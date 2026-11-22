@@ -1,5 +1,6 @@
 # Kickoff prompts
 
-One prompt per workstream session (`WS-NN.md`), plus `template.md`. These are drafted in the claude.ai Project (WS-01) and committed here.
+- `template.md`: the generic three-phase template (A: design chat, B: implementation, C: grading)
+- `WS-02.md` … `WS-05.md`: Phase A design kickoffs for the core workstreams. Run them in the claude.ai Project. Each produces an approved spec that its Phase B implementation prompt builds on.
 
-Usage: start a new Claude Code session on this repo and paste the workstream's prompt. When the implementing session finishes, run the `spec-grader` agent and paste its follow-on prompt back into the session.
+Order: WS-02 → (WS-03 ∥ WS-04) → WS-05. WS-06 to WS-09 prompts will be written after the core specs are approved.

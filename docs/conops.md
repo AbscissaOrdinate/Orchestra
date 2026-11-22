@@ -157,6 +157,9 @@ Order: WS-01 → WS-02 → WS-03 and WS-04 in parallel → WS-05 → WS-06 throu
 
 ## 12. Research backlog
 
+Closed 2026-11-22. See `docs/research/m1-findings.md`.
+
+
 - How TNO's economy and budget mechanics work (currently known only loosely)
 - War Footing's licensing and arms-deal system
 - Terra Invicta's tech tree structure
