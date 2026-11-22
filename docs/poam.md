@@ -9,8 +9,8 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 
 | ID | Milestone | Exit criteria | WS | Status |
 |---|---|---|---|---|
-| M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ◐ |
-| M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ◐ (ADRs done; research open) |
+| M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ☑ |
+| M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ (OQ-4 pending Sean's test) |
 | M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ☐ |
 | M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ☐ |
 | M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
@@ -25,11 +25,13 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 |---|---|---|---|
 | 1 | Install the Claude GitHub App on the repo so cloud sessions can push | GitHub settings | ☑ |
 | 2 | Review and approve ConOps | This Project | ☑ (v0.2) |
-| 3 | Draft the workstream kickoff prompt template plus prompts for WS-02 through WS-05 | Project chat → `prompts/` | ☐ |
+| 3 | Draft the workstream kickoff prompt template plus prompts for WS-02 through WS-05 | `prompts/` | ☑ |
 | 4 | Resolve OQ-1, 2, 3, 5 | Project | ☑ (ADR-0001–0003) |
 | 6 | Test whether the claude.ai Project can sync docs from the repo (OQ-4) | Sean | ☐ |
 | 7 | Start WS-08 setting/canon chat: 1955 back-history, expanded DATE polity list | New Project chat | ☐ |
-| 5 | Run M1 research | Project chat | ☐ |
+| 5 | Run M1 research | `docs/research/m1-findings.md` | ☑ |
+| 8 | Start WS-02 design chat with `prompts/WS-02.md` | New Project chat | ☐ |
+| 9 | Describe the target TNO economy "feel" at the WS-03 kickoff | Sean | ☐ |
 
 ## Change log
 
@@ -37,3 +39,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 |---|---|
 | 2026-11-22 | Initial scaffold, ConOps v0.1 |
 | 2026-11-22 | ConOps v0.2 baselined; ADR-0001 (RON), ADR-0002 (Tauri), ADR-0003 (DATE + disclaimer) |
+| 2026-11-22 | M1 research findings; prompt template + WS-02–05 kickoff prompts; M0 closed |
