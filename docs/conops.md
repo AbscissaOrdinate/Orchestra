@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Baseline v0.1 (draft) |
+| Status | Baseline v0.2 |
 | Owner | Sean |
 | Workstream | WS-01 |
 | Last updated | 2026-11-22 |
@@ -48,7 +48,7 @@ There are no win conditions. The game is a sandbox with optional retrospective s
 | Governance | Parametric institutions, factions, and reform as a project | Freeform scripting |
 | Economy | Sectoral production, quantile income distribution, full tax suite, bonds, monetary policy, cohort demographics, defense procurement | Detailed trade networks, finance sector |
 | R&D | World-level latent truth, polity beliefs, stochastic projects, hidden cross-field enablers | — |
-| Craft design | Hull presets + component slots + derived stats; preset 2D silhouette | Movable external components (decide whether they're cosmetic or affect stats; see OQ-3) |
+| Craft design | Hull presets + component slots + derived stats; preset 2D silhouette | Movable external components, cosmetic only (OQ-3) |
 | Defense market | Buy, license, or arms-deal designs and components, with tracked provenance | — |
 | Diplomacy | Alliances (overlapping, multiple types), clause-based treaties with probabilistic violation detection, a basic intel mechanic | Covert ops depth |
 | Combat | Auto-resolved operational engagements: salvo (naval, air, space) and Lanchester (ground) | Any tactical layer |
@@ -59,7 +59,7 @@ There are no win conditions. The game is a sandbox with optional retrospective s
 - **Default setting:** a DATE-style world. That means fictional polities on **real Earth geography**, modeled on the U.S. Army Decisive Action Training Environment, expanded so the board has enough actors. The 1955 back-history is written in-house at low fidelity.
 - **Extensibility (SYS-007):** the setting is pure data. Polities, region ownership, start conditions, and names live in content files, separate from the map, which is a fixed region graph. Adding, removing, or renaming nations, or swapping in another setting on the same map, must need no code changes.
 - **Solar System:** a variant of ours, generated from a seed. Hypothetical moons and minor bodies can exist, and off-Earth resources are sampled per world and revealed through prospecting.
-- **Licensing caveat (OQ-1):** this repository is GPL-3.0 and public. Before committing any DATE-derived names or text, verify DATE's distribution status. The fallback is to borrow only its structure and use renamed polities.
+- **DATE usage (OQ-1, ADR-0003):** DATE is Distribution A (approved for public release) and a U.S. Government work in the public domain, so it may be used in this GPL repository. The README and the game's credits must carry a non-endorsement disclaimer. The 1955 back-history and canon are written in WS-08.
 
 ## 5. Cross-cutting design principles
 
@@ -101,8 +101,8 @@ Every model choice below is provisional until its workstream spec is approved.
 
 - `crates/sim-core`: pure Rust simulation library (P-4, P-5).
 - `crates/cli`: headless runner, batch Monte Carlo, scenario I/O.
-- `app/`: Tauri shell with an HTML/CSS/JS front end consuming sim-core. 2525 symbols likely via the `milsymbol` JS library (to be verified).
-- `content/`: data files (format TBD: RON, TOML, or JSON).
+- `app/`: Tauri shell with an HTML/CSS/JS front end consuming sim-core (ADR-0002). 2525 symbols likely via the `milsymbol` JS library (to be verified).
+- `content/`: data files in RON, with prose in Markdown (ADR-0001).
 - `prototypes/`: model sketches in Python or MATLAB.
 
 ## 8. Top risks
@@ -113,7 +113,7 @@ Every model choice below is provisional until its workstream spec is approved.
 | R-2 | Runaway feedback loops (debt spirals, population blowups) | Damping terms; batch Monte Carlo stability tests in CI (WS-10) |
 | R-3 | Content volume (techs, components, events across about 100 years) | P-6; procedural parameter sampling; MVP timeframe limit |
 | R-4 | Solo developer bandwidth and Claude Pro usage limits | Spec-first with testable acceptance criteria; thin stubs; the grader loop limits rework |
-| R-5 | DATE licensing in a public GPL repo | OQ-1, resolved before any DATE content is committed |
+| R-5 | DATE licensing in a public GPL repo | Resolved: Distribution A / public domain, with a non-endorsement disclaimer (ADR-0003) |
 
 ## 9. System requirements (top level)
 
@@ -149,11 +149,11 @@ Order: WS-01 → WS-02 → WS-03 and WS-04 in parallel → WS-05 → WS-06 throu
 
 | ID | Question | Owner |
 |---|---|---|
-| OQ-1 | What is DATE's distribution and release status, and can its names and text be used in a public GPL repo? | WS-08 research |
-| OQ-2 | Content file format (RON, TOML, or JSON) | WS-02 |
-| OQ-3 | Do movable external craft components affect stats (e.g., signature, stability), or are they cosmetic only? | WS-05 |
-| OQ-4 | Can the claude.ai Project sync from this repo, avoiding duplicated docs? | WS-01 |
-| OQ-5 | Tauri vs. a pure-Rust UI (egui/iced) for a text-heavy interface | WS-02 |
+| OQ-1 | What is DATE's distribution and release status, and can its names and text be used in a public GPL repo? | **Closed:** yes, with a disclaimer (ADR-0003) |
+| OQ-2 | Content file format | **Closed:** RON + Markdown (ADR-0001) |
+| OQ-3 | Do movable external craft components affect stats (e.g., signature, stability), or are they cosmetic only? | **Closed:** cosmetic only |
+| OQ-4 | Can the claude.ai Project sync from this repo, avoiding duplicated docs? | Open: Sean to test |
+| OQ-5 | Tauri vs. a pure-Rust UI (egui/iced) for a text-heavy interface | **Closed:** Tauri (ADR-0002) |
 
 ## 12. Research backlog
 
