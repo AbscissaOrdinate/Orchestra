@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Status | Baseline v0.2 |
+| Status | Baseline v0.3 |
 | Owner | Sean |
 | Workstream | WS-01 |
-| Last updated | 2026-11-22 |
+| Last updated | 2026-11-24 |
 
 This is the top-level design document. Workstream specs (`docs/specs/`) derive from it and trace back to the `SYS-` requirements in §9. If a spec conflicts with this document, this document wins until it is formally revised (see `CLAUDE.md`).
 
@@ -51,7 +51,12 @@ There are no win conditions. The game is a sandbox with optional retrospective s
 | Craft design | Hull presets + component slots + derived stats; preset 2D silhouette | Movable external components, cosmetic only (OQ-3) |
 | Defense market | Buy, license, or arms-deal designs and components, with tracked provenance | — |
 | Diplomacy | Alliances (overlapping, multiple types), clause-based treaties with probabilistic violation detection, a basic intel mechanic | Covert ops depth |
-| Combat | Auto-resolved operational engagements: salvo (naval, air, space) and Lanchester (ground) | Any tactical layer |
+| Force design | Data-driven formation templates (sub-unit slots + equipment slots + personnel), era presets, research-unlocked slots and doctrine choices. Design from company level; **track** BCT/brigade, ship, squadron, SOF company, spacecraft/constellation (§6.1). Groupings: squadron/fleet, wing, joint task force. | Division/corps HQs as tracked echelons; generals and leaders; player-authored doctrine |
+| Manpower & readiness | Recruitment pool from demographics; conscription vs. volunteer policy; active/reserve/cadre tiers; training lag; funded readiness with decay; one experience scalar | Detailed personnel management |
+| Basing & infrastructure | Naval, air, army, space (launch sites, ground stations) and production (shipyards, plants) facilities with capacity; overseas access by treaty | Base defense layouts; detailed logistics network (MVP: abstract supply capacity along region edges) |
+| Munitions | Stockpiles in a few aggregate classes, consumed by combat and refilled by production | Per-munition-type tracking |
+| Strategic forces | Abstract: warhead stockpile, delivery systems, survivability and posture produce a deterrence-credibility value used by diplomacy and AI; nuclear use is a catastrophic escalation event | Nuclear exchange modeling |
+| Combat | Auto-resolved operational engagements: salvo (naval, air, space) and Lanchester (ground), consuming unit aggregates only | Any tactical layer; cyber/EW beyond a modifier |
 | UI | Text-first, SVG vector, MIL-STD-2525 symbols, ASCII fallback | 3D |
 
 ## 4. Setting
@@ -74,6 +79,7 @@ There are no win conditions. The game is a sandbox with optional retrospective s
 | P-7 | **Fidelity tiers.** | High-fidelity polities run the full models. Macro polities run reduced-form equations on a few aggregates. Polities can move between tiers. |
 | P-8 | **Coupling through shared objects.** | Economic interest groups *are* political factions. R&D projects *are* how designs come to exist. Avoid duplicate parallel models. |
 | P-9 | **Prototype before porting.** | Models are first sketched in Python, MATLAB, or a spreadsheet (`prototypes/`) and tuned there, then implemented in Rust against a spec. |
+| P-10 | **Compose upward with one slot pattern.** | Components → craft designs → formation templates all use the same slot/derived-stat mechanism. Each tracked unit exposes a few aggregates (offense, defense, staying power, detection, mobility, upkeep), and higher systems consume only those. |
 
 ## 6. System overview
 
@@ -93,9 +99,29 @@ Every model choice below is provisional until its workstream spec is approved.
 | Defense industry | Medium | Wright's-law learning, production-rate effects, operations and support lifecycle costs; a market for buying, licensing, and arms deals (War Footing-inspired) | WS-05 |
 | Diplomacy & AI | Thin | Utility AI weighted by archetype × strength tier. Bargaining model for war/peace. Repeated-game reputation. Clause-based treaties. | WS-06 |
 | Intelligence | Thin | P-2 belief updates | WS-06 |
-| Combat | Thin | One stochastic attrition kernel: Hughes salvo (naval, air, space), Lanchester square/linear (ground); binomial draws | WS-07 |
+| Force design | Medium | Formation templates (P-10); unit lifecycle (commission, refit/modernize, mothball, decommission, sell); deployment orders by theater/region with simple postures (defend, attack, patrol, blockade, strike, deter) | WS-11 |
+| Manpower & readiness | Thin | Pool drawn from WS-03 cohorts; conscription is a WS-04 policy; readiness decays unless funded; O&S cost per unit | WS-11 |
+| Basing & munitions | Thin | Facility capacity per region; access from WS-06 treaties; munitions stockpiles × production rate | WS-11 |
+| Strategic forces | Thin | Stockpile + delivery + survivability → deterrence credibility (an input to WS-06 bargaining) | WS-11, WS-06 |
+| ISR assets | Thin | Satellites, patrol aircraft and SOF reconnaissance feed P-2 belief updates | WS-11, WS-06 |
+| Services | Thin | Army, navy, air and space services are WS-04 interest groups competing for budget share | WS-04, WS-11 |
+| Combat | Thin | One stochastic attrition kernel: Armstrong stochastic salvo (naval, air, space; sequential-fire variant for first strikes), Lanchester square/linear (ground); consumes unit aggregates × readiness × supply × experience | WS-07 |
 | Space | Thin | Hohmann delta-v graph, synodic windows, prospecting (P-2), outposts | WS-08 |
 | UI | Thin | Tauri webview, SVG, MIL-STD-2525 symbology, text-first | WS-09 |
+
+### 6.1 Force echelons
+
+Design granularity is not tracking granularity. Templates are built from small building blocks, but only the tracked echelon exists as an entity on the map and receives orders. This keeps entity counts in the hundreds per polity, not thousands (R-6).
+
+| Domain | Template building blocks | Tracked unit | Groupings |
+|---|---|---|---|
+| Army | Company → battalion → regiment (optional) → brigade / BCT | Brigade / BCT | Joint task force (divisions and corps post-MVP) |
+| Special operations | Company | Company | Joint task force |
+| Navy | Ship design (WS-05) | Ship | Squadron → fleet |
+| Air | Aircraft design → squadron template | Squadron | Wing → air force |
+| Space | Spacecraft design | Spacecraft or constellation | Orbital group |
+
+Variants such as marines and amphibious forces, airborne, carrier air wings, and paramilitary or gendarmerie (relevant to WS-04 internal stability) are templates, not separate systems. Space is a separate service from about the 1960s; the setting decides when.
 
 ## 7. Architecture (provisional; to be confirmed in an ADR during WS-02)
 
@@ -114,6 +140,7 @@ Every model choice below is provisional until its workstream spec is approved.
 | R-3 | Content volume (techs, components, events across about 100 years) | P-6; procedural parameter sampling; MVP timeframe limit |
 | R-4 | Solo developer bandwidth and Claude Pro usage limits | Spec-first with testable acceptance criteria; thin stubs; the grader loop limits rework |
 | R-5 | DATE licensing in a public GPL repo | Resolved: Distribution A / public domain, with a non-endorsement disclaimer (ADR-0003) |
+| R-6 | Force micromanagement and entity count | Tracked echelons fixed per domain (§6.1); templates applied in bulk; AI auto-organizes forces for macro polities |
 
 ## 9. System requirements (top level)
 
@@ -126,7 +153,8 @@ Every model choice below is provisional until its workstream spec is approved.
 | SYS-005 | Technology truth is sampled per world; polities hold beliefs. | The same seed gives the same truth for every polity. Beliefs converge toward truth as research increases. |
 | SYS-006 | Polities run at high or macro fidelity and can switch tiers. | A tier switch conserves the key aggregates (GDP, population, military power) within tolerance. |
 | SYS-007 | The setting (polities, ownership, start state) is content data, separate from the map. | A test scenario adds a polity using data files only. |
-| SYS-008 | Performance: one monthly tick with the MVP polity counts takes under 100 ms on mid-range hardware (provisional). | Benchmark run in CI |
+| SYS-008 | Performance: one monthly tick with the MVP polity counts takes under 100 ms on mid-range hardware (provisional). | Benchmark run in CI, including ~300 tracked units per high-fidelity polity |
+| SYS-009 | Forces are composed from data-driven formation templates. Only the tracked echelon per domain (§6.1) exists as a map entity, and each tracked unit exposes aggregates with breakdowns. | A new template defined only in content files can be built and deployed. A unit's aggregates equal the rollup of its sub-units and equipment, with breakdown terms that sum to the value. |
 
 ## 10. Workstreams
 
@@ -142,8 +170,9 @@ Every model choice below is provisional until its workstream spec is approved.
 | WS-08 | World generation, space map, resources, setting data | Design → code |
 | WS-09 | UI/UX and symbology | Design → code |
 | WS-10 | V&V: the spec-grader workflow, tests, batch stability | Cross-cutting |
+| WS-11 | Force design, manpower, basing, munitions, strategic forces | Design → code |
 
-Order: WS-01 → WS-02 → WS-03 and WS-04 in parallel → WS-05 → WS-06 through WS-09. WS-10 runs throughout.
+Order: WS-01 → WS-02 → WS-03 and WS-04 in parallel → WS-05 → WS-11 → WS-07, then WS-06, WS-08 and WS-09. WS-10 runs throughout.
 
 ## 11. Open questions
 
@@ -154,6 +183,7 @@ Order: WS-01 → WS-02 → WS-03 and WS-04 in parallel → WS-05 → WS-06 throu
 | OQ-3 | Do movable external craft components affect stats (e.g., signature, stability), or are they cosmetic only? | **Closed:** cosmetic only |
 | OQ-4 | Can the claude.ai Project sync from this repo, avoiding duplicated docs? | Open: Sean to test |
 | OQ-5 | Tauri vs. a pure-Rust UI (egui/iced) for a text-heavy interface | **Closed:** Tauri (ADR-0002) |
+| OQ-6 | Where force state lives in the WS-02 world model: a `force` block, its stage placement, and how combat losses (WS-07, stage R6) get back to it under the one-writer-per-block rule | WS-02 review, before approval |
 
 ## 12. Research backlog
 
