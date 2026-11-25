@@ -89,6 +89,8 @@ pub struct World {
     pub econ: Vec<EconBlock>,             // WS-03 (stub in M4)
     pub gov:  Vec<GovBlock>,              // WS-04 (stub in M4)
     pub rnd:  Vec<RndBlock>,              // WS-05 (stub in M4)
+    pub force: Vec<ForceBlock>,           // WS-11 (stub in M4): units, groupings, manpower, munitions, bases
+    pub engagements: Vec<EngagementRecord>, // WS-07, this tick only: losses and munitions expended per unit
     pub beliefs: Vec<BeliefBlock>,        // per polity; owned by the Observe stage
     pub events: Vec<Event>,               // this tick only
 }
@@ -139,8 +141,10 @@ Stages run in this fixed order every tick [D]:
 | R3 Production | Output, industry learning, R&D project progress | `econ` (production part), `rnd` | stage-start |
 | R4 Finance | Tax revenue, budget, bonds, monetary, demographics | `econ` (finance part) | R3 results |
 | R5 Politics | Factions, stability, reform | `gov` | R4 results |
-| R6 External | Diplomacy, treaties, engagements, space ops (WS-06/07/08) | their blocks | R5 results |
-| R7 Tier | Refresh `Polity.agg` from detail; execute tier switches | `polities[].agg`, `tier`, detail `Option`s | R6 results |
+| R5b Forces | Readiness and upkeep, mobilization and manpower draw, unit deliveries and lifecycle, deployments (WS-11) | `force` | R5 results |
+| R6 External | Diplomacy, treaties, engagements, space ops (WS-06/07/08). Combat reads `force` and writes `engagements`; it never writes `force`. | their blocks, `engagements` | R5b results |
+| R6b Losses | Apply `engagements` to `force`: casualties, destroyed units, munitions drawdown, captured bases (WS-11) | `force` | R6 results |
+| R7 Tier | Refresh `Polity.agg` from detail; execute tier switches | `polities[].agg`, `tier`, detail `Option`s | R6b results |
 | I1 Observe | Apply all `Observation`s to `beliefs` | `beliefs` | all |
 | I2 Report | Finalize events, record time series | `events`, `Recorder` | all |
 
@@ -168,6 +172,8 @@ fn stage_r3(world: &mut World, ctx: &mut TickCtx) {
 
 pub fn step(world: &mut World, orders: &[Order]) -> TickReport; // runs D1..I2, increments tick
 ```
+
+**Force state (ConOps OQ-6).** WS-11 owns `force` and writes it in two stages: R5b (its own dynamics) and R6b (applying combat results). WS-07 only ever writes `engagements`. Losses therefore reach `force` and `agg.military_power` in the same tick, and the one-writer-per-block-per-stage rule holds. Known lag: manpower drawn in R5b reduces the labor force seen by WS-03 the following tick.
 
 Within a stage, subsystems run sequentially in the listed order. Sinks (`events`, `observations`) are appended in that order, so they're deterministic. A subsystem that needs a value computed later in the same stage must move to a later stage instead.
 
@@ -264,7 +270,7 @@ pub trait Tiered {                          // implemented by each subsystem blo
 - Every polity always has `agg`. For high-fidelity polities R7 recomputes it from detail each tick, so diplomacy, AI and combat can compare polities of any tier through one interface.
 - Tier switches are requested by order (`OrderKind::SetTier`, normally emitted by WS-06 AI) and executed only in R7.
 - Demotion drops detail; `agg` already holds the aggregates. Promotion calls `disaggregate` with a content-defined template (e.g., age pyramid shape, quantile shares), rescales to hit the conserved values, then re-aggregates and checks them.
-- `military_power` is defined by WS-07. Until then the stub is the sum of force-element strengths.
+- `military_power` is the rollup of tracked-unit aggregates from `force` (WS-11, ConOps P-10/SYS-009); WS-07 defines how combat uses it. Until then the stub is the sum of stub unit strengths.
 
 ### 3.9 CLI (`orchestra`)
 
@@ -301,10 +307,11 @@ Batch uses `std::thread::scope`; each run is single-threaded; results are gather
 | ARC-014 | All belief updates go through `Observation`s applied in stage I1. | Test: a stub subsystem's observations change `beliefs` only after I1; no other code path writes `world.beliefs` (pub(crate) setter; reviewed by grader). | P-2 |
 | ARC-015 | Region and body graphs support neighbor queries and minimum-cost paths. | Test: on a 5-node fixture graph, `shortest_path` returns the known optimum delta-v path and cost; adjacency lists are sorted. | ConOps §3 |
 | **Pipeline** |||
-| ARC-020 | Each tick runs stages D1, D2, R1–R7, I1, I2 in that order. | Test: stub subsystems append their stage name to an event list; the per-tick sequence equals the table in §3.3. | ConOps §2 |
+| ARC-020 | Each tick runs stages D1, D2, R1–R5, R5b, R6, R6b, R7, I1, I2 in that order. | Test: stub subsystems append their stage name to an event list; the per-tick sequence equals the table in §3.3. | ConOps §2 |
 | ARC-021 | Within a stage, every subsystem reads the stage-start state; blocks commit at stage end; each block has exactly one writer. | Test: two stub subsystems in one stage each read the other's block; results are identical when their call order is swapped. Ownership holds because subsystem functions take `&World` (compile-enforced). | P-4 |
 | ARC-022 | Orders are validated before application; invalid orders are rejected as events, never panics. | Test: an order for a dead polity, a past tick, and an out-of-range value each produce a rejection event and leave state unchanged. | SYS-001 |
 | ARC-023 | All state `f64`s are finite after every stage in debug and test builds. | Test: a stub subsystem that writes NaN causes a panic naming the stage and block. | R-2, SYS-002 |
+| ARC-024 | Combat losses reach `force` and aggregates in the same tick, and only WS-11 functions write `force`. | Test: a stub combat function in R6 records the destruction of one stub unit in `engagements`; after R7 of the same tick the unit is gone from `force` and `agg.military_power` has dropped by its strength, with a breakdown term naming the engagement. Grader check: no WS-07 function returns a `ForceBlock`. | SYS-009, P-4 |
 | **RNG** |||
 | ARC-030 | All randomness comes from `RngFactory::stream` or `worldgen_stream`, as specified in §3.4. | Grader check plus ARC-004 lint; no other `SeedableRng` constructor in `sim-core` outside `rng.rs` (CI `grep`). | P-4, SYS-002 |
 | ARC-031 | RNG golden values are pinned. | Test `arc_031_rng_golden`: `ChaCha8Rng::seed_from_u64(42)` first three `u64`s = `12578764544318200737, 17529487244874322312, 7886285670807131020`; `LogNormal::new(0.0, 0.5)` first sample from seed 42 = `1.2699666231939588`; `stream(seed 42, tag "eco", entity 3, tick 0, purpose 0)` first `u64` = `16460933805651989612`, first `f64` after it = `0.9772430632731485`. [V: measured 2026-11-22, x86-64 Linux, the pinned versions] | SYS-002 |
@@ -335,7 +342,7 @@ Batch uses `std::thread::scope`; each run is single-threaded; results are gather
 | ARC-081 | A tier switch conserves aggregates. | Test: promote then demote a stub polity; each conserved quantity is within 1e-6 relative of its pre-switch value at both steps. | SYS-006 |
 | ARC-082 | Tier switches happen only in R7 and only by order. | Test: a `SetTier` order issued in D1 changes `tier` only after R7 of the same tick; no other stage changes `tier`. | SYS-006 |
 | **Performance** |||
-| ARC-090 | Pipeline overhead (stubs that touch every tracked variable) is ≤ 5 ms/tick at MVP scale. | `orchestra bench` on a synthetic scenario (1 player + 5 high + 40 macro polities, 100 regions, 50 bodies, 300 techs, ~1,600 tracked vars), release build: median ≤ 5 ms on reference hardware; CI threshold 10 ms. | SYS-008 |
+| ARC-090 | Pipeline overhead (stubs that touch every tracked variable) is ≤ 5 ms/tick at MVP scale. | `orchestra bench` on a synthetic scenario (1 player + 5 high + 40 macro polities, 100 regions, 50 bodies, 300 techs, ~300 stub tracked units per high-fidelity polity, ~1,600 polity-level tracked vars plus unit state per OQ-A6), release build: median ≤ 5 ms on reference hardware; CI threshold 10 ms. | SYS-008 |
 | ARC-091 | Per-subsystem budgets sum to the SYS-008 total. | Budget table (§5) is in this spec; each WS spec states its own budget; `bench` prints per-stage medians. | SYS-008 |
 | **Tauri stub** |||
 | ARC-100 | The Tauri app builds and calls sim-core. | Manual check on the dev machine: the window shows the version and a world hash that matches `orchestra run --ticks 0 --seed <same>`. | ADR-0002 |
@@ -353,8 +360,9 @@ Target: median ≤ 100 ms per tick, release build, on reference hardware (OQ-A3)
 | D2 AI + R6 diplomacy (WS-06) | 20 |
 | R6 combat (WS-07) | 10 |
 | R6 space ops, R2 events (WS-08) | 5 |
+| R5b forces, R6b losses (WS-11) | 5 |
 | I1 Observe, I2 Report, R7 Tier | 5 |
-| Margin | 10 |
+| Margin | 5 |
 
 Snapshot ring memory budget: ≤ 64 MB for 12 snapshots (≈ 5 MB per `World`) [D]. If WS-03 to WS-05 push past it, reduce the ring length before changing representation.
 
@@ -383,4 +391,5 @@ The schemas themselves belong to each WS. WS-02 fixes only these:
 | OQ-A2 | Is the 12-tick ring and 12-tick autosave interval right for "why did X change?" UX (WS-09)? | 12 / 12 |
 | OQ-A3 | Reference hardware for SYS-008. | 4-core x86-64 at ~3 GHz, 16 GB RAM [D]; Sean to name the actual machine |
 | OQ-A4 | Should `Aggregates` include government debt and treasury from the start, so WS-06 AI can compare fiscal strength across tiers? | Add when WS-03 is drafted |
-| OQ-A5 | ConOps §7 says the architecture is to be confirmed in an ADR during WS-02. ADR-0004 does that; ConOps §7 should cite it and drop "provisional". | Proposed ConOps edit; not made in this PR |
+| OQ-A5 | ConOps §7 says the architecture is to be confirmed in an ADR during WS-02. ADR-0004 does that; ConOps §7 should cite it and drop "provisional". | **Closed:** ConOps §7 edited in this PR, effective when the PR is approved |
+| OQ-A6 | Unit-level state (~1,800 units × readiness/strength/experience) would multiply the D2 inline-breakdown estimate several-fold and push the snapshot ring past 64 MB. Should unit-level variables store plain values and build breakdowns on query (stock form: the previous snapshot's value + this tick's flows), keeping inline breakdowns for polity-level aggregates only? | Yes [D]. Update D2/ADR-0007 estimates, and ARC-090 to measure ring memory. |

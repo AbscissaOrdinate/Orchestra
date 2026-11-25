@@ -13,7 +13,7 @@ Each monthly tick runs Decide → Resolve → Inform (ConOps §2). Subsystems ar
 | **Ordered stages; read stage-start state, commit at stage end; one writer per block** | Couplings across stages are same-tick; couplings within a stage are order-independent; lags are visible in the stage table; borrow checker enforces it (`fn(&World) -> NewBlock`) | Subsystems must be placed in the right stage; a subsystem split across stages (economy production vs. finance) needs two functions |
 
 ## Decision
-**Ordered stages:** D1 Orders, D2 AiDecide, R1 ApplyOrders, R2 Exogenous, R3 Production, R4 Finance, R5 Politics, R6 External, R7 Tier, I1 Observe, I2 Report. A subsystem is a plain function `fn(&World, &mut TickCtx) -> NewBlock(s)`, called from a static, hand-written stage function. No runtime registry. Each block has exactly one writing function per stage. Belief updates happen only in I1 from queued `Observation`s. Tier switches happen only in R7.
+**Ordered stages:** D1 Orders, D2 AiDecide, R1 ApplyOrders, R2 Exogenous, R3 Production, R4 Finance, R5 Politics, R5b Forces, R6 External, R6b Losses, R7 Tier, I1 Observe, I2 Report. A subsystem is a plain function `fn(&World, &mut TickCtx) -> NewBlock(s)`, called from a static, hand-written stage function. No runtime registry. Each block has exactly one writing function per stage. Belief updates happen only in I1 from queued `Observation`s. Tier switches happen only in R7.
 
 ## Consequences
 - Stage placement is a design decision each WS spec must state, with the lag it implies.
