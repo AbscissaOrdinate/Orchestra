@@ -82,5 +82,5 @@ Confidence tags: **[V]** checked against the source linked · **[R]** recalled o
 | YAML (ADR-0001 check) | **[V]** `serde_yaml` was archived and deprecated 2024-03-25 ([release](https://redirect.github.com/dtolnay/serde-yaml/releases)). Its fork `serde_yml` is also deprecated and had a soundness advisory ([docs.rs](https://docs.rs/serde_yml/)). A maintained fork, `yaml_serde`, now exists under the YAML organization ([docs.rs](https://docs.rs/crate/yaml_serde/latest)). **This confirms ADR-0001: RON stays.** |
 
 ## 6. Remaining open items
-- OQ-4 (Project ↔ repo sync): Sean to test.
+- OQ-4 (Project ↔ repo sync): closed 2026-11-25. The Project's GitHub source (`main`, whole repo) is searchable by path and matched the repo at PR #3. Synced files are not listed as docs and can't be read by name. Sync is manual ("Sync now"). Propagation of a later commit was not tested.
 - The TNO mechanic is undocumented (§1.1). Sean will describe the intended feel at the WS-03 kickoff.

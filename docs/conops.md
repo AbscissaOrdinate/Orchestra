@@ -181,7 +181,7 @@ Order: WS-01 → WS-02 → WS-03 and WS-04 in parallel → WS-05 → WS-11 → W
 | OQ-1 | What is DATE's distribution and release status, and can its names and text be used in a public GPL repo? | **Closed:** yes, with a disclaimer (ADR-0003) |
 | OQ-2 | Content file format | **Closed:** RON + Markdown (ADR-0001) |
 | OQ-3 | Do movable external craft components affect stats (e.g., signature, stability), or are they cosmetic only? | **Closed:** cosmetic only |
-| OQ-4 | Can the claude.ai Project sync from this repo, avoiding duplicated docs? | Open: Sean to test |
+| OQ-4 | Can the claude.ai Project sync from this repo, avoiding duplicated docs? | **Closed:** yes, for retrieval. The Project's GitHub source (`main`, whole repo) is searchable by path, so the repo is the single copy. Synced files can't be opened by name, and sync is manual ("Sync now"). Design changes are still committed here by hand |
 | OQ-5 | Tauri vs. a pure-Rust UI (egui/iced) for a text-heavy interface | **Closed:** Tauri (ADR-0002) |
 | OQ-6 | Where force state lives in the WS-02 world model: a `force` block, its stage placement, and how combat losses (WS-07, stage R6) get back to it under the one-writer-per-block rule | **Closed:** `force` block owned by WS-11, written in R5b and R6b; WS-07 writes `engagements` only (WS-02 §3.3, ARC-024) |
 

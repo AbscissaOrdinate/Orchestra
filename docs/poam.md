@@ -10,7 +10,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | ID | Milestone | Exit criteria | WS | Status |
 |---|---|---|---|---|
 | M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ☑ |
-| M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ (OQ-4 pending Sean's test) |
+| M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ |
 | M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ☐ |
 | M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03–05 pending) |
 | M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
@@ -27,7 +27,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2 | Review and approve ConOps | This Project | ☑ (v0.2) |
 | 3 | Draft the workstream kickoff prompt template plus prompts for WS-02 through WS-05 | `prompts/` | ☑ |
 | 4 | Resolve OQ-1, 2, 3, 5 | Project | ☑ (ADR-0001–0003) |
-| 6 | Test whether the claude.ai Project can sync docs from the repo (OQ-4) | Sean | ☐ |
+| 6 | Test whether the claude.ai Project can sync docs from the repo (OQ-4) | Sean | ☑ (2026-11-25; works for search, manual sync) |
 | 7 | Start WS-08 setting/canon chat: 1955 back-history, expanded DATE polity list | New Project chat | ☐ |
 | 5 | Run M1 research | `docs/research/m1-findings.md` | ☑ |
 | 8 | Start WS-02 design chat with `prompts/WS-02.md` | New Project chat | ☑ (spec + ADR-0004–0009 drafted, PR open) |
@@ -48,3 +48,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-24 | ConOps v0.3: force design added (scope rows, P-10, §6.1 echelons, R-6, SYS-009, OQ-6); WS-11 created; WS-11 kickoff prompt |
 | 2026-11-25 | WS-02 v0.2: OQ-A1–A6 closed (same-platform determinism; user-set history ring/autosave {1–24}, 3 autosaves kept; reference machine Ryzen 7 5800H; debt/treasury deferred to WS-03; `Lazy` unit-level breakdowns). Added ARC-044–046 and `explain_change`; ARC-021/024/031/042/043/062/090 revised; ADR-0006/0007/0009 revised |
 | 2026-11-25 | WS-02 spec approved v1.0; ADR-0004–0009 accepted |
+| 2026-11-25 | OQ-4 closed: Project GitHub sync works for search (manual "Sync now"; files not openable by name); POAM item 6 done |
