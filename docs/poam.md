@@ -31,7 +31,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 7 | Start WS-08 setting/canon chat: 1955 back-history, expanded DATE polity list | New Project chat | ☐ |
 | 5 | Run M1 research | `docs/research/m1-findings.md` | ☑ |
 | 8 | Start WS-02 design chat with `prompts/WS-02.md` | New Project chat | ☑ (spec + ADR-0004–0009 drafted, PR open) |
-| 10 | Review WS-02 spec and ADR-0004–0009; answer OQ-A1–A5; approve or request changes | Sean | ☐ |
+| 10 | Review WS-02 spec and ADR-0004–0009; answer OQ-A1–A6; approve or request changes | Sean | ◐ (OQ-A1–A6 answered and applied 2026-11-25; awaiting approval and merge of PR #3) |
 | 11 | After WS-02 approval: write the WS-02 Phase B prompt; start M4 (the ConOps §7 edit for OQ-A5 is already in PR #3) | Project → repo | ☐ |
 | 9 | Describe the target TNO economy "feel" at the WS-03 kickoff | Sean | ☐ |
 | 12 | Resolve OQ-6 in the WS-02 review: add a `force` block (owner WS-11), its stage, and the combat-loss path; add force units to the ARC-090 bench scenario | WS-02 PR | ☑ (R5b/R6b, ARC-024, OQ-A6) |
@@ -46,3 +46,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-22 | M1 research findings; prompt template + WS-02–05 kickoff prompts; M0 closed |
 | 2026-11-22 | WS-02 architecture spec (Draft) and ADR-0004–0009 (Proposed); M3 in progress. M1 stays ☑ with OQ-4 pending |
 | 2026-11-24 | ConOps v0.3: force design added (scope rows, P-10, §6.1 echelons, R-6, SYS-009, OQ-6); WS-11 created; WS-11 kickoff prompt |
+| 2026-11-25 | WS-02 v0.2: OQ-A1–A6 closed (same-platform determinism; user-set history ring/autosave {1–24}, 3 autosaves kept; reference machine Ryzen 7 5800H; debt/treasury deferred to WS-03; `Lazy` unit-level breakdowns). Added ARC-044–046 and `explain_change`; ARC-021/024/031/042/043/062/090 revised; ADR-0006/0007/0009 revised |

@@ -1,6 +1,6 @@
 # ADR-0009 — Save format and state hash: postcard + blake3
 
-Status: Proposed · Date: 2026-11-22 · Workstream: WS-02 · Supports: SYS-002
+Status: Proposed · Date: 2026-11-22 (revised 2026-11-25) · Workstream: WS-02 · Supports: SYS-002
 
 ## Context
 SYS-002 requires byte-identical state hashes for identical seed and inputs. Saves need to be compact, fast and bit-exact for `f64`. Content is RON (ADR-0001), but saves have no requirement to be hand-edited.
@@ -14,7 +14,7 @@ SYS-002 requires byte-identical state hashes for identical seed and inputs. Save
 | JSON | Universal | Large; float formatting; reserved for export |
 
 ## Decision
-Saves are `postcard(SaveHeader, World, InputLog)`. `SaveHeader` carries magic `ORCH`, `SAVE_FORMAT_VERSION`, sim-core version, content hash, seed and tick. `state_hash = blake3(postcard(World))`. JSON (`serde_json`, CLI only) is for export. No migration in MVP: mismatched versions are rejected. A committed fixture save catches type changes made without a version bump.
+Saves are `postcard(SaveHeader, World, InputLog)`. `SaveHeader` carries magic `ORCH`, `SAVE_FORMAT_VERSION`, sim-core version, content hash, seed, tick and platform (OS/arch). A save from another platform loads; replay reports any divergence as a platform difference (OQ-A1). `state_hash = blake3(postcard(World))`. JSON (`serde_json`, CLI only) is for export. No migration in MVP: mismatched versions are rejected. A committed fixture save catches type changes made without a version bump.
 
 ## Consequences
 - Every change to a serialized type needs a version bump and a new fixture; old saves stop loading. That's acceptable before release.
