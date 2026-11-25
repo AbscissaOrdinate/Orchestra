@@ -1,5 +1,5 @@
 # WS-02 — Architecture & Data Model
-Status: Draft v0.2 (OQ-A1–A6 resolved; ready for approval) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-25
+Status: Approved v1.0 (2026-11-25) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-25
 
 Tags: **[V]** verified (source or measurement given) · **[R]** recalled, not checked · **[D]** design choice.
 Decisions are recorded in ADR-0004 to ADR-0009. This spec is the contract that WS-03 to WS-09 code against.

@@ -1,6 +1,6 @@
 # ADR-0008 — Belief representation: small Gaussian mixture with a (mean, σ) facade
 
-Status: Proposed · Date: 2026-11-22 · Workstream: WS-02 · Supports: P-1, P-2, SYS-005
+Status: Accepted · Date: 2026-11-22 · Workstream: WS-02 · Supports: P-1, P-2, SYS-005
 
 ## Context
 P-2 requires one belief mechanic for tech uncertainty, intel, treaty verification, prospecting and AI reasoning. WS-05 needs multimodal outcomes ("works well or dead end", ConOps §6). Order of magnitude [D]: 45 polities × ~1,000 subjects ≈ 45,000 beliefs.

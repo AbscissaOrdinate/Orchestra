@@ -1,6 +1,6 @@
 # ADR-0007 — Explainability: inline polity-level breakdowns, lazy unit-level breakdowns, snapshot ring, replay
 
-Status: Proposed · Date: 2026-11-22 (revised 2026-11-25: OQ-A2, OQ-A6) · Workstream: WS-02 · Supports: SYS-004, SYS-009, P-3
+Status: Accepted · Date: 2026-11-22 (revised 2026-11-25: OQ-A2, OQ-A6) · Workstream: WS-02 · Supports: SYS-004, SYS-009, P-3
 
 ## Context
 Every displayed variable must decompose into labeled terms that sum to its value (SYS-004), including each tracked unit's aggregates (SYS-009). The UI must answer "why did X change?" for recent months. Estimates [D]:

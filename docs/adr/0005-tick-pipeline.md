@@ -1,6 +1,6 @@
 # ADR-0005 — Tick pipeline: ordered stages with stage-end commit
 
-Status: Proposed · Date: 2026-11-22 · Workstream: WS-02
+Status: Accepted · Date: 2026-11-22 · Workstream: WS-02
 
 ## Context
 Each monthly tick runs Decide → Resolve → Inform (ConOps §2). Subsystems are coupled (P-8): tax revenue depends on this month's output, faction approval on this month's taxes. The order in which subsystems see each other's updates must be explicit and deterministic (P-4).

@@ -1,6 +1,6 @@
 # ADR-0004 — Workspace layout and state model (no ECS)
 
-Status: Proposed · Date: 2026-11-22 · Workstream: WS-02 · Confirms: ConOps §7
+Status: Accepted · Date: 2026-11-22 · Workstream: WS-02 · Confirms: ConOps §7
 
 ## Context
 ConOps §7 lists a provisional layout (`sim-core`, `cli`, `app/`, `content/`, `prototypes/`) to be confirmed in WS-02. The state model has to be deterministic (P-4), hashable and serializable as one value (SYS-002), and small enough for a solo developer to keep in his head. The MVP holds ~45 polities, ~100 regions, ~50 bodies and a few hundred techs [D].

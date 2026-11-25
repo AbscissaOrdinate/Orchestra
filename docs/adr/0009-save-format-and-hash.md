@@ -1,6 +1,6 @@
 # ADR-0009 — Save format and state hash: postcard + blake3
 
-Status: Proposed · Date: 2026-11-22 (revised 2026-11-25) · Workstream: WS-02 · Supports: SYS-002
+Status: Accepted · Date: 2026-11-22 (revised 2026-11-25) · Workstream: WS-02 · Supports: SYS-002
 
 ## Context
 SYS-002 requires byte-identical state hashes for identical seed and inputs. Saves need to be compact, fast and bit-exact for `f64`. Content is RON (ADR-0001), but saves have no requirement to be hand-edited.
