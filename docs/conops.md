@@ -123,7 +123,7 @@ Design granularity is not tracking granularity. Templates are built from small b
 
 Variants such as marines and amphibious forces, airborne, carrier air wings, and paramilitary or gendarmerie (relevant to WS-04 internal stability) are templates, not separate systems. Space is a separate service from about the 1960s; the setting decides when.
 
-## 7. Architecture (provisional; to be confirmed in an ADR during WS-02)
+## 7. Architecture (ADR-0004 to ADR-0009; detailed in `docs/specs/WS-02-architecture.md`)
 
 - `crates/sim-core`: pure Rust simulation library (P-4, P-5).
 - `crates/cli`: headless runner, batch Monte Carlo, scenario I/O.
@@ -183,7 +183,7 @@ Order: WS-01 → WS-02 → WS-03 and WS-04 in parallel → WS-05 → WS-11 → W
 | OQ-3 | Do movable external craft components affect stats (e.g., signature, stability), or are they cosmetic only? | **Closed:** cosmetic only |
 | OQ-4 | Can the claude.ai Project sync from this repo, avoiding duplicated docs? | Open: Sean to test |
 | OQ-5 | Tauri vs. a pure-Rust UI (egui/iced) for a text-heavy interface | **Closed:** Tauri (ADR-0002) |
-| OQ-6 | Where force state lives in the WS-02 world model: a `force` block, its stage placement, and how combat losses (WS-07, stage R6) get back to it under the one-writer-per-block rule | WS-02 review, before approval |
+| OQ-6 | Where force state lives in the WS-02 world model: a `force` block, its stage placement, and how combat losses (WS-07, stage R6) get back to it under the one-writer-per-block rule | **Closed:** `force` block owned by WS-11, written in R5b and R6b; WS-07 writes `engagements` only (WS-02 §3.3, ARC-024) |
 
 ## 12. Research backlog
 
