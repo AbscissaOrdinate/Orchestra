@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft for review. The framework (§3) and gap decisions (§11) still need Sean's confirmation |
+| Status | Draft v0.2. Framework and gap recommendations confirmed 2026-11-26, except F-5/G-5 (revised below, pending); T-4 decided |
 | Feeds | WS-07 (combat kernel spec), WS-11 (unit stats and munitions) |
 | Parent | ConOps §3 (Combat, Munitions rows), §5 P-4/P-9/P-10, §6 Combat row, SYS-009; WS-02 §3.3, ARC-024 |
 | Date | 2026-11-26 |
@@ -39,14 +39,14 @@ Confidence tags follow `m1-findings.md`: **[V]** checked against the linked sour
 
 | ID | Decision [D] | Confirm? |
 |---|---|---|
-| F-1 | One salvo kernel for naval, air, space, air/missile defense, and strikes on facilities. Ground maneuver stays in Lanchester (ConOps §6) | ☐ |
-| F-2 | Truth comes from **sampling**: one stochastic realization per engagement, with vectorized binomial and multinomial draws over arrays (units × munition classes × layers). Armstrong closed forms are used only for (a) the verification oracle and (b) AI and doctrine forecasts on beliefs (P-2) | ☐ |
-| F-3 | An engagement is a set of rounds (salvo pulses), default `R_max = 3` per engagement per tick. The engagement generator (who meets whom, range band, first strike) is a separate WS-07 function fed by WS-11 deployments and WS-08 adjacency and launch windows | ☐ |
-| F-4 | Damage reduces the WS-02 strength fraction `s`. A unit is out of action at `s ≤ s_min` (content; default 0). Its offense and defense scale with `s` in the next round | ☐ |
-| F-5 | Munitions are tracked as **~8–12 aggregate classes** (§8.4). Each polity has one current design per class, and stock is a count per class per holder | ☐ |
-| F-6 | Stock lives on the tracked unit for ships, batteries, and spacecraft. Air uses base stock with a per-sortie loadout | ☐ |
-| F-7 | Doctrine is a preset parameter set per service, unlocked by research (ConOps §3: no player-authored doctrine) | ☐ |
-| F-8 | EW is limited to the §6 terms | ☐ |
+| F-1 | One salvo kernel for naval, air, space, air/missile defense, and strikes on facilities. Ground maneuver stays in Lanchester (ConOps §6) | ☑ |
+| F-2 | Truth comes from **sampling**: one stochastic realization per engagement, with vectorized binomial and multinomial draws over arrays (units × munition classes × layers). Armstrong closed forms are used only for (a) the verification oracle and (b) AI and doctrine forecasts on beliefs (P-2) | ☑ |
+| F-3 | An engagement is a set of rounds (salvo pulses), default `R_max = 3` per engagement per tick. The engagement generator (who meets whom, range band, first strike) is a separate WS-07 function fed by WS-11 deployments and WS-08 adjacency and launch windows | ☑ |
+| F-4 | Damage reduces the WS-02 strength fraction `s`. A unit is out of action at `s ≤ s_min` (content; default 0). Its offense and defense scale with `s` in the next round | ☑ |
+| F-5 | Munitions are tracked as **~8–12 aggregate classes** (§8.4). Each holder keeps per-class **lots** with their own stats (§7.4), so new research changes only new deliveries, never stock already held | ☐ pending §7.4 choice |
+| F-6 | Stock lives on the tracked unit for ships, batteries, and spacecraft. Air uses base stock with a per-sortie loadout | ☑ |
+| F-7 | Doctrine is a preset parameter set per service, unlocked by research (ConOps §3: no player-authored doctrine) | ☑ |
+| F-8 | EW is limited to the §6 terms | ☑ |
 
 ## 4. Modifications to Armstrong
 
@@ -109,6 +109,23 @@ Excluded: ESM/SIGINT, emission control (beyond a posture flag that lowers signat
 
 Weapon selection: each unit class's doctrine has a preference list per mission, for example `strike_ship: [AShM, glide_bomb, gun]`. The first class with stock > 0, a legal target, and `range_band ≥ required` is used. When AShM runs out, glide bombs are chosen, and because their range band falls below the defender's area band, M-9 exposes the aircraft. That is the intended cost.
 
+### 7.4 Munition lots (G-5)
+
+Requirement (Sean): researching a new design must not change stock already built. Options:
+
+| Option | State per holder | Fidelity | Cost |
+|---|---|---|---|
+| A. Track every design | One count per design per class | Exact | Unbounded over 105 years; breaks the ConOps munitions scope |
+| B. One blended lot per class (Sean's proposal) | Count + count-weighted stats per class | Exact for the mean where stats enter linearly (`p_rel`, `lethality`); small bias where they don't (`eccm` inside the logistic, Pk via threat class) | 1× |
+| **C. B, plus a categorical split (recommended)** | Up to **2 lots** per class: blend only lots whose categorical fields match (`threat_class`, `range_band`, `legal_targets`); a third lot merges into its nearest match by those fields | Exact for categorical changes (a subsonic AShM and a hypersonic one never average into a fake "transonic" missile); B's small bias otherwise | ≤ 2× B; still a few classes |
+
+Rules for C [D]:
+- Deliveries from WS-05 production join the holder's matching lot by count-weighted average, or open the second lot.
+- Blended fields: `p_rel`, `lethality`, `eccm`. Categorical fields are never blended.
+- Lot choice when firing is a doctrine field: `best_first` (default), or `oldest_first` for Conserve, which burns obsolete stock in low-threat engagements.
+- Transfers between holders move lots with their stats, so a base's mixed stock goes onto a ship as it is.
+- Refit/modernization (WS-11) may convert a lot at a cost. It never happens automatically.
+
 ### 7.3 Doctrine parameters (preset per service, research-unlocked)
 
 | Parameter | Saturation | Measured | Conserve |
@@ -130,7 +147,8 @@ This is the contract. WS-11's rollup produces these from templates and designs; 
 
 | Field | Type | Meaning |
 |---|---|---|
-| `target_class` | enum: `surface`, `air`, `ground_mobile`, `ground_fixed`, `facility`, `space` (+ `orbit_regime`) | Legality and Pk lookups |
+| `target_class` | enum: `surface`, `subsurface`, `air`, `ground_mobile`, `ground_fixed`, `facility`, `space` (+ `orbit_regime`) | Legality and Pk lookups |
+| `signature_fired` | f64 multiplier | Signature after the unit fires (a submarine's datum, a battery's launch plume); applies from the next round |
 | `s` | f64 (0, 1] | Strength fraction (WS-02) |
 | `staying_power` | f64, standard hits at s = 1 | Hits of lethality 1.0 that put the unit out of action |
 | `signature` | f64 ≥ 0 | Allocation weight and detection penalty |
@@ -168,14 +186,24 @@ This is the contract. WS-11's rollup produces these from templates and designs; 
 |---|---|
 | `id`, `role` | offensive / interceptor / both / decoy |
 | `legal_targets` | Set of target classes (interceptors also list threat classes) |
-| `threat_class` | When in flight: `subsonic`, `supersonic`, `ballistic`, `hypersonic_glide`, `aircraft`, `orbital_kv` |
+| `threat_class` | When in flight: `subsonic`, `supersonic`, `ballistic`, `hypersonic_glide`, `aircraft`, `orbital_kv`, `torpedo` |
 | `p_rel` | Launch and guidance reliability (Armstrong p) |
 | `lethality[target_class]` | Standard hits per impact |
 | `eccm`, `range_band`, `area_fire` (deferred) | — |
 
-Indicative classes (F-5): AShM, LACM, ballistic SRBM/MRBM, HGV, AAM, area SAM/ABM, point SAM/CIWS, ASAT (direct-ascent), co-orbital KV, PGM/glide bomb, decoy.
+Indicative classes (F-5): AShM, LACM, ballistic SRBM/MRBM, HGV, AAM, area SAM/ABM, point SAM/CIWS, ASAT (direct-ascent), co-orbital KV, PGM/glide bomb, heavyweight torpedo, lightweight torpedo/ASW weapon, decoy.
 
-### 8.5 Content matrices (WS-07 owns)
+### 8.5 Subsurface (submarines and torpedoes)
+
+The kernel applies without new mechanics [D]:
+- `subsurface` is a target class. Only ASW-legal classes can engage it (lightweight torpedoes from ships, helicopters and MPA; heavyweight torpedoes from submarines).
+- Torpedoes are a `torpedo` threat class. Ship defense against them is mostly the **soft layer** (towed decoys, consuming `cm`) with few hard-kill layers. Lethality against surface targets is high.
+- A submarine's low `signature` dominates the detection contest, so it usually gets round 1 alone (M-8). `signature_fired` then exposes it to counterattack in later rounds.
+- A submarine firing AShM or LACM is an ordinary mount. Ballistic-missile submarines stay in WS-11 strategic forces, outside the kernel.
+
+The real limit sits outside the kernel **[R]**: ASW outcomes are dominated by search and detection over time (classical search theory), not by salvo exchange. The WS-07 engagement generator (G-1) must produce submarine contacts at a low per-tick probability driven by ASW sensor coverage versus signature. Otherwise submarines will fight as often as surface ships, and too visibly.
+
+### 8.6 Content matrices (WS-07 owns)
 
 - `pk[interceptor_class, threat_class]`
 - `legal[munition_class, target_class]`
@@ -209,7 +237,7 @@ Per engagement: participants; rounds run; first-strike side. Per unit: Δs, out-
 | G-2 | Detection contest is crude | **Address thin** (§6); belief-driven σ is a later WS-06 refinement |
 | G-3 | Target allocation realism | **Accept** multinomial-by-priority; tune in the prototype |
 | G-4 | BDA between rounds | **Accept** perfect BDA in MVP; imperfect BDA (Atkinson & Kress) deferred |
-| G-5 | Munition vintages within a class | **Decide:** blend stock stats by count on refill (recommended), or keep the newest design's stats for all stock |
+| G-5 | Munition vintages within a class | **Sean:** new designs must not upgrade existing stock. Options and recommendation in §7.4 (pending) |
 | G-6 | Salvo hits on ground brigades → Lanchester strength | **Address** in WS-07: hits convert to the Lanchester strength loss via `staying_power` |
 | G-7 | Space: debris, regimes, co-orbital transit time, maneuver as defense | **Accept thin:** maneuver = soft layer spending a Δv stock; debris = a WS-08 hazard increment per kill. Flag for WS-08 |
 | G-8 | Strikes on facilities and the economy (bases, infrastructure, cities) | **Address:** `facility` target class whose damage feeds WS-11 capacity and WS-03 capital |
@@ -223,7 +251,7 @@ Per engagement: participants; rounds run; first-strike side. Per unit: Δs, out-
 - **T-1 Munitions (ConOps §3):** "a few aggregate classes" holds if F-5 caps the list at about 12 classes with class-level stats. "Per-munition-type tracking" stays deferred. Proposed edit: add "held per unit or base".
 - **T-2 P-10:** offense and defense become small per-class structures (§8.2–8.3), not scalars. Proposed edit: "offense and defense as per-munition-class mounts and layers".
 - **T-3 EW:** §6 is meant to stay at modifier level. Confirm that it does.
-- **T-4 Batteries (§6.1):** the army's tracked unit is the brigade. Decide whether missile and air-defense batteries are **brigade templates** (keeps R-6) or a tracked battalion/battery exception.
+- **T-4 Batteries (§6.1): decided 2026-11-26.** Missile and air-defense units are **brigade templates** (R-6 holds). A brigade with `mounts`/`layers` takes part in the salvo kernel; its maneuver elements stay in Lanchester (G-6).
 
 ## Sources
 Listed inline in §2. Additional: [Wikipedia: Salvo combat model](https://en.wikipedia.org/wiki/Salvo_combat_model) (bibliography cross-check).
