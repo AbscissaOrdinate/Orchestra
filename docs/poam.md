@@ -12,7 +12,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ☑ |
 | M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ |
 | M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ◐ ((a) and (c) planned: `prototypes/economy/README.md`, `prototypes/governance/PLAN.md`) |
-| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03 v0.1 and WS-04 v0.2 drafts in review; WS-05 pending) |
+| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved v1.2; WS-03 v0.4 and WS-04 v0.4 drafts, not yet marked approved; WS-05 pending) |
 | M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
 | M5 | Core triad in Rust | Economy, governance, and R&D implemented to spec, with batch stability tests in CI | WS-03–05 | ☐ |
 | M6 | Forces & thin stubs | Force design (templates, lifecycle, manpower, basing, munitions, strategic forces) per WS-11; diplomacy/AI, combat kernel, space graph, and setting data at MVP depth | WS-06–08, WS-11 | ☐ |
@@ -50,7 +50,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ☑ (wealth, CBI ownership and rents note all done in WS-03 v0.2/v0.3) |
 | 22 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
 | 23 | Review and approve WS-08b v0.4 (all four workstreams' feedback applied; §8.1 lists what remains) | Sean | ☐ |
-| 24 | After WS-08b merges: WS-02 applies P-02a–g (v1.2); WS-08a drops `Region.resource_tags`, rewords WLD-047, adds WLD-017 and owns `deposit_start.ron`; WS-03 publishes `extraction_share` (WS-04 OQ-G11) | WS-02, WS-08a, WS-03 | ◐ (WS-08a part done: v0.3, PR ws08a/v0.3) |
+| 24 | After WS-08b merges: WS-02 applies P-02a–g (v1.2); WS-08a drops `Region.resource_tags`, rewords WLD-047, adds WLD-017 and owns `deposit_start.ron`; WS-03 publishes `extraction_share` (WS-04 OQ-G11) | WS-02, WS-08a, WS-03 | ◐ (WS-08a part done: v0.3, PR #20; WS-02 part done: v1.2, PR ws02/v1.2-ws08b; WS-03 `extraction_share` open) |
 | 25 | Build M2(d), the rent-hook prototype (`prototypes/ws08b-sol/README.md` §2, ≈ 14 h), after M2(a) P1–P3; propose `deposit_start.ron` values for WS-08a review | `prototypes/economy/` | ☐ |
 
 ## Change log
@@ -80,3 +80,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-08b v0.1–v0.3 (PR #14, merged then reverted so WS-03 v0.4 could land): seeded Sol (32 canonical bodies + ≤ 18 generated from real small-body populations), regime-node Δv graph with synodic windows, four-kind resource taxonomy, commodity price block, rent hook, prospecting, thin space ops; OQ-S1–S5 closed |
 | 2026-11-27 | WS-08b v0.4 (new PR, rebuilt on main): marks P-03a–k and P-04a–e applied; `f_w` wording (λ_w 0.3); exploration channel `none`; extraction value added for `extraction_share` (WLD-058, WS-04 OQ-G11); WS-02 v1.2 items (delivery lag, per-regime `orbital_assets`, ≈ 0.18 MB snapshot); deposit IDs from tag text (SYS-007); `deposit_start.ron` header rule; OQ-S6 foreign concessions (non-blocking, default none) |
 | 2026-11-27 | WS-08a v0.3 (WS-08b P-08a1/2): `Region.resource_tags` removed (WLD-047); new WLD-017 validates `settings/<s>/deposit_start.ron` against WS-08b deposit IDs; 58 passing tests. `deposit_start.ron` values wait on WS-08b M2(d) |
+| 2026-11-27 | WS-02 v1.2: WS-08b P-02a–g applied (`Sol` node graph, `resources`/`space` blocks, WS-08 in R2/R5b/R6b, `Owner::{Deposit, Facility, Node}`, observation units in ADR-0008, test-setting bodies, `Aggregates.orbital_assets`); ARC-013/015/080/081/090 and §5 memory updated |
