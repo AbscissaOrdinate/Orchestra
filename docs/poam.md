@@ -11,8 +11,8 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 |---|---|---|---|---|
 | M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ☑ |
 | M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ |
-| M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ☐ |
-| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03–05 pending) |
+| M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ◐ ((c) planned: `prototypes/governance/PLAN.md`) |
+| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-04 draft v0.1 in review; WS-03, WS-05 pending) |
 | M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
 | M5 | Core triad in Rust | Economy, governance, and R&D implemented to spec, with batch stability tests in CI | WS-03–05 | ☐ |
 | M6 | Forces & thin stubs | Force design (templates, lifecycle, manpower, basing, munitions, strategic forces) per WS-11; diplomacy/AI, combat kernel, space graph, and setting data at MVP depth | WS-06–08, WS-11 | ☐ |
@@ -36,6 +36,9 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 9 | Describe the target TNO economy "feel" at the WS-03 kickoff | Sean | ☐ |
 | 12 | Resolve OQ-6 in the WS-02 review: add a `force` block (owner WS-11), its stage, and the combat-loss path; add force units to the ARC-090 bench scenario | WS-02 PR | ☑ (R5b/R6b, ARC-024, OQ-A6) |
 | 13 | Start the WS-11 design chat with `prompts/WS-11.md` once the WS-05 spec is approved | New Project chat | ☐ |
+| 14 | Review WS-04 spec draft; answer OQ-G1–G6; approve or request changes | Sean (WS-04 PR) | ☐ |
+| 15 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 first); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
+| 16 | At the WS-03 kickoff, ratify or amend the proposed WS-03 ↔ WS-04 contract (WS-04 §3.2, OQ-G5); `prompts/WS-03.md` now points to it | WS-03 chat | ☐ |
 
 ## Change log
 
@@ -50,3 +53,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-25 | WS-02 spec approved v1.0; ADR-0004–0009 accepted |
 | 2026-11-25 | OQ-4 closed: Project GitHub sync works for search (manual "Sync now"; files not openable by name); POAM item 6 done |
 | 2026-11-26 | Salvo kernel research note `docs/research/salvo-model.md` (feeds WS-07, WS-11): framework F-1–F-8, gaps, munition lots option C, batteries as brigade templates; ConOps T-1/T-2 edits proposed, not made |
+| 2026-11-27 | WS-04 governance spec Draft v0.1 (GOV-001–098: parametric institutions, data-driven factions, 6 policy axes, selectorate loyalty discount, legitimacy/unrest stocks, coup/revolution hazards, staged reform, lobbies, macro tier) and M2(c) prototype plan; WS-03 contract proposed from the WS-04 side (OQ-G5) |
