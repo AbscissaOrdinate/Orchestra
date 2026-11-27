@@ -1,6 +1,6 @@
 # M2(a) Economy prototype plan (WS-03)
 
-Status: Plan v0.1 · Spec: `docs/specs/WS-03-economy.md` (Draft v0.1) · Last updated: 2026-11-26
+Status: Plan v0.3 · Spec: `docs/specs/WS-03-economy.md` (Draft v0.3) · Last updated: 2026-11-27
 
 Goal: show that the WS-03 model is stable over 1955–2060 in batch Monte Carlo (spec §6.1), that every failure mode is reachable by policy on a plausible timescale (§6.2), and that it *feels* like TNO's slow pressure. The parameters this produces become the M4 content defaults.
 
@@ -19,7 +19,10 @@ Goal: show that the WS-03 model is stable over 1955–2060 in batch Monte Carlo 
 |---|---|
 | `params.toml` | All §3 defaults, per archetype |
 | `model.py` | State containers and stage functions (§3.1–3.13) |
-| `taxes.py` | Parametric distribution, 1,000-point grid, tax engine, incidence (§3.5); runnable standalone for the Laffer and bracket-creep checks |
+| `calib_wealth.py` | **Exists.** Fits the wealth marginals to Fed DFA / WIR shares and the joint panel to SCF 2022 (§3.5); reproduces the spec's calibration table |
+| `panel_size.py` | **Exists.** Panel-size study (equal vs. oversampled) behind the 8,192 choice |
+| `panel.py` | Household panel (oversampled lattice, weighted rank-cell marginals, roles, keys, shrinkage), tax engine, incidence (§3.5); runnable standalone for the Laffer, bracket-creep and ECO-048/049 checks |
+| `wealth_groups.py` | Five-group wealth stock-flow, homeownership, q_H/q_E, pensions, offshore, generalized Pareto rebuild (§3.5 wealth dynamics); ECO-140–143, 147 |
 | `demography.py` | Single-year two-sex cohort component, Preston/Brass mortality, TFR (§3.9) |
 | `scenarios.py` | Scenario definitions (§3 below) as dicts of overrides plus stub input series |
 | `batch.py` | `python batch.py --scenario S04 --runs 500 --seed 1` → `results/S04.npz` + summary CSV |
@@ -50,6 +53,10 @@ Archetypes: **A** advanced market democracy (high CBI, d_lim 1.6); **B** planned
 | S15 | Bailout path (C hits critical debt, lender available) | 1 | 500 | ECO-065, 067 continuity; CI path |
 | S16 | Tier round trip (promote/demote every 10 years) | 13 | 200 | ECO-121, 122 |
 | S17 | Projection accuracy (beliefs = truth vs. σ 5% vs. 30%) | 1 | 200 | ECO-102 |
+| S18 | Inequality drift: advanced archetype, top tax rates cut 1980 and growth slowing (WS-04 S5 counterpart) | 1 | 500 | §6.1 wealth bounds; W_hh/Y rises; outputs feed WS-04 S5 as its econ input |
+| S19 | US policy path 1955–2012 (spec §3.5 table) | 1 | 200 | ECO-144 (US) |
+| S20 | UK policy path 1955–1975 | 1 | 200 | ECO-144 (UK), ECO-146 |
+| S21 | NL-like vs. BE-like pair, same tax-transfer schedule, 40 years | 2 | 200 | ECO-145 |
 
 Sensitivity: rerun S01, S05 and S06 with σ_CES ∈ {0.4, 0.6, 1.0}, ETI ∈ {0.1, 0.25, 0.5}, β_d ∈ {2, 3, 4} bp, k ∈ {0.03, 0.06, 0.1}. Report which criteria are fragile.
 
@@ -57,12 +64,12 @@ Sensitivity: rerun S01, S05 and S06 with σ_CES ∈ {0.4, 0.6, 1.0}, ETI ∈ {0.
 
 | Phase | Work | Exit | Est. h [D] |
 |---|---|---|---|
-| P1 | `taxes.py`, `demography.py` standalone | ECO-040–044, 080–083 pass | 6 |
+| P1 | `panel.py`, `wealth_groups.py`, `demography.py` standalone | ECO-040–044, 048, 049, 080–083, 140–143, 147 pass | 11 |
 | P2 | Single-polity closed economy: production, IS gap, Phillips/Taylor/Cagan, budget, bonds | S00, S05–S07 pass | 8 |
 | P3 | Distribution dynamics, corruption, shadow economy, planned settings, beliefs + projection | S02, S10, S17 pass | 6 |
 | P4 | Multi-polity: trade, FX, diffusion, macro tier | S04, S09, S11, S16 pass | 6 |
-| P5 | Batch criteria, calibration, sensitivity, `feel.py` | All §6.1/§6.2 rows pass; criteria.md committed | 6 |
-| — | **Total** | | **≈ 32 h** (≈ 3–4 weeks at 10 h/week) |
+| P5 | Batch criteria, calibration (incl. S19–S21), sensitivity, `feel.py` | All §6.1/§6.2 rows and ECO-144–146 pass; criteria.md committed | 7 |
+| — | **Total** | | **≈ 38 h** (≈ 4 weeks at 10 h/week) |
 
 ## 5. Feel review (Sean, end of P5)
 

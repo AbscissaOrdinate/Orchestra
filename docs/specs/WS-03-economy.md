@@ -1,5 +1,9 @@
 # WS-03 — Macroeconomy, Fiscal & Monetary Policy, Demographics
-Status: Draft v0.1 · Parent: ConOps §3, §5 (P-1, P-2, P-3, P-7, P-8), §6 economy rows, §8 R-1/R-2, SYS-002, SYS-004, SYS-006, SYS-008 · Last updated: 2026-11-26
+Status: Draft v0.3 · Parent: ConOps §3, §5 (P-1, P-2, P-3, P-7, P-8), §6 economy rows, §8 R-1/R-2, SYS-002, SYS-004, SYS-006, SYS-008 · Depends on: WS-02 v1.1, WS-04 Draft v0.2, WS-08a Draft v0.1 · Last updated: 2026-11-27
+
+**v0.3 changes (2026-11-27):** wealth is now a **dynamic stock tracked for five WID-style groups** (§3.5 wealth dynamics). Each group's change breaks down into saving, returns, asset-price gains, taxes, estates and mobility. The wealth marginal is rebuilt from the group means each year, replacing the hand-written α_w and p0 laws. New instruments: mortgage LTV cap, mortgage-interest deductibility, pension funded share, and a social housing spending line. Measured (offshore excluded) and pension-augmented wealth shares are reported. The panel is now 8,192 households with oversampled tails (measured in `panel_size.py`). New ECO-140 to ECO-147, calibrated to the 1978–2012 US path, UK 1955–1975, and a Netherlands-like vs. Belgium-like pair.
+
+**v0.2 changes (2026-11-27, after WS-04 v0.2):** §3.5 replaces the parametric income bins and the v0.1 linear key-wealth rule with a **synthetic household panel** calibrated to US and Algerian wealth data and the SCF 2022 joint income–wealth profile (new ECO-048, ECO-049; ECO-040, 042, 090 revised). Aggregate household wealth and an asset-price index are now defined. CBI is read only from WS-04 (WS-04 OQ-G7 item 2). WS-03 now cites the WS-08a start-state bands it owns (§5.1, WLD-022), and OQ-E3 is closed by WS-04's discretion-band formula. WS-04's shocks, laws and order gate are added to §2.3/§2.5.
 
 Tags: **[V]** checked against the linked source this session · **[R]** recalled, not checked · **[D]** design choice. Every [R] value is a calibration starting point that the M2(a) prototype must confirm or replace.
 Contract: WS-02 v1.0 (stages R2–R4, `Tracked`/`Breakdown`, keyed RNG streams, `Tiered`, `PolityView`). Nothing here changes WS-02.
@@ -54,6 +58,7 @@ Explicit lags that follow from placement: the policy rate set in R4 reaches the 
 | WS-04 | `EconOutcomes` per `EconKey` (§2.4): real disposable income level and 12-month growth, effective tax rate, transfers received, unemployment exposure, inflation loss, employment and profits (sector keys) | real per capita / share |
 | WS-04 | Spending per budget line (WS-04 classifies public vs. private goods); corruption rents (leakage amount) available to the winning coalition | real |
 | WS-04 | Stress indicators: spread, rating band, inflation, real growth, shortage index, arrears, conditionality index, active warning bands (as events) | — |
+| WS-04 | Distribution summary: wealth shares (top 10/1/0.1%, bottom 50%) in three concepts (**measured**, which excludes offshore wealth; **true**; and **augmented** with pension rights), the five group shares with their flow breakdown, income shares (same cuts), homeownership rate, aggregate household wealth and wealth/income ratio (§3.5) | share / real |
 | WS-04 | `project()` incidence per `EconKey` for a draft budget, so factions can preview and react before enactment | — |
 | WS-05 | Funding per R&D line (civil fields, defense R&D, space program) and procurement appropriations, in real terms deflated by an R&D cost index (wage-weighted) | real |
 | WS-05 | Defense and space sector capacity, utilization and wage index; skilled-labor pool (`h × L` in those sectors); FX rates and reserves | — |
@@ -65,7 +70,8 @@ Explicit lags that follow from placement: the policy rate set in R4 reaches the 
 
 | From | Item | Used in |
 |---|---|---|
-| WS-04 | `cbi ∈ [0,1]`, `corruption ∈ [0,1]`, `stat_bias ∈ [0, 0.3]` (statistics inflation by low-accountability regimes), `FactionEconBehavior` (§2.4), budget enactment result, monthly discretion band, legality of price controls, conscription law | §3.3–3.8, §3.11, §3.12 |
+| WS-04 | `cbi ∈ [0,1]` (WS-04 is the only source; WS-03 has no default), `corruption ∈ [0,1]`, `stat_bias ∈ [0, 0.3]` (statistics inflation by low-accountability regimes), `FactionEconBehavior` (§2.4), budget enactment result, monthly discretion band, legality of price controls, laws read by WS-03 (pension age → §3.6 retirees and §3.5 Transfer role; women's status → female participation §3.9 and TFR), conscription law (passed to WS-11) | §3.3–3.8, §3.11, §3.12 |
+| WS-04 | `shocks { capital_loss, output_loss } ∈ [0, 0.5]` from coups and revolutions: capital_loss destroys that share of every sector's K (and the matching private wealth) in R2; output_loss is a one-tick gap shock | §3.1, §3.2 |
 | WS-05 | Sector TFP multipliers `M_s ≥ 0`, capital-quality and depreciation modifiers, health-tech and contraception-tech indices, procurement spending by seller polity, arms export receipts and license fees | §3.2, §3.9, §3.10 |
 | WS-06 | Trade access matrix `a_ij ∈ [0,1]` (spheres, sanctions, embargoes), bailout lender availability and terms, sphere anchor polity | §3.7, §3.10 |
 | WS-11 | Upkeep demand (personnel count, pay, O&S cost), manpower drawn by sex and band, war casualties by sex and band | §3.6, §3.9 |
@@ -78,10 +84,14 @@ P-8: factions *are* the economic interest groups. WS-04 owns the faction list, m
 ```rust
 pub enum Role { Wage, Capital, Transfer, Public }    // Public = government employees and the military
 pub struct EconKey { pub bin: u8 /* 0..20 */, pub sector: Option<SectorIdx>, pub role: Role }
+// sector is Some for Wage and Capital keys and None for Transfer and Public keys:
+// at most 20·5·2 + 20 + 20 = 240 keys; keys with pop_share = 0 are omitted.
 // WS-03 publishes, each tick (R4):
 pub struct EconOutcomes { pub by_key: Vec<(EconKey, KeyOutcome)> }   // sorted by key
 pub struct KeyOutcome { pub pop_share: f64, pub real_disp_income: f64, pub disp_growth_12m: f64,
-                        pub eff_tax_rate: f64, pub transfers: f64, pub unemp_exposure: f64, pub inflation_loss: f64 }
+                        pub eff_tax_rate: f64, pub transfers: f64, pub unemp_exposure: f64, pub inflation_loss: f64,
+                        pub wealth: f64 /* real net wealth per capita, §3.5 key wealth */ }
+// Corruption rents are reported separately (§2.2) and are never added to any key's real_disp_income.
 // WS-04 publishes, each tick (R5):
 pub struct FactionEconBehavior {
     pub membership: Vec<(FactionId, EconKey, f64)>,  // weights; Σ over factions per key ≤ 1 (split membership allowed)
@@ -99,14 +109,17 @@ WS-03 projects behavior onto keys: `mod_k = Σ_f membership(f,k) · behavior_f`.
 | Order | Cadence | Effect |
 |---|---|---|
 | `EnactBudget(BudgetDraft)` | annual, effective at fiscal-year start (content; default January) | Full tax schedule, tariffs, appropriations by line, transfer parameters, debt rule. Gated by WS-04 (veto players). If it fails, last year's budget continues (continuing resolution). |
-| `AdjustTax { tax, delta }` | monthly, within the WS-04 discretion band (default cumulative ±2 pp per tax per fiscal year) | Temporary rate change; out-of-band orders are rejected with an event |
+| `AdjustTax { tax, delta }` | monthly, within the WS-04 discretion band: 2 pp × clamp(W_exec / 0.2, 0.5, 2) per tax per fiscal year (WS-04 §3.2) | Temporary rate change; out-of-band orders are rejected with an event |
 | `PublicInvestment { sector or infrastructure, amount }` | monthly | Discretionary investment within the investment envelope plus borrowing |
-| `SetRegulation { kind, level }` | monthly | Regulation level, price controls, capital controls, investment directives |
+| `SetRegulation { kind, level }` | monthly | Regulation level, price controls, capital controls, investment directives, **mortgage LTV cap**, **mortgage-interest deductibility** (v0.3) |
+| `EnactBudget` fields (v0.3) | annual | **Pension funded share** ∈ [0, 1] (the share of pension promises pre-funded in pension funds instead of pay-as-you-go; moves at most 0.05/yr) and the **social housing** spending line |
 | `Supplemental { line, amount }` | monthly | Emergency appropriation (war, disaster); WS-04 charges political cost |
 | `IndustrialConversion { from, to, share }` | monthly | Moves capital between industry and defense at a conversion cost and lag |
 | `SetMonetary { policy_rate_pref, financing_share }` | monthly | Effective only in proportion to (1 − CBI) |
 | `SetDebtRule { auto_repay, reserve_floor_months, max_yield }` | monthly | TNO-style reserve and repayment behavior; arrears threshold |
 | `DrawBailout { amount }` | monthly | Draws the facility if WS-06 offers one; raises the conditionality index |
+
+All WS-03 orders pass through WS-04's pure `gate_orders` function in R1 (WS-04 GOV-064), so both subsystems reject exactly the same orders; WS-03 adds no gate of its own beyond range validation.
 
 ## 3. Model
 
@@ -199,26 +212,82 @@ i(t+1)         = ρ_i i + (1 − ρ_i) i_target,  floored at i_zlb
 
 ### 3.5 Income and wealth distribution and taxes
 
-**State, parametric [D]:** income and wealth each follow a lognormal body for p < p_t = 0.90 and a Pareto tail above, matched continuously at the threshold. That gives four shape parameters `(σ_y, α_y, σ_w, α_w)` plus the means. The 20 bins are vigintiles (5% population each), derived from those parameters each tick; top-1% and top-0.1% figures come analytically from the Pareto tail.
-
-| Option | Pros | Cons |
-|---|---|---|
-| Per-bin representative agents with their own wealth accumulation | Emergent r − g dynamics | Unstable (bins diverge), needs a re-ranking/mobility fudge, hard to calibrate |
-| **Parametric shape with reduced-form laws of motion** | Stable by construction, calibrates directly to top-share data, cheap | Less emergent; laws of motion are reduced-form |
+**State [D]:** three parametric marginals, each with a lognormal body below p_t = 0.90 and a Pareto tail above, matched continuously at p_t:
+- labor income `L`: `(σ_L, α_L)`; mean from the wage bill
+- household net wealth `W`: `(σ_w, p0)` body plus a piecewise Pareto top (`α_U9`, `α_T09`, `α_T01` above p90, p99 and p99.9), rebuilt each year from the five group means of the wealth dynamics below (generalized Pareto interpolation, [R] Blanchet–Fournier–Piketty). `p0` is the share of households with zero net wealth. The 3-parameter fits in the table below are the special case of one tail exponent and are used for the 1955 start; mean = `W_hh` / households
+- aggregate household wealth `W_hh = q_A · P · Σ_s (1 − state_own_s) K_s + dom_hold · D_d + κ_h · Y_nominal`. `q_A` is an asset-price index with partial adjustment 0.2/yr toward `MPK_net / (r_real + eq_premium)`, bounded [0.5, 2.5] [D]. `dom_hold` is the domestic share of government bonds (0.8 [D]). `κ_h` stands for housing and land, calibrated so `W_hh/Y` is 2–3 in the 1955 advanced archetype. Rich countries' private wealth/national income ratios rose from about 200–300% in 1970 to 400–600% in 2010 [V: [Piketty & Zucman 2014](https://researchonline.lse.ac.uk/id/eprint/66106)], and with s/g dynamics the model should reproduce that drift when growth slows.
 
 Laws of motion (annual, partial adjustment rate λ_d = 0.1/yr [D]):
-- `σ_y → σ_y*(skill-biased tech from WS-05, sector mix, Σ labor_militancy, minimum-wage regulation)`
-- `α_y → α_y*(top marginal rate, regulation)`, bounded [1.5, 3.5] [D]
-- `α_w → α_w*(r_net − g, wealth tax, estate tax, flight)`, bounded [1.2, 3.0] [D]
+- `σ_L → σ_L*(skill-biased tech from WS-05, sector mix, Σ labor_militancy, minimum-wage regulation)`
+- `α_L → α_L*(top marginal rate, regulation)`, bounded [1.3, 3.5] [D]
+- The wealth shape has no law of motion of its own (v0.3): it follows from the group stock-flow below.
 
-**Tax engine:** Every schedule is content data: brackets with rates and thresholds (nominal, with an `indexed` flag), base definitions and elasticities. Revenue is computed on a fixed fine grid of 1,000 quantile points (50 per bin) using the parametric quantile function, then aggregated to bins. Bracket thresholds inside a bin therefore cause no artifacts. The grid is recomputed when the schedule or shape changes, and scaled by income growth otherwise.
+**Household panel [D]** (replaces v0.1's parametric income bins and the linear key-wealth rule). Each high-fidelity polity carries `H = 8,192` synthetic households with **oversampled tails**: on each score, 70% of households sit in the bottom 90%, 20% in p90–99 and 10% in p99–100, with weights so that weighted totals are unchanged (as the SCF itself oversamples). Measured against a 262,144-household reference (`prototypes/economy/panel_size.py`), 8,192 oversampled households beat 16,384 equal-weight ones on every metric: worst bin-wealth error 4.3% vs. 5.5%, top-1% income share ±0.002 vs. ±0.006, top-bracket tax base ±1.9% vs. ±5.1%. Error budget [D]: bin wealth ≤ 5%, top-1% share ≤ 0.003, top-bracket base ≤ 2%. Each has fixed scores from a deterministic rank-1 lattice: no RNG, regenerated on load, `#[serde(skip)]`, so nothing is added to the save. The scores are `z_L` and `z_W` (Gaussian with correlation `ρ_LW`), `z_A` (age, with correlation `ρ_AW` to `z_W`), `u_pub` and `u_sec` (uniform). Each fiscal year, and whenever a marginal or a role share changes:
+1. **Rank-cell values.** A household's labor income and wealth are the exact means of their marginals over its *weighted* rank cell (cumulative weight before it to cumulative weight after it). Both marginals are therefore exact (totals and shares equal the analytic values), and the ranks carry the dependence.
+2. **Roles.** *Transfer* = the top `old_share` of `z_A`, where `old_share` = population at or above the WS-04 pension age ÷ adult population (§3.9). These households' labor income is replaced by their pension. *Public* = a `public_emp_share` of the remainder, chosen by `u_pub`. *Capital* = remaining households with `r_hh·W ≥ θ_cap·L` (θ_cap = 1 [D]). Everyone else is *Wage*. Sector is assigned by cutting `u_sec` on sector employment shares (Wage) or private-capital shares (Capital). Roles and sectors therefore come out of the economy, with no role multipliers.
+3. **Income** = labor income or pension + `r_hh · W_domestic` + transfers. Ranking by pre-tax total income gives the 20 income vigintiles. `EconKey` = (bin, sector, role).
+4. **Taxes are evaluated per household** on each household's own wage, capital income, consumption (MPC by bin), wealth and, for Transfer households via age-specific mortality, estate. This replaces v0.1's 1,000-point grid. Capital-income and wealth taxes therefore fall on the households that actually hold the wealth.
+5. **Key outputs** are weight-averaged over member households. A key with `n_k < n0 = 20` households is shrunk toward its bin mean, `x_k ← (n_k x_k + n0 x_bin)/(n_k + n0)`, and the bin's keys are then rescaled so the bin total is unchanged. Σ_k pop_k·wealth_k = W_hh holds exactly.
+6. **Offshore wealth.** A share `φ_off` of top-vigintile wealth, driven by `flight_propensity` and capital controls, still counts in key wealth (oligarchs stay rich and keep their clout) but leaves the domestic tax bases and the domestic investment pool.
+7. **Shares.** Top 10/1/0.1% and bottom 50% wealth shares are reported analytically from the marginal; income shares come from the panel.
+
+Calibration [V data; fits are measured with `prototypes/economy/calib_wealth.py`]:
+
+| Target | Data | Model fit |
+|---|---|---|
+| US wealth shares (Fed DFA, 2026 Q2) | top 0.1% 15.0%, top 1% 32.5%, top 10% 68.9%, bottom 50% 2.3%, per [Wikipedia, citing Fed DFA](https://en.wikipedia.org/wiki/Wealth_inequality_in_the_United_States) | σ_w 1.98, α_w 1.48, p0 0.31: top 10% and bottom 50% exact; top 1% 31.0%; top 0.1% 13.1% (a single tail slightly under-fills the extreme top) |
+| Algeria wealth (WIR 2022): an emerging-economy check | top 10% 57%, bottom 50% 5.9%, top 1% 24.8% ([WIR 2022 country sheets](https://wir2022.wid.world/www-site/uploads/2022/03/0098-21_WIL_RIM_COUNTRY_SHEETS.pdf)) | σ_w 1.29, α_w 1.57, p0 0.30: top 10% and bottom 50% exact; top 1% 23.9% |
+| US income shares | top 1% ≈ 20%, bottom 50% ≈ 13% (2016) ([WIR 2018 summary](https://inequality.hks.harvard.edu/file_url/2572)) | Panel total income: top 10% 0.45, top 1% 0.20 |
+| Joint: mean net worth by percentile of usual income ÷ overall mean (SCF 2022: <20: 129.7k; 20–40: 218.7k; 40–60: 385.4k; 60–80: 636.8k; 80–90: 1,264.7k; 90–100: 6,629.6k; all: 1,063.7k) ([Fed SCF 2022 table 2](https://s3.documentcloud.org/documents/24173157/scf-net-worth.pdf)) | 0.12, 0.21, 0.36, 0.60, 1.19, 6.23 | Panel (σ_L 0.66, α_L 1.44, ρ_LW 0.18, W/Y 5, r 5%): 0.10, 0.23, 0.40, 0.76, 1.63, 5.40, **log RMSE 0.19**. v0.1 linear rule, c = 0.6: **0.61**; best c (0.9): 0.23; Gaussian copula on income rank without the capital-income channel: 0.34 |
+| Trend | US top 0.1% wealth share 7% (1978) → 22% (2012) on capitalized income [V: [Saez & Zucman](https://inequality.stanford.edu/node/7537)]; series differ by method (compare DFA's 15%) | A drift target for the advanced archetype, not a point fit |
+
+Why the panel: the top income decile holds about 62% of US wealth (SCF 2022), because top incomes are partly capital income generated by that wealth. A rule that only correlates income rank with wealth rank misses this. The v0.1 linear rule put 4.5× mean wealth in the top income decile against 6.2× in the data, and 0.41× in the bottom quintile against 0.12×. The remaining misfit (80–90th percentile too rich, top decile not rich enough) points to heterogeneous returns (r_hh rising with wealth rank, [R] Fagereng et al.), which the prototype may add as one parameter. 1955 starting shapes are [R] (lower concentration; for example, US top 1% wealth share in the low-to-mid 20s). The prototype pulls WID series for each archetype before tuning.
+
+**Wealth dynamics (v0.3) [D].** The distribution's state is the mean real wealth `W_g` of five rank groups with fixed population shares: B50 (p0–50), M40 (p50–90), U9 (p90–99), T09 (p99–99.9), T01 (p99.9–100). These are WID's standard cuts, so every group maps one-to-one to published data. Annual update at fiscal-year rollover:
+
+```
+W_g' = W_g + S_g + Ret_g + Gain_g − Tax_g − Est_g + Mob_g,      then rescale Σ_g pop_g W_g' = W_hh (national-accounts anchor)
+S_g    = s_g · Yd_g                                           Yd_g from the panel (households currently in wealth group g)
+s_g    = s0_g + s_y · ln(Yd_g / Yd) − β_p · pens_gen · 1[g ∈ B50, M40] + β_t · (1 − transfer_security) − β_c · consumption_need
+Ret_g  = (1 − τ_k,g) · (r_H h_g + r_E e_g + r_B b_g) · A_g − r_M · m_g · A_g · (1 − τ_ded · deductibility)
+Gain_g = (h_g Δln q_H + e_g Δln q_E) · A_g                      realized share taxed as capital gains
+Tax_g  = wealth tax (per panel household, exact)
+Est_g  = d_g · W_g · τ_estate,eff(g)                           d_g: deaths share of the group (age profile from §3.9)
+Mob_g  = (pop_{g+1} μ_{g+1} W_{g+1} − pop_g μ_g W_g) / pop_g    downward dilution flux (estates split among heirs, turnover)
+```
+
+- **Portfolio by group** (`A_g` gross assets; shares `h` housing, `e` equity/business, `b` bonds/deposits; mortgage debt `m_g`). Content per archetype, e.g. middle groups housing-heavy and top groups equity-heavy [R; ECB HFCS/SCF portfolio tables in M2(a)].
+- **Homeownership** `own` moves 0.05/yr toward `f(LTV cap, deductibility, social housing/GDP, house price/income)` [D]. It sets `h_g` and `m_g` for B50 and M40. Mortgage claims are owned by the top groups through their bonds and bank equity, so leverage moves net wealth *between* groups without changing `W_hh`.
+- **Asset prices:** `q_E` (the v0.2 `q_A`) for equity and business; `q_H` for housing, with partial adjustment 0.15/yr toward `f(r_real, LTV cap, real income growth)` [D]. Falling rates raise both, and the gains go to the owners in proportion to their holdings.
+- **Financial repression** appears with no special rule: `r_B` is the bond yield minus inflation, so 1945–75-style inflation with capped yields erodes bond-heavy groups.
+- **Pensions:** `pens_gen` = replacement rate × coverage. A funded share `f_p` builds a pension-fund stock (held in equity and bonds and counted in `W_hh`'s capital) that is **excluded from measured household wealth** and allocated to groups pro rata to labor income for the *augmented* concept. Generous pensions lower B50/M40 saving (precautionary and retirement saving crowded out).
+- **Mobility μ_g** (default 0.02/0.03/0.05/0.06 per yr for M40/U9/T09/T01 [D]) is what makes the distribution stationary. In compartment form it is the random-growth logic: the top share settles where `r_net,g + s_g·Yd_g/W_g − g` balances `μ_g`. Policy moves `r_net` and `s_g` at once, so transitions take decades rather than centuries. Standard random-growth models generate transitions an order of magnitude too slow ([V] [Gabaix, Lasry, Lions & Moll](https://img.nber.org/papers/21363)); group-specific (type-dependent) returns and saving are their proposed fix. ECO-147 tests the speed.
+- **Offshore:** `φ_off` of T09+T01 wealth (§ household panel step 6) rises with estate and wealth tax rates × (1 − enforcement) and with flight propensity. *Measured* shares exclude it; *true* shares include it. England's declared top-1% share fell from over 75% in 1900 to under 20% by 1970 [V: [Cummins, VoxEU](https://cepr.org/index%2Ephp/voxeu/columns/using-history-understand-hidden-wealth-uk)], but hidden elite wealth reverses about a third of the observed top-10% decline (same source). The model reproduces both.
+- **Invariants:** group means stay strictly ordered (B50 < M40 < … < T01); B50 may be ≤ 0 (net debt). The panel's wealth marginal is rebuilt from the five means so that they match exactly.
+- **Breakdown (P-3):** each group's Δ share = saving + returns + price gains − taxes − estates + mobility + rescale, with an exact sum. This is the distributional-national-accounts style decomposition, so "why did the top 1% get richer?" has an answer on screen.
+
+Calibration targets for the dynamics (data [V]; acceptance in ECO-144 to ECO-146):
+
+| Case | Data | Policy differences scripted in the scenario |
+|---|---|---|
+| US 1955–2012 | Top 0.1% wealth share 7% (1978) → 22% (2012) (Saez–Zucman, above); top 1% saves ~35% of income, bottom 90% ~0 ([VoxEU](https://cepr.org/index%2Ephp/voxeu/columns/exploding-wealth-inequality-united-states)) | Top income rate 91% → 70% → 28% → ~39%; estate tax cut after 1980; repression 1945–75; equity price rise as rates fall |
+| UK 1955–1975 | Concentration fell sharply 1914–1979 and the UK became less wealth-unequal than the US ([V] [Alvaredo, Atkinson & Morelli](https://tmp.gc.cuny.edu/?p=2417)); top estate tax rate almost 80% in the 1950s ([V] Cummins) | High estate tax, repression, nationalization (state ownership) |
+| Netherlands-like | Income Gini 0.28 (2013) with top 1% wealth ~24% and top 10% ~60% ([V] [OECD 2015](https://www.oecd.org/netherlands/oecd2015-in-it-together-highlights-netherlands.pdf)); wealth Gini 0.82 without pension rights vs. 0.54 with them ([V] [ISI 2019](https://isi2019.org/proceeding/1.IPS/IPS%20Volume%201/files/basic-html/page101.html)) | Large funded pensions; low homeownership (large social rental sector); high LTV with full deductibility |
+| Belgium-like | Top 10% 43–44%, top 1% 12% of net wealth (HFCS 2010/2014) ([V] [NBB](https://nbb.be/en/node/135991)); high homeownership and house prices ([V] [NBB](https://www.nbb.be/en/node/464029)) | Same tax-transfer schedule as NL-like; PAYG pensions; high homeownership, moderate LTV |
+| Cross-check | The lowest-homeownership western EU countries (DE, AT, FR, NL) have among the highest wealth inequality ([V] [Eurofound](https://www.eurofound.europa.eu/en/publications/all/a-picture-of-wealth-inequality-across-eu-member-states)) | — |
+
+Survey (HFCS/SCF) and capitalized-income (Saez–Zucman) or DFA series measure the top differently. Each test compares against the data for its own concept, and acceptance bands are wide enough to cover that gap.
+
+**Cheaper fallback (if the panel misses the time budget):** keep v0.1's linear rule but with c = 0.9 and role factors normalized within each bin. It fits the SCF profile nearly as well (0.23) but gives no income/wealth consistency, no emergent roles and no per-household tax bases.
+
+**Tax engine:** Every schedule is content data: brackets with rates and thresholds (nominal, with an `indexed` flag), base definitions and elasticities. Revenue is computed per panel household and aggregated to keys and bins, so bracket thresholds inside a bin cause no artifacts. The panel is re-evaluated when the schedule, a marginal or a role share changes, and scaled by monthly income growth otherwise.
 
 | Tax | Base | Behavioral response |
 |---|---|---|
 | Personal income (progressive) | Reported income `z` | `z = z0 · ((1−τ_m)/(1−τ_m0))^e`, ETI e = 0.25 [V: SSG midpoint, [Wikipedia summary of SSG 2012](https://en.wikipedia.org/wiki/Taxable_income_elasticity)]; top vigintile e = 0.4 [R] |
 | Payroll / social insurance (added; not in the kickoff list) | Wage income up to a cap | Same ETI; funds pensions |
 | Corporate | Capital income × corporate share | Profit shifting elasticity with openness (0.5 [D]); raises the user cost of capital in §3.1 |
-| Capital gains | Realized gains = realization rate × wealth × asset-price growth | Realization elasticity (lock-in), 0.7 [R] |
+| Capital gains | Realized gains = realization rate × asset wealth × Δq_A (asset-price index, above) | Realization elasticity (lock-in), 0.7 [R] |
 | VAT/sales | Consumption by bin (MPC × disposable) | Through the shadow economy |
 | Wealth | Net wealth above threshold | Avoidance elasticity 0.5 [D] plus flight (`flight_propensity`) |
 | Estate | Mortality-weighted wealth of old cohorts | Avoidance 0.3 [D] |
@@ -228,11 +297,12 @@ Laws of motion (annual, partial adjustment rate λ_d = 0.1/yr [D]):
 - Laffer behavior emerges. Check: for a top bracket with Pareto parameter `a` and ETI `e`, the revenue-maximizing rate is τ* = 1/(1 + a·e) [R: Saez 2001].
 - Non-indexed brackets produce bracket creep under inflation (a silent revenue gain that WS-04 bins feel).
 - **Shadow economy:** share `sh = clamp(sh0 + β_T·tax_burden + β_R·regulation + β_c·corruption − β_E·enforcement − Σ compliance_mod, 0.05, 0.65)`. Calibration anchor: an average of about 32% of GDP across 158 countries in 1991–2015, ranging from 7.2% (Switzerland) to 62.3% (Bolivia) [V: [Medina & Schneider, IMF WP/18/17](https://papers.ssrn.com/abstract=3124402)]. Shadow output is real output (it counts for the gap and welfare) but is outside every tax base. Official GDP excludes it.
-- **Outputs (incidence view):** revenue by tax × bin; effective average and marginal rates per bin; pre-tax and post-tax-and-transfer Gini; top 10/1/0.1% shares; shadow share.
+- **Key wealth (WS-04 OQ-G7):** from the household panel above (v0.1's linear rule was withdrawn in v0.2).
+- **Outputs (incidence view):** revenue by tax × bin; effective average and marginal rates per bin; pre-tax and post-tax-and-transfer Gini; income and wealth top 10/1/0.1% and bottom 50% shares; W_hh/Y; offshore share; shadow share.
 
 ### 3.6 Budget (cadence per Sean: majority annual, limited monthly discretion)
 
-Spending lines (content, extensible): defense personnel, defense O&S, defense procurement, defense R&D, space program, civil R&D (by WS-05 field), education, health, pensions, welfare transfers, unemployment benefits, infrastructure (public capital), administration & enforcement, internal security, subsidies, interest.
+Spending lines (content, extensible): defense personnel, defense O&S, defense procurement, defense R&D, space program, civil R&D (by WS-05 field), education, health, pensions, welfare transfers, unemployment benefits, social housing (v0.3; lowers homeownership toward renting, raises B50 real consumption), infrastructure (public capital), administration & enforcement, internal security, subsidies, interest.
 
 - **Mandatory (formula-driven):** pensions = retirees(age ≥ retirement age, a WS-04 policy) × replacement rate × average wage × coverage; health scales with the old-age share; unemployment benefits = u × LF × benefit rate (automatic stabilizer); interest = i_eff × debt. Demographic aging builds pressure here without any script.
 - **Execution:** appropriations are spent at 1/12 per month. Corruption leakage `leak = c_leak · corruption` (default c_leak = 0.4 [D]) removes part of each discretionary line's real effect. The leaked amount goes to `EconOutcomes` rents (WS-04 allocates it to the coalition as private goods).
@@ -370,7 +440,7 @@ Runaway paths we must control: the debt spiral (i > g with deficits), hyperinfla
 | Demographics | Annual, single-year ages | Exact aging (no band diffusion); population interpolated monthly |
 | Budget and tax schedule | Annual (with monthly discretion within band) | Sean's cadence decision; continuing resolution on failure |
 
-Budget [D]: ≤ 20 ms for R2–R4 with 6 high-fidelity + 40 macro polities (WS-02 §5). Estimate: high-fidelity monthly work is ~10⁴ flops per polity; the 1,000-point tax grid runs only on schedule or shape change; demographics once a year. Projection runs outside the tick (UI on demand) or inside D2 for AI (WS-06 budget).
+Budget [D]: ≤ 20 ms for R2–R4 with 6 high-fidelity + 40 macro polities (WS-02 §5). Estimate: high-fidelity monthly work is ~10⁴ flops per polity; the 8,192-household panel (one sort plus per-household taxes, ≈ 0.5 ms per polity [D estimate]) and the five-group wealth update runs on schedule, shape or role-share change, normally once a year; demographics once a year. Projection runs outside the tick (UI on demand) or inside D2 for AI (WS-06 budget).
 
 ### 3.16 UI data (progressive disclosure)
 
@@ -409,9 +479,11 @@ Tolerances: "rel" = relative. All tests run with fixed seeds. "Shocks off" means
 | ECO-034 | Price controls suppress measured inflation, accumulate overhang and release it. | Planned archetype, pc = 0.8 for 20 years: measured π ≤ 0.2 × true π; overhang/GDP ≥ 10%; set pc = 0 → annual π ≥ 50% within 12 months. | §3.12 |
 | ECO-035 | Unemployment follows Okun's law. | Unit: gap = −2% → u = u* + 1 pp (β_okun = 2) within 1e-12. | §3.2 |
 | **Distribution & tax** ||||
-| ECO-040 | The distribution is lognormal-body/Pareto-tail with 20 vigintile bins; top shares are analytic. | Bin population shares = 0.05 each; income shares sum to 1 within 1e-12; numerical top-1% share from a 10⁶-point grid matches the analytic value within 1e-4; Gini from params matches a 10⁶-sample Monte Carlo within 0.002. | §3.5 |
+| ECO-040 | Labor income and wealth marginals are lognormal-body/Pareto-tail (wealth with a zero-wealth mass p0); 20 income vigintile bins come from the panel; wealth top shares are analytic. | Bin population shares = 0.05 each (± 1/H); income shares sum to 1 within 1e-12; analytic wealth top-1% share matches a 10⁶-point quadrature within 1e-4; with the US parameter set, the four wealth shares equal the §3.5 'model fit' values within 0.002. | §3.5 |
 | ECO-041 | Shape parameters move by partial adjustment toward bounded targets. | Step change in target: after 1 year the parameter has moved λ_d of the gap within 1e-9; values never leave bounds over 10⁴ random target sequences. | R-2 |
-| ECO-042 | Every tax is content-defined and computed on the 1,000-point grid; revenue = Σ bins. | A test schedule adding a new bracket loaded from RON changes revenue with no code change; Σ bin revenue = total within 1e-9 rel; a bracket threshold inside a bin produces revenue continuous in the threshold (max jump < 1e-6 of revenue for a 1e-6 threshold move). | P-6, SYS-007 |
+| ECO-042 | Every tax is content-defined and computed per panel household; revenue = Σ households = Σ bins. | A test schedule adding a new bracket loaded from RON changes revenue with no code change; Σ bin revenue = total within 1e-9 rel; a bracket threshold inside a bin produces revenue continuous in the threshold (max jump < 1e-6 of revenue for a 1e-6 threshold move). | P-6, SYS-007 |
+| ECO-048 | The household panel is deterministic, adds nothing to the save, and has exact weighted marginals. | Two loads of the same save give bit-identical panels; weights sum to 1 within 1e-12; weighted Σ labor income and Σ wealth equal the analytic totals within 1e-9 rel; the weighted wealth top-10% share equals the analytic value within 1e-6; vs. a 2^18 equal-weight reference, `panel_size.py` metrics are within the §3.5 error budget; the `World` postcard size is unchanged with and without the panel. | §3.5, SYS-002 |
+| ECO-049 | The joint income–wealth profile matches the US calibration. | With the §3.5 US parameter set: log RMSE of mean wealth by income group vs. SCF 2022 ≤ 0.25, total-income top 10% share in [0.43, 0.50], top 1% in [0.17, 0.23]; Σ_k pop_k·wealth_k = W_hh within 1e-9 rel. | §3.5, WS-04 OQ-G7 |
 | ECO-043 | Reported income responds to marginal rates with the ETI; Laffer behavior emerges. | Top bracket over a Pareto tail with a = 2, e = 0.25: revenue from that bracket maximized at τ* = 1/(1 + a·e) = 0.667 within ±0.01 (grid sweep, step 0.005). | §3.5 |
 | ECO-044 | Non-indexed brackets produce bracket creep. | 10% inflation, real incomes constant, non-indexed: effective rate of bin 10 rises; indexed: unchanged within 1e-12. | §3.5 |
 | ECO-045 | Incidence outputs exist and are consistent. | Revenue by tax × bin sums to total revenue; post-tax Gini ≤ pre-tax Gini for any schedule with non-negative marginal rates increasing in income and positive transfers to the bottom; effective rates in [0, 1]. | §3.5, §3.16 |
@@ -444,8 +516,17 @@ Tolerances: "rel" = relative. All tests run with fixed seeds. "Shocks off" means
 | ECO-083 | Fertility is bounded and falls with income. | TFR ∈ [1.0, 7.5] for 10⁴ random inputs; shocks off, income ×4 over 50 years from TFR 6 → TFR < 2.5 at the end. | §3.9, R-2 |
 | ECO-084 | The recruitment pool goes to WS-11 and the manpower draw comes back. | Pool = Σ pop ages 15–49 by sex and band (exact); drawing 5% of men 20–24 cuts the labor force next tick by that count × participation (within 1e-9 rel). | WS-11 |
 | ECO-085 | Aging raises mandatory spending. | Old-age dependency doubled, everything else fixed: pension + health spending rise by the formula's factor within 1e-9 rel. | §3.6 |
+| **Wealth dynamics (v0.3)** ||||
+| ECO-140 | Group wealth follows the stock-flow identity and the national-accounts anchor. | For 10⁴ random years: W_g' − W_g equals Σ flows within 1e-9 rel before rescale; Σ_g pop_g W_g' = W_hh within 1e-9 rel after; each group's share breakdown sums exactly (ARC-041). | §3.5, P-3 |
+| ECO-141 | Group means stay ordered and shares stay bounded. | 10⁴ random policy sequences × 105 years, shocks on: B50 < M40 < U9 < T09 < T01 every year; top-10% share ∈ [0.30, 0.90]; no `ClampHit`. | R-2 |
+| ECO-142 | The wealth marginal reproduces the five group means exactly. | Weighted panel group means equal W_g within 1e-9 rel; the quantile function is non-decreasing and continuous at p50, p90, p99 and p99.9. | §3.5 |
+| ECO-143 | Each policy channel moves wealth in the documented direction. | Shocks off, 20 years after a one-time change vs. baseline: estate tax +20 pp → T01 share lower; funded pension share 0 → 1 → B50+M40 measured share lower and augmented share within ±0.02 of baseline; LTV cap 0.8 → 1.1 with full deductibility → B50 share lower; social housing +1% of GDP → homeownership lower; real bond return −3 pp for 20 years → M40 and U9 shares lower; q_E +50% → top-1% share higher. | §3.5 |
+| ECO-144 | The US and UK paths reproduce the direction and size of the historical change. | Scripted policy paths (§3.5 table), median of 200 seeds: US top 0.1% share in 1978 ∈ [0.05, 0.10], 2012/1978 ratio ≥ 2, 2012 ∈ [0.13, 0.24], and 1955→1978 not rising by > 0.01; UK measured top-1% share in 1970 ∈ [0.15, 0.25] and below the US value. | §3.5 |
+| ECO-145 | The same tax-transfer system yields NL-like and BE-like wealth outcomes from pensions and housing alone. | Two polities with identical schedules, differing only in funded pension share, social housing and mortgage regime, after 40 years: both income Ginis ∈ [0.25, 0.31]; NL-like measured top 10% ∈ [0.55, 0.65] and top 1% ∈ [0.19, 0.29]; BE-like top 10% ∈ [0.39, 0.49] and top 1% ∈ [0.08, 0.16]; NL-like augmented Gini at least 0.15 below its measured Gini. | §3.5 |
+| ECO-146 | Measured and true wealth diverge under high estate taxes. | UK-like path 1955–1975: true top-10% share minus measured ∈ [0.2, 0.45] × the measured decline. | §3.5 |
+| ECO-147 | Transitions take decades, not centuries. | Top rate 70% → 28% at year 0, everything else fixed: half of the eventual change in T01 share is reached in 15–35 years. | §3.5, R-1 |
 | **Interfaces** ||||
-| ECO-090 | WS-04 inputs (cbi, corruption, stat_bias, behavior) are consumed; `EconOutcomes` are published for every key. | Stub WS-04 setting cbi 0 → 1 changes the policy-rate breakdown's CBI term; every `EconKey` with pop_share > 0 appears in `EconOutcomes` sorted by key. | P-8 |
+| ECO-090 | WS-04 inputs (cbi, corruption, stat_bias, behavior) are consumed; `EconOutcomes` are published for every key. | Stub WS-04 setting cbi 0 → 1 changes the policy-rate breakdown's CBI term; every `EconKey` with pop_share > 0 appears in `EconOutcomes` sorted by key; Transfer and Public keys have `sector = None`; Σ_k pop_k·wealth_k equals W_hh within 1e-9 relative; mean wealth per income bin (all roles pooled) is non-decreasing in bin. (v0.1 required monotonicity within each (sector, role); that is dropped because Transfer keys are legitimately wealthier than their low incomes imply, which is the life-cycle pattern in the data.) | P-8, WS-04 OQ-G7 |
 | ECO-091 | Behavior is projected onto keys by membership. | Unit: mod_k = Σ_f membership·behavior within 1e-12; a faction with invest_sentiment −1 on capital keys lowers i_rate by the content coefficient × its membership. | P-8 |
 | ECO-092 | The WS-05 interface is complete in both directions. | Stub WS-05: M_s = 1.1 raises Y*_s by 10% (shocks off, within 1e-9 rel); R&D funding lines appear in its input deflated by the R&D cost index; procurement from a foreign seller moves reserves (ECO-071). | WS-05 |
 | ECO-093 | WS-11 upkeep is funded up to appropriation. | Appropriation = 0.7 × demand → funded fraction 0.7 exported; spending = appropriation. | WS-11 |
@@ -477,11 +558,20 @@ Tolerances: "rel" = relative. All tests run with fixed seeds. "Shocks off" means
 | `content/econ/spending_lines.ron` | `[Line { id, kind: Mandatory(Formula) | Discretionary, ws_link: Option<String>, leakable: bool }]` |
 | `content/econ/regimes.ron` | `Regimes { states, matrix, stress_weights, effects }` |
 | `content/econ/bands.ron` | `[Band { id, var, enter, exit }]` |
-| `content/econ/archetypes/*.ron` | `Archetype { id, d_lim, sigma_struct, cbi_default, distribution, template_pyramid, sector_shares, k_y, ... }` |
+| `content/econ/archetypes/*.ron` | `Archetype { id, d_lim, sigma_struct, marginals: { sigma_l, alpha_l, sigma_w, alpha_w, p0 }, rho_lw, rho_aw, kappa_h, template_pyramid, sector_shares, k_y, ... }` (no CBI: WS-04 owns it) |
 | `content/econ/demography.ron` | Standard life table, fertility shape by 5-year band, participation schedules |
-| `content/settings/<s>/start.ron` (WS-02) | Per polity: archetype, start GDP, population pyramid (5-year bands), debt, tax schedule, budget, CBI |
+| `content/econ/start_bands.ron` | Band → number maps for the WS-08a fields WS-03 owns (§5.1) |
+| `content/settings/<s>/econ_overrides.ron` | Optional per-polity WS-03 overrides (archetype, debt, tax schedule, budget, pyramid shape), keyed by polity ID. WS-08a `start.ron` stays enums-only (WLD-021) |
 
 All parameter defaults in §3 live in content; the code holds formulas only (ARC-010).
+
+### 5.1 WS-08a start-state fields owned by WS-03 (WLD-022)
+
+| Field | WS-03 mapping (numbers set in M2(a) calibration, stored in `start_bands.ron`) |
+|---|---|
+| `economy.size` (Band) | Monotone band → share of world GDP; the world total is fixed by the 1955 calibration |
+| `economy.development` (Band) | Monotone band → GDP per capita; with `size` it implies population. It also selects the archetype marginals (σ_w, α_w, p0, κ_h) and the `template_pyramid` |
+| `economy.system` (`Market` · `Mixed` · `Planned`) | `state_own_s` (≈ 0.1 / 0.4 / 0.8 [D]), planning flags (§3.12) and the default price controls. WS-04 consumes the result, and its `gov` preset supplies CBI |
 
 ## 6. Verification
 
@@ -502,6 +592,8 @@ Unit and integration tests are named `eco_NNN_*`. M2(a) runs the batch criteria 
 | Population ×(2060/1955) | Advanced [0.7, 2.5]; developing [1.5, 12] | [R] UN history/projections |
 | TFR, e0 | Always within [1.0, 7.5] and [30, 95] | §3.9 |
 | Disposable-income Gini | [0.20, 0.65]; top 1% income share [3%, 35%] | [R] WID range |
+| Wealth shares | Top 10% in [0.45, 0.85]; bottom 50% in [0, 0.10]; top 1% in [0.12, 0.45] | [V] the §3.5 calibration points lie inside; bounds [D] |
+| W_hh / Y | [1.5, 7.0]; the advanced archetype's 1970→2010 median rises if g falls | [V] Piketty–Zucman 200–300% → 400–600% |
 | Shadow share | [5%, 65%]; cross-archetype mean in [20%, 40%] | [V] Medina–Schneider |
 | Labor share | [0.45, 0.80] | [R] |
 | Monte Carlo convergence | Standard error of each reported median < 5% of its value | [D] |
@@ -525,7 +617,9 @@ Unit and integration tests are named `eco_NNN_*`. M2(a) runs the batch criteria 
 |---|---|---|
 | OQ-E1 | Should players be able to order a debt restructuring/haircut (credibility hit, debt relief), post-MVP or MVP? | Post-MVP; arrears and bailouts only |
 | OQ-E2 | FX pegs (Bretton Woods 1955–71, sphere currency blocs): needed for the MVP feel? | No; PPP + spread stub only |
-| OQ-E3 | The monthly tax discretion band: is ±2 pp per tax per fiscal year right, and does WS-04 widen it for strong executives? | ±2 pp; WS-04 may scale it by executive strength |
+| OQ-E3 | The monthly tax discretion band | **Closed (2026-11-27):** WS-04 sets it to 2 pp × clamp(W_exec/0.2, 0.5, 2) (WS-04 §3.2, GOV-066) |
 | OQ-E4 | Should the shadow economy and true (vs. official) GDP ever be visible to the player? | No; only official stats and beliefs |
 | OQ-E5 | Proposed ConOps edits (not made): (a) §6 Demographics "5-year bands" → "single-year cohorts, 5-year bands at interfaces"; (b) §6 Taxation adds payroll tax; (c) §6 Macroeconomy adds "IS-curve demand gap; per-polity structural beliefs (P-1) drive the budget projection". | Apply on approval of this spec |
 | OQ-E6 | Reference currency for `Aggregates`: world unit at 1955 PPP (proposed) or market FX? | 1955 PPP world unit; market FX for debt |
+| OQ-E7 | Is heterogeneous return by group (now in the wealth dynamics) enough to close the remaining top-end SCF misfit, or is a per-household return within the panel also needed? | Decide in M2(a); add only if ECO-049 fails with the v0.3 dynamics on |
+| OQ-E8 | Should the augmented (pension-inclusive) wealth concept also go into `KeyOutcome`, for WS-04 factions that care about retirement security? | No; the distribution summary reports it, and `KeyOutcome.wealth` stays marketable wealth (oligarch clout and flight act on marketable wealth) |

@@ -1,8 +1,10 @@
 # WS-08b — Solar System, Resources & Space Operations
-Status: Draft v0.2 · Parent: ConOps §3 (space map row), §4 (Solar System), §5 P-1/P-2/P-3/P-4/P-6/P-7/P-10, §6 space row, SYS-002, SYS-004, SYS-005, SYS-006, SYS-008 · Depends on: WS-02 v1.1, WS-03 Draft v0.1 (§2.2–2.3, §3.1, §3.3, §3.10, §3.13), WS-08a Draft v0.2 (§3.2, WLD-047), WS-04 Draft v0.2 (PR #8: Space axis, `rents` channel), `docs/research/salvo-model.md` · Last updated: 2026-11-27
+Status: Draft v0.3 · Parent: ConOps §3 (space map row), §4 (Solar System), §5 P-1/P-2/P-3/P-4/P-6/P-7/P-10, §6 space row, SYS-002, SYS-004, SYS-005, SYS-006, SYS-008 · Depends on: WS-02 v1.1, WS-03 Draft v0.3 (§2.2–2.4, §3.1, §3.3, §3.5, §3.6, §3.10, §3.13, §5.1), WS-08a Draft v0.2 (§3.2, WLD-047), WS-04 Draft v0.3 (§2.1 Space axis, §3.4 `gate_orders`, §4.4 private goods, §6.4 policy map), `docs/research/salvo-model.md` · Last updated: 2026-11-27
 
 Tags: **[V]** checked against the cited source this session, or computed by `prototypes/ws08b-sol/sol.py` (marked "computed") · **[R]** recalled or secondary, not checked against a primary source · **[D]** design choice. Every [R] and [D] number is a calibration starting point that M2(d) (§7.2) confirms or replaces.
 Requirement IDs WLD-050–099 (WS-08a ends at WLD-049). Nothing here edits another document; proposed edits are listed in §8.
+
+**v0.3 (sync with merged WS-03 v0.3 and WS-04 v0.3, 2026-11-27):** private resource rents now reach households as business equity through WS-03's household panel and five-group wealth dynamics: WS-08b publishes a resource-equity value, so a price windfall shows up as asset-price gains for equity-heavy groups (§4.6, WLD-074, P-03j). WS-04's coup and revolution `capital_loss` shocks also hit deposit development (§4.6, WLD-088). WS-08b orders that commit budget money go through WS-04's `gate_orders` (§3.4, P-04d). §8 now proposes concrete WS-04 `policy_map.ron` rows (GOV-021) and answers WS-04's OQ-G8 revisit (P-04e). Proposed WS-03 scenarios were renumbered S22/S23, because WS-03 now uses S18–S21. §8.1 lists what each workstream needs to do or confirm.
 
 **v0.2 (Sean's review, 2026-11-27):** OQ-S1–S5 closed as recommended. Generated small bodies now follow the real populations: vulcanoids, near-Earth asteroids by group, Mars and Jupiter trojans, main belt with its composition gradient, Hildas (§4.1 G-4). Canonical minor bodies are kept in every world: Ceres, Pallas, Juno, Vesta, Hygiea, Psyche, Eros, Pluto and Charon (§4.1 G-1a).
 
@@ -74,7 +76,7 @@ pub struct ResourceState {                       // R2
     pub by_polity: Vec<ResourceIncome>,          // per polity, this tick
 }
 pub struct DepositState { pub cum_produced: f64, pub dev: f64, pub output: Tracked, pub owner: Option<PolityId> }
-pub struct ResourceIncome { pub rent: Tracked, pub royalty: f64, pub soe: f64, pub private: f64, pub diverted: f64,
+pub struct ResourceIncome { pub rent: Tracked, pub royalty: f64, pub soe: f64, pub private: f64, pub diverted: f64, pub v_res: Tracked,
                             pub net_position: Vec<f64> /* per kind, units */, pub capex_due: f64 }
 pub struct SpaceState {                          // R5b, R6b
     pub positions: BTreeMap<UnitId, SpacePos>,   // spacecraft only; absent = on the ground (WS-11)
@@ -111,13 +113,16 @@ Lags: R2 uses last month's `f_g`, GDP and FX, so commodity prices respond to the
 
 AI polities issue the same orders (WS-06). Macro polities issue none; their space activity is the §4.10 reduced form.
 
+**Gating.** `Survey` and `DevelopDeposit` commit budget money (the `exploration` and `resource_development` lines), so they pass through WS-04's pure `gate_orders` in R1 like every WS-03 order (WS-04 GOV-064), and WS-08b adds only range validation (P-04d). Launches, facilities and missions are paid for from the existing space-program line, which the annual budget already gates; their orders are validated by WS-08b alone.
+
 ### 3.5 What flows to and from other workstreams
 
 | Direction | Item | Notes |
 |---|---|---|
-| WS-03 → WS-08b | `f_g` (R2 draw), GDP, price level, FX `e_i`, royalty rate, `state_ownership` of agriculture & extraction, corruption K | read one tick old |
-| WS-08b → WS-03 | `ResourceIncome` per polity: rent (real), royalty, SOE take, private, diverted; commodity net positions (units, value); capex schedule | P-03a–P-03i |
-| WS-08b → WS-04 | diverted resource rents, inside WS-03's corruption-rents amount (`rents` channel); royalty instrument | P-04a–P-04c |
+| WS-03 → WS-08b | `f_g` (R2 draw), GDP, price level, FX `e_i`, royalty rate, `state_own_s` of agriculture & extraction (from WS-08a `economy.system`, WS-03 §5.1), corruption K, r_real + eq_premium | read one tick old |
+| WS-08b → WS-03 | `ResourceIncome` per polity: rent (real), royalty, SOE take, private, diverted; private resource equity `V_res`; commodity net positions (units, value); capex schedule | P-03a–P-03i |
+| WS-04 → WS-08b | `shocks.capital_loss` (coups, revolutions); `gate_orders` results for `Survey` and `DevelopDeposit` | WS-04 §3.4, WS-03 §2.3 |
+| WS-08b → WS-04 | diverted resource rents, inside WS-03's corruption-rents amount (`rents` channel); policy-map rows for the royalty rate and two budget lines | P-04a–P-04c |
 | WS-05 → WS-08b | capability flags (offshore, arctic, observatory tier, orbital spectrometry, lander, aerocapture, ISRU), best v_e, launch-vehicle and spacecraft design stats, deliveries | P-05a |
 | WS-08b → WS-05/WS-11 | fissile self-sufficiency index per polity | P-05b |
 | WS-06 ↔ WS-08b | survey access, facility access (allied resupply), extraction-rights clauses; discovery publication; observations of others' missions | P-06a |
@@ -213,11 +218,13 @@ q_d = u_d · q̂_d;   cum_d += q_d                                 depletion: cu
 | Royalty | ρ·τ·(1 − c_div K) | WS-03 revenue line `resource_royalty` |
 | SOE take | ρ·(1 − τ)·σ·(1 − c_div K) | WS-03 SOE revenue line |
 | Diverted | ρ·(τ + (1 − τ)σ)·c_div K | WS-03 corruption-rents amount → WS-04 private goods (`rents`) |
-| Private | ρ·(1 − τ)(1 − σ) | capital keys of agriculture & extraction (then taxed as WS-03 does) |
+| Private | ρ·(1 − τ)(1 − σ) | business-equity income of households: WS-03 adds it to the capital income of the panel households holding equity in agriculture & extraction (then taxes it per household), and to the equity return of the five wealth groups (P-03j) |
 
 The four flows sum to ρ exactly. In WS-03, agriculture & extraction output becomes Y_ext = Y*_CES,ext·(1 + gap) + ρ_i (only the above-normal return is added; unit costs pay the factors already in the CES). Effects: exporters gain GDP, revenue and FX reserves when f_g > 0; in autocracies diverted rents buy coalition loyalty without leaking public spending (the rentier effect, through WS-04's existing selectorate mechanics); revenue becomes procyclical with f_g (a resource-curse channel); a price collapse turns into deficits and, through WS-03 §3.7, into slowly building debt pressure.
 
-**Development.** `DevelopDeposit` charges capex = capex_months × (believed monthly output at u = 1) × p̄_k, priced on the polity's **belief** of S, not the truth, so a bad estimate wastes money (P-1). WS-03 spreads it over `dev_months`: the state share through budget line `resource_development`, the private share as agriculture & extraction investment. Then dev ramps linearly to 1 over `dev_months`. Start levels come from the setting (`deposit_start.ron`, OQ-S5; default 0). Conquest transfers a deposit with its `dev` (WS-07 facility damage may lower it).
+**Resource equity (WS-03 v0.3 hook).** Private rent is a return on business equity, so its capitalized value belongs in household wealth. Per deposit, V_d = max(0, (1 − τ)(1 − σ) · 12 ρ_d) · a(T_d, r), with annuity factor a(T, r) = (1 − e^(−rT))/r, r = WS-03's r_real + eq_premium, and T_d = (S_d − cum_d)/(12 q_d) years, capped at 50 [D]. WS-08b publishes V_res,i = Σ_{d∈i} V_d (real LCU, with a per-deposit breakdown). Proposed for WS-03 (P-03j): add V_res to W_hh as an equity line, held through the groups' equity shares e_g, with ΔV_res counted in Gain_g, and subject to the same offshore share φ_off. Then an `f_g` windfall makes top, equity-heavy groups richer through asset-price gains, and resource oligarchs gain clout through WS-04's wealth-weighted institutions, with no new WS-04 rule. Unowned or state-owned rents add nothing (σ = 1 → V = 0).
+
+**Development.** `DevelopDeposit` charges capex = capex_months × (believed monthly output at u = 1) × p̄_k, priced on the polity's **belief** of S, not the truth, so a bad estimate wastes money (P-1). WS-03 spreads it over `dev_months`: the state share through budget line `resource_development`, the private share as agriculture & extraction investment. Then dev ramps linearly to 1 over `dev_months`. Start levels come from the setting (`deposit_start.ron`, OQ-S5; default 0). Conquest transfers a deposit with its `dev` (WS-07 facility damage may lower it). A WS-04 `capital_loss` shock in polity i multiplies the `dev` of every deposit i owns by (1 − capital_loss), in the same R2 tick that WS-03 destroys that share of sector capital: extraction capacity is capital too.
 
 ### 4.7 Commodity channels to every polity, and stability
 
@@ -333,6 +340,7 @@ Verification: **P** = prototype check in `prototypes/ws08b-sol/sol.py` (now); **
 | WLD-071 | The window penalty is quadratic, and departures wait outside windows. | Unit: Δv(m) equals the §4.3 formula within 1e-12 in the 3 open months; a mission planned in a closed month departs in the next open month, and its arrival = departure + months. | §4.3 | M4 |
 | WLD-072 | Transit time is ⌈T_H⌉ months; planetocentric legs finish in the tick. | Earth→Mars 9, Earth→Jupiter 33 months; a LEO→LLO→Moon surface mission launched at tick t has `Arrived` at t. | §4.3 | P, M4 |
 | WLD-073 | Windows are a pure function of truth and tick. | `window(edge, t)` evaluated twice, and after a save/load, returns identical values; no window data is stored in `World`. | P-4, ARC-061 | M4 |
+| WLD-074 | Private resource equity is published per polity and matches the annuity formula. | Unit: V_d equals max(0, (1 − τ)(1 − σ)·12ρ_d)·a(T_d, r) within 1e-12, with T capped at 50; σ = 1 → V_res = 0; V_res,i = Σ V_d within 1e-9 rel (ARC-041 breakdown). Two-polity exporter test (WLD-085 setup): f_g +2σ held 24 months raises the exporter's V_res vs. f_g = 0. | §4.6, WS-03 §3.5 | M4 |
 | **Resources** |||||
 | WLD-075 | The taxonomy has exactly the four kinds, each with ≥ 1 mechanic, and the code names no kind. | Default content: 4 kinds. A fixture kind with `mechanics: []` is rejected. CI grep finds no `res.` ID in `crates/*/src/` (ARC-010). | D3, P-6 | M4 |
 | WLD-076 | Resource tags follow the grammar. | The 66 default tags load. A fixture with `oil.giant`, `metals.supergiant` and `hydrocarbons.major.underwater` reports exactly 3 errors naming kind, size class and qualifier. A tag on a sea zone is rejected (WLD-010). | §4.4 | M4 |
@@ -348,7 +356,7 @@ Verification: **P** = prototype check in `prototypes/ws08b-sol/sol.py` (now); **
 | WLD-085 | A positive f_g is a windfall for exporters and a loss for importers. | Two-polity world (exporter: one `hydrocarbons.giant.easy` at dev 1; importer: none), shocks off except f_g held at +2σ for 24 months vs f_g = 0, same seed: the exporter's rent, GDP, treasury revenue and FX reserves are all higher; the importer's NX and reserves are lower and its π is higher. Signs hold in 200/200 seeds with shocks on. | §4.7, WS-03 §3.3 | M2, M4 |
 | WLD-086 | Commodity flows conserve and reach WS-03. | Σ_i n_k,i = 0 within 1e-9 rel every month; WS-03's NX and reserve breakdowns contain a commodity term equal to n·p per polity. | §4.7 | M4 |
 | WLD-087 | Development ramps after capex, priced on belief, gated by capability. | `DevelopDeposit` on an offshore deposit without `cap.offshore` is rejected; with it, dev = 0 until capex completes, then rises linearly to 1 over `dev_months`; capex equals the formula using the belief mean of S (not truth) within 1e-9. | §4.6, P-1 | M4 |
-| WLD-088 | Ownership changes move rents. | A region transferred at tick t: from t + 1 its deposits' rents go to the new owner, with `dev` unchanged. Unowned regions produce 0. | §4.6 | M4 |
+| WLD-088 | Ownership changes and capital-loss shocks move rents and capacity. | A region transferred at tick t: from t + 1 its deposits' rents go to the new owner, with `dev` unchanged. Unowned regions produce 0. A WS-04 `capital_loss` of 0.3 at tick t gives every deposit of that polity `dev` × 0.7 at t (within 1e-12), and no other polity's deposits change. | §4.6, WS-04 §3.3 | M4 |
 | WLD-089 | WS-03 stability holds with resources on. | M2(d): every WS-03 §6.1 row passes for archetypes A, B, C with the default Earth tags, plus the proposed exporter archetype D rows (P-03h); zero `ClampHit`. | R-2, ECO-130 | M2 |
 | **Prospecting** |||||
 | WLD-090 | Surveys push observations with the content σ, and beliefs converge. | A drilling survey pushes one observation with noise_sigma = 0.3. 20 successive drilling surveys on one deposit: belief σ(ln S) < 0.1 and \|mean − ln S_true\| < 3σ in ≥ 95% of 500 seeds. A barren deposit's dry-component weight exceeds 0.9 after 3 drilling surveys in ≥ 90% of seeds. | P-2, ARC-013 | M4 |
@@ -363,7 +371,7 @@ Verification: **P** = prototype check in `prototypes/ws08b-sol/sol.py` (now); **
 | WLD-098 | Engagement inputs, debris and the macro tier follow §4.9.8, §4.9.7 and §4.10. | (a) Two hostile spacecraft at `node.earth.low` form one co-location group; a Transit unit forms none; a ground DA-ASAT battery gets `node.earth.low` in reach and not `node.earth.synchronous` without the tech. (b) With D_n set so that β·D = 0.1, the debris-loss frequency over 10⁴ unit-ticks = 1 − e^(−0.1) ± 0.01; D in Low halves in 240·ln 2 months with no kills. (c) Promote then demote a macro polity: assets per regime conserved within 1e-6 (ARC-081). | §4.9, P-7, SYS-006 | M4 |
 | WLD-099 | WS-08b is deterministic, explainable and within budget. | Two 1,260-tick runs with the same seed and inputs give identical hashes (ARC-060). Every WS-08b `Tracked`/`Lazy` passes the ARC-041 sum check over a 120-tick run. `bench`: R2 + R5b + R6b WS-08b median ≤ 2 ms on the reference machine. | SYS-002, SYS-004, SYS-008 | M4 |
 
-WLD-058, WLD-059 and WLD-074 are reserved.
+WLD-058 and WLD-059 are reserved.
 
 ## 6. Content/data
 
@@ -405,7 +413,7 @@ The prototype uses PCG64; the Rust port must match the formulas exactly and the 
 
 ### 7.2 M2(d) plan: rent hook and price block
 
-`prototypes/ws08b-sol/README.md`. In short: add `resources.py` to the M2(a) economy prototype (vectorized over runs), run WS-03 §6.1 with resources on, add exporter archetype D, and run three scenarios: S11 (oil shocks 1973 and 1979, now via p_k), S18 (price collapse 1986) and S19 (discovery windfall: North Sea type). Exit: WLD-085 and WLD-089 pass, and world rents/GDP stay inside the World Bank historical band of ≈ 1–8% [R]. Estimate 14 h [D].
+`prototypes/ws08b-sol/README.md`. In short: add `resources.py` to the M2(a) economy prototype (vectorized over runs), run WS-03 §6.1 with resources on, add exporter archetype D, and run three scenarios: S11 (oil shocks 1973 and 1979, now via p_k), S22 (price collapse 1986) and S23 (discovery windfall: North Sea type). Exit: WLD-085 and WLD-089 pass, and world rents/GDP stay inside the World Bank historical band of ≈ 1–8% [R]. Estimate 14 h [D].
 
 ### 7.3 M4
 
@@ -429,11 +437,15 @@ Tests named `wld_0NN_*` in `sim-core`, one or more per requirement. The test set
 | P-03e | WS-03 §3.10, §3.4 | Commodity net positions n·p enter NX and FX reserves; the import-price term weights commodity prices by their import share | §4.7 |
 | P-03f | WS-03 §3.3 | `f_g` stays a WS-03 draw; the λ loading becomes the non-commodity world shock, default 0.3 (was 0.5), tuned in M2(d) | Avoids double counting (OQ-S2) |
 | P-03g | WS-03 §3.13 | The macro ln y equation applies to non-resource output; y = y_nr + rent; pb includes the state's take | Macro rents |
-| P-03h | WS-03 §6.1, §6.2 | Exporter archetype D rows; S11 via p_k; new S18 (1986 price collapse: exporter deficit widens ≥ 3 pp of GDP within 2 years in ≥ 70% of runs) and S19 (discovery windfall) | WLD-085, WLD-089 |
-| P-03i | WS-03 §2.3 | Inputs table gains the WS-08 row (`ResourceIncome`, net positions, capex) | Interface completeness |
-| P-04a | WS-04 `policy_map.ron` | Add instrument `resource_royalty` (channel `incidence`, Economy axis, + toward cooperative). Reserve `extraction_intensity` with channel `none` and no axis, as the hook for a future conservation axis | OQ-G8 revisit |
+| P-03h | WS-03 §6.1, §6.2 | Exporter archetype D rows; S11 via p_k; new S22 (1986 price collapse: exporter deficit widens ≥ 3 pp of GDP within 2 years in ≥ 70% of runs) and S23 (discovery windfall) | WLD-085, WLD-089 |
+| P-03i | WS-03 §2.3 | Inputs table gains the WS-08 row (`ResourceIncome`, `V_res`, net positions, capex) | Interface completeness |
+| P-03j | WS-03 §3.5 | Add WS-08b's `V_res` to W_hh as an equity line, held through the groups' equity shares e_g, with ΔV_res in Gain_g and the private rent flow in the panel's capital income for agriculture & extraction equity holders; φ_off applies. Alternative if WS-03 prefers: fold the rent into the agriculture & extraction MPK_net that drives q_E (simpler, but it then raises every sector's equity price) | §4.6; private rents reach the v0.3 wealth model |
+| P-03k | WS-03 §3.5 | `resource_royalty` is a firm-level tax on the rent base, outside the per-household panel (like the SOE line); the monthly discretion band (WS-04 GOV-066) applies to it like any tax | v0.3 taxes are per household |
+| P-04a | WS-04 §6.4, `policy_map.ron` | Three rows (GOV-021): royalty rate (tax) → `incidence`, Economy +● (a higher state take is the cooperative pole, like state ownership); `resource_development` line → `incidence`, Economy +●; `exploration` line → `public (v 0.5)`, Economy +● (survey results are a public good to the owner). Missions, launches and facilities add no instrument: they are paid from the existing space-program line (Space +●●●) | GOV-021 validation |
 | P-04b | WS-04 §4.4 | The private-goods breakdown labels the resource-diversion part of Rents separately | Legibility (P-3) |
-| P-04c | WS-04 §6.2 | Industrialists' membership includes Capital keys of agriculture & extraction | Resource owners, P-8 |
+| P-04c | WS-04 §6.2 | Industrialists' membership includes Capital keys of agriculture & extraction (today: industry, defense, space) | Resource owners, P-8 |
+| P-04d | WS-04 §3.4 | `gate_orders` also covers WS-08b's `Survey` and `DevelopDeposit` (budget-committing; PC cost 0 by default [D]) | One gate (GOV-064) |
+| P-04e | WS-04 §7, OQ-G8 | OQ-G8 asked to revisit the Space axis when WS-08b adds resources. WS-08b's answer: keep **earthbound / expansionist**. WS-08b adds rents but no environment state, so an extraction/ecocentric axis would still have nothing to act on. Resource politics already reaches factions through incidence (rents, royalty), Spoils (diverted rents) and wealth clout (V_res). Revisit with a future environment model | Closes the revisit |
 | P-05a | WS-05 | Capability flags (`cap.offshore`, `cap.arctic`, `cap.observatory` tiers, `cap.orbital_spectrometry`, `cap.lander`, `cap.aerocapture`, `cap.isru`); propulsion v_e by tech; launch-vehicle and spacecraft design stats (payload to LEO, reliability, Δv capacity, dry mass, survey sensor class); deliveries to sites | §4.8, §4.9 |
 | P-05b | WS-05 / WS-11 | Use the fissile self-sufficiency index as a nuclear-program cost multiplier (form chosen there) | NuclearFeed mechanic |
 | P-06a | WS-06 | Treaty clauses: survey access, facility access (allied resupply), off-Earth extraction rights (an Outer Space Treaty-style hook); discovery publication; intel observations of others' missions and facilities | §4.8, §4.9 |
@@ -446,6 +458,18 @@ Tests named `wld_0NN_*` in `sim-core`, one or more per requirement. The test set
 | P-08a2 | WS-08a content | Add `settings/date/deposit_start.ron` (1955 development levels of known deposits) | OQ-S5 |
 | P-SAL | salvo note §8.1, §7.2, §11 | `orbit_regime` = WS-08b `OrbitRegime`; spacecraft refill = WS-08b §4.9.6; G-7 closed by §4.9.7–4.9.8 | Shared vocabulary |
 | P-CON | ConOps §6 space row | "Hohmann Δv graph over orbit-regime nodes, synodic windows, world commodity prices and resource rents (WS-03 hook), prospecting (P-2), outposts and stations" | Reflects D1, D4, D9 |
+
+### 8.1 What each workstream needs to do or confirm (as of WS-03 v0.3, WS-04 v0.3)
+
+| Workstream | Needed | Blocking? |
+|---|---|---|
+| WS-02 | Accept and apply P-02a–P-02g: `Sol` node graph type, the `resources` and `space` world blocks, WS-08 writers in R2, R5b and R6b (none in R6), `Owner::{Deposit, Facility, Node}`, the `Observation` units convention, test-setting bodies, optional `orbital_assets`. These change WS-02's approved v1.1, so they need your sign-off | Yes for M4; not for approving WS-08b |
+| WS-03 | Accept P-03a–P-03k. Two need its judgment: **P-03j** (explicit resource-equity line vs. folding the rent into q_E) and **P-03f** (residual λ 0.5 → 0.3, confirmed in M2(d)). It should also confirm that S22/S23 and archetype D are free, and that royalty sits outside the panel (P-03k) | P-03j decides how WLD-074 is consumed; the rest can follow approval |
+| WS-04 | Add the three P-04a policy-map rows (GOV-021 fails without them once WS-08b content loads), extend `gate_orders` (P-04d), add Industrialists membership (P-04c), the breakdown label (P-04b), and record the OQ-G8 answer (P-04e) | P-04a and P-04d before M4 integration |
+| WS-08a | Remove the reserved `Region.resource_tags` field (OQ-S1, P-08a1) and own `settings/date/deposit_start.ron` (OQ-S5, P-08a2; values drafted in M2(d)) | No |
+| WS-05, WS-06, WS-07, WS-11 | Carry P-05a/b, P-06a, P-07a and P-11a–d into their kickoffs | No |
+
+Nothing from another workstream is needed to approve WS-08b itself: every cross-workstream item is a proposal, and approving the spec means accepting §8 for each owner to apply.
 
 ## 9. Open questions
 
