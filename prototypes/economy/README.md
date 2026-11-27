@@ -1,6 +1,6 @@
 # M2(a) Economy prototype plan (WS-03)
 
-Status: Plan v0.3 · Spec: `docs/specs/WS-03-economy.md` (Draft v0.3) · Last updated: 2026-11-27
+Status: Plan v0.4 · Spec: `docs/specs/WS-03-economy.md` (Draft v0.4) · Last updated: 2026-11-27
 
 Goal: show that the WS-03 model is stable over 1955–2060 in batch Monte Carlo (spec §6.1), that every failure mode is reachable by policy on a plausible timescale (§6.2), and that it *feels* like TNO's slow pressure. The parameters this produces become the M4 content defaults.
 
@@ -31,7 +31,7 @@ Goal: show that the WS-03 model is stable over 1955–2060 in batch Monte Carlo 
 
 ## 3. Scenarios (all 1955-01 to 2060-12, monthly)
 
-Archetypes: **A** advanced market democracy (high CBI, d_lim 1.6); **B** planned economy (CBI 0, price controls 0.6, state ownership 0.8, corruption 0.4); **C** developing (low K/Y, TFR ≈ 6, corruption 0.3, d_lim 0.7).
+Archetypes: **A** advanced market democracy (high CBI, d_lim 1.6); **B** planned economy (CBI 0, price controls 0.6, state ownership 0.8, corruption 0.4); **C** developing (low K/Y, TFR ≈ 6, corruption 0.3, d_lim 0.7); **D** resource exporter (defined and run in M2(d) by WS-08b: one supergiant or two giant deposits, high royalty or SOE share, corruption 0.4).
 
 | ID | Scenario | Polities | Runs | Checks |
 |---|---|---|---|---|
@@ -46,7 +46,7 @@ Archetypes: **A** advanced market democracy (high CBI, d_lim 1.6); **B** planned
 | S08 | Laffer sweep (top MTR 0–95% step 5) | 1 | 20 × 100 | §6.2 row 4; ECO-043 |
 | S09 | Embargo at 1975 (C's largest partner) | 13 | 200 | ECO-070 |
 | S10 | Price-control release in 1990 (B) | 1 | 500 | ECO-034 |
-| S11 | Oil shock: scripted global factor +3σ in 1973 and 1979 | 13 | 200 | Inflation +3–10 pp in A, recession probability up; no clamp hits |
+| S11 | *Moved to M2(d) (v0.4):* oil shocks 1973 and 1979 via WS-08b commodity prices; `f_g` no longer loads directly on ε_π | — | — | WS-08b §7.2 |
 | S12 | War mobilization 1965–70 (A: defense 25% GDP, 8% LF drawn) | 1 | 500 | §6.2 row 8; ECO-016, 084 |
 | S13 | Baby boom (TFR +1 for 1946–60 start cohorts) | 1 | 500 | Pension and health spending peak 2010–2030; debt pressure visible ≥ 10 years ahead in the projection |
 | S14 | Tax regime swing: flat 20% vs. 1955-style 91% top rate (A) | 1 | 2 × 500 | Gini and top-share bounds; revenue difference; ETI response |
@@ -57,6 +57,8 @@ Archetypes: **A** advanced market democracy (high CBI, d_lim 1.6); **B** planned
 | S19 | US policy path 1955–2012 (spec §3.5 table) | 1 | 200 | ECO-144 (US) |
 | S20 | UK policy path 1955–1975 | 1 | 200 | ECO-144 (UK), ECO-146 |
 | S21 | NL-like vs. BE-like pair, same tax-transfer schedule, 40 years | 2 | 200 | ECO-145 |
+
+Reserved for WS-08b M2(d): **S22** (1986 price collapse) and **S23** (discovery windfall), archetype **D**; criteria in spec §6.1/§6.2.
 
 Sensitivity: rerun S01, S05 and S06 with σ_CES ∈ {0.4, 0.6, 1.0}, ETI ∈ {0.1, 0.25, 0.5}, β_d ∈ {2, 3, 4} bp, k ∈ {0.03, 0.06, 0.1}. Report which criteria are fragile.
 
