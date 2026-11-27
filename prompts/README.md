@@ -6,3 +6,4 @@
 
 Order: WS-02 → (WS-03 ∥ WS-04) → WS-05 → WS-11. Prompts for WS-06 to WS-09 will be written after the core specs are approved (WS-07 right after WS-11).
 - `M4.md`: Phase B implementation prompts for the sim-core skeleton (WS-02), in six increments.
+- `WS-10.md`: Project-chat prompt for V&V review of code-session PRs and gating the next increment.
