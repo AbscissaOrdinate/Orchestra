@@ -1,0 +1,12 @@
+[package]
+name = "orchestra-app"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = [] }
+sim-core = { path = "../../crates/sim-core" }

@@ -1,0 +1,10 @@
+[workspace]
+resolver = "3"
+members = ["crates/sim-core", "crates/cli", "app/src-tauri"]
+# The app needs webkit system libraries, so plain `cargo build`/`cargo test` skip it (ARC-001).
+default-members = ["crates/sim-core", "crates/cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+publish = false

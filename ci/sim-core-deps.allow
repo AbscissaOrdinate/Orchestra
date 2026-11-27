@@ -1,0 +1,10 @@
+# ARC-003 allowlist: sim-core direct dependencies (WS-02 §3.1), as `cargo tree --depth 1 --prefix none` prints them.
+# A version change is a deliberate edit here; RNG crate changes also need new ARC-031 golden values (ADR-0006).
+blake3 v1.8.8
+postcard v1.2.0
+rand v0.10.4
+rand_chacha v0.10.0
+rand_core v0.10.1
+rand_distr v0.6.0
+ron v0.12.3
+serde v1.0.229
