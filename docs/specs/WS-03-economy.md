@@ -1,5 +1,5 @@
 # WS-03 — Macroeconomy, Fiscal & Monetary Policy, Demographics
-Status: Draft v0.1 · Parent: ConOps §3, §5 (P-1, P-2, P-3, P-7, P-8), §6 economy rows, §8 R-1/R-2, SYS-002, SYS-004, SYS-006, SYS-008 · Last updated: 2026-11-26
+Status: Draft v0.1 (+ WS-04 OQ-G7 wealth amendment, 2026-11-27) · Parent: ConOps §3, §5 (P-1, P-2, P-3, P-7, P-8), §6 economy rows, §8 R-1/R-2, SYS-002, SYS-004, SYS-006, SYS-008 · Last updated: 2026-11-26
 
 Tags: **[V]** checked against the linked source this session · **[R]** recalled, not checked · **[D]** design choice. Every [R] value is a calibration starting point that the M2(a) prototype must confirm or replace.
 Contract: WS-02 v1.0 (stages R2–R4, `Tracked`/`Breakdown`, keyed RNG streams, `Tiered`, `PolityView`). Nothing here changes WS-02.
@@ -78,10 +78,14 @@ P-8: factions *are* the economic interest groups. WS-04 owns the faction list, m
 ```rust
 pub enum Role { Wage, Capital, Transfer, Public }    // Public = government employees and the military
 pub struct EconKey { pub bin: u8 /* 0..20 */, pub sector: Option<SectorIdx>, pub role: Role }
+// sector is Some for Wage and Capital keys and None for Transfer and Public keys:
+// at most 20·5·2 + 20 + 20 = 240 keys; keys with pop_share = 0 are omitted.
 // WS-03 publishes, each tick (R4):
 pub struct EconOutcomes { pub by_key: Vec<(EconKey, KeyOutcome)> }   // sorted by key
 pub struct KeyOutcome { pub pop_share: f64, pub real_disp_income: f64, pub disp_growth_12m: f64,
-                        pub eff_tax_rate: f64, pub transfers: f64, pub unemp_exposure: f64, pub inflation_loss: f64 }
+                        pub eff_tax_rate: f64, pub transfers: f64, pub unemp_exposure: f64, pub inflation_loss: f64,
+                        pub wealth: f64 /* real net wealth per capita, §3.5 key wealth */ }
+// Corruption rents are reported separately (§2.2) and are never added to any key's real_disp_income.
 // WS-04 publishes, each tick (R5):
 pub struct FactionEconBehavior {
     pub membership: Vec<(FactionId, EconKey, f64)>,  // weights; Σ over factions per key ≤ 1 (split membership allowed)
@@ -228,6 +232,7 @@ Laws of motion (annual, partial adjustment rate λ_d = 0.1/yr [D]):
 - Laffer behavior emerges. Check: for a top bracket with Pareto parameter `a` and ETI `e`, the revenue-maximizing rate is τ* = 1/(1 + a·e) [R: Saez 2001].
 - Non-indexed brackets produce bracket creep under inflation (a silent revenue gain that WS-04 bins feel).
 - **Shadow economy:** share `sh = clamp(sh0 + β_T·tax_burden + β_R·regulation + β_c·corruption − β_E·enforcement − Σ compliance_mod, 0.05, 0.65)`. Calibration anchor: an average of about 32% of GDP across 158 countries in 1991–2015, ranging from 7.2% (Switzerland) to 62.3% (Bolivia) [V: [Medina & Schneider, IMF WP/18/17](https://papers.ssrn.com/abstract=3124402)]. Shadow output is real output (it counts for the gap and welfare) but is outside every tax base. Official GDP excludes it.
+- **Key wealth (WS-04 OQ-G7) [D]:** bins rank people by income, and wealth has its own distribution, so each key needs a rule for how much wealth its members hold. The rule: w̃_b = c·W_b + (1 − c)·W̄, where W_b is the mean wealth of vigintile b of the wealth distribution, W̄ is mean wealth, and c = 0.6 [D] stands in for the income–wealth rank correlation (comonotonic at c = 1, flat at 0). Key wealth = w̃_b × role factor (Capital 2.5, Wage 0.8, Transfer 1.0, Public 0.8 [D]), then rescaled by one factor so that Σ_k pop_k·wealth_k equals aggregate household wealth exactly. Recomputed annually with the distribution shape. The prototype checks c against wealth-by-income-decile data before tuning.
 - **Outputs (incidence view):** revenue by tax × bin; effective average and marginal rates per bin; pre-tax and post-tax-and-transfer Gini; top 10/1/0.1% shares; shadow share.
 
 ### 3.6 Budget (cadence per Sean: majority annual, limited monthly discretion)
@@ -445,7 +450,7 @@ Tolerances: "rel" = relative. All tests run with fixed seeds. "Shocks off" means
 | ECO-084 | The recruitment pool goes to WS-11 and the manpower draw comes back. | Pool = Σ pop ages 15–49 by sex and band (exact); drawing 5% of men 20–24 cuts the labor force next tick by that count × participation (within 1e-9 rel). | WS-11 |
 | ECO-085 | Aging raises mandatory spending. | Old-age dependency doubled, everything else fixed: pension + health spending rise by the formula's factor within 1e-9 rel. | §3.6 |
 | **Interfaces** ||||
-| ECO-090 | WS-04 inputs (cbi, corruption, stat_bias, behavior) are consumed; `EconOutcomes` are published for every key. | Stub WS-04 setting cbi 0 → 1 changes the policy-rate breakdown's CBI term; every `EconKey` with pop_share > 0 appears in `EconOutcomes` sorted by key. | P-8 |
+| ECO-090 | WS-04 inputs (cbi, corruption, stat_bias, behavior) are consumed; `EconOutcomes` are published for every key. | Stub WS-04 setting cbi 0 → 1 changes the policy-rate breakdown's CBI term; every `EconKey` with pop_share > 0 appears in `EconOutcomes` sorted by key; Transfer and Public keys have `sector = None`; Σ_k pop_k·wealth_k equals aggregate wealth within 1e-9 relative, and key wealth is non-decreasing in bin within each (sector, role). | P-8, WS-04 OQ-G7 |
 | ECO-091 | Behavior is projected onto keys by membership. | Unit: mod_k = Σ_f membership·behavior within 1e-12; a faction with invest_sentiment −1 on capital keys lowers i_rate by the content coefficient × its membership. | P-8 |
 | ECO-092 | The WS-05 interface is complete in both directions. | Stub WS-05: M_s = 1.1 raises Y*_s by 10% (shocks off, within 1e-9 rel); R&D funding lines appear in its input deflated by the R&D cost index; procurement from a foreign seller moves reserves (ECO-071). | WS-05 |
 | ECO-093 | WS-11 upkeep is funded up to appropriation. | Appropriation = 0.7 × demand → funded fraction 0.7 exported; spending = appropriation. | WS-11 |

@@ -94,9 +94,9 @@ Eight axes is more than v0.1's six. But each faction weighs only 2–3, so a pla
 | `shocks` (coup, revolution) | capital_loss, output_loss ∈ [0, 0.5] | §4.6; WS-03 applies them in R2 via its event-capital-destruction input |
 
 **Requested WS-03 edits (OQ-G7; WS-04 does not change WS-03):**
-1. Add `wealth: f64` (real per capita) to `KeyOutcome`. The oligarchs institution and wealth-weighted control need it. Fallback if refused: wealth proxy = real_disp_income^1.5, normalized.
+1. ~~Add `wealth: f64` to `KeyOutcome`.~~ **Done (2026-11-27):** WS-03 §2.4 and §3.5 (key-wealth rule), ECO-090. Transfer and Public keys carry no sector, so there are at most 240 keys.
 2. CBI ownership. WS-03 lists `cbi_default` in archetypes and CBI in `start.ron`. Under WLD-022 (one primary owner per start field), CBI belongs to the WS-04 government type. WS-03 should read `cbi` only from WS-04 and drop its own default, or keep the default as a macro-tier fallback only.
-3. Rents: WS-04 assumes corruption rents are *not* added to any key's `real_disp_income`. WS-03 §3.6 says WS-04 allocates them, so WS-04 counts them as private goods. WS-03 should state this, so rents are never counted twice.
+3. **Done (2026-11-27, WS-03 §2.4 note).** Rents: WS-04 assumes corruption rents are *not* added to any key's `real_disp_income`. WS-03 §3.6 says WS-04 allocates them, so WS-04 counts them as private goods. WS-03 should state this, so rents are never counted twice.
 
 ### 3.3 WS-06, WS-11, WS-05, WS-08a contracts
 
@@ -170,6 +170,8 @@ All quantities are per polity per monthly tick. Indices: k EconKey, f faction, i
 Presets (§6.1) are named parameter sets. A custom government is any valid set.
 
 ### 4.2 Keys, membership, institution control, clout
+
+**Keys.** At most 240 `EconKey`s per polity (20 bins × 5 sectors × Wage/Capital, plus 20 Transfer and 20 Public keys without a sector; empty keys are omitted). Each carries income, tax, transfer, unemployment, inflation and wealth fields, and the player never sees them directly.
 
 **Membership.** Content gives each faction an affinity a_fk ∈ [0, 1] over `EconKey` selectors (bin ranges, sectors, roles). Military factions' affinity on `Role::Public` keys equals each service's personnel ÷ public employment (WS-11 counts). Shares m_fk = a_fk / max(1, Σ_f a_fk); the remainder is apolitical; a key can split across factions (WS-03 §2.4, V3 precedent). WS-04 publishes m_fk as `FactionEconBehavior.membership`. A faction's population share is h_f = Σ_k m_fk·pop_k; its *core weight* on key k is w_fk ∝ m_fk·pop_k·real_disp_income_k (normalized; the politically relevant members).
 
@@ -472,7 +474,7 @@ Conscription (none / selective / universal) · Press (free / restricted / censor
 
 ### 7.1 Tests and stubs
 - Tests named `gov_NNN_*` on the WS-02 test scenario plus a governance fixture (3 polities: parliamentary, junta, single-party; 12 factions; 9 institutions).
-- Stubs: an `econ` stub implementing the WS-03 §2.4 types (`EconKey`, `KeyOutcome` with the proposed `wealth`, rents, budget lines, a linear `project`), plus `force` and `diplo` stubs. The Python prototype uses the same fields.
+- Stubs: an `econ` stub implementing the WS-03 §2.4 types (`EconKey`, `KeyOutcome` with `wealth`, rents, budget lines, a linear `project`), plus `force` and `diplo` stubs. The Python prototype uses the same fields.
 - Batch tests (GOV-044, 057, 058, 063, 076, 092) run in CI at 50 runs and in full nightly (WS-10).
 
 ### 7.2 Calibration bands (GOV-057) [D, anchored on [V]]
@@ -499,6 +501,6 @@ Estimated R5 cost per high-fidelity polity: 12 factions × ~240 keys membership,
 | OQ-G4 | The player always keeps the state | **Closed: yes** |
 | OQ-G5 | WS-03 contract | **Closed: WS-04 conforms to WS-03 §2.4**; remaining asks moved to OQ-G7 |
 | OQ-G6 | Macro polities reform only by coup or revolution | **Closed: yes** |
-| OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | **Accepted (2026-11-27)**; to be made in WS-03 v0.2. Until then, the prototype uses the income^1.5 wealth proxy |
+| OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | **Accepted (2026-11-27).** Wealth and the rents note are done in WS-03 (this PR); CBI ownership remains for WS-03 v0.2 |
 | OQ-G8 | Space axis poles: earthbound/expansionist (recommended) vs. extraction/ecocentric | **Closed (2026-11-27): earthbound/expansionist**; revisit when WS-08b adds resources |
 | OQ-G9 | WS-11 must expose a strategic (nuclear) share of defense spending for the Nuclear axis | **Accepted (2026-11-27)**; a WS-11 kickoff input. Until then the Nuclear axis reads only the posture law |
