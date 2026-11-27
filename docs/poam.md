@@ -37,7 +37,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 12 | Resolve OQ-6 in the WS-02 review: add a `force` block (owner WS-11), its stage, and the combat-loss path; add force units to the ARC-090 bench scenario | WS-02 PR | ☑ (R5b/R6b, ARC-024, OQ-A6) |
 | 13 | Start the WS-11 design chat with `prompts/WS-11.md` once the WS-05 spec is approved | New Project chat | ☐ |
 | 14 | Review WS-03 spec draft; answer OQ-E1–E6 (incl. the ConOps edits proposed in OQ-E5); approve or request changes | Sean | ☐ |
-| 15 | Build the M2(a) economy prototype per `prototypes/economy/README.md` (≈ 32 h, P1–P5) | `prototypes/economy/` | ☐ |
+| 15 | Build the M2(a) economy prototype per `prototypes/economy/README.md` (≈ 34 h, P1–P5) | `prototypes/economy/` | ☐ |
 | 16 | Start the WS-04 design chat; it must conform to the WS-03 §2.4 contract (`EconKey`, `EconOutcomes`, `FactionEconBehavior`) | New Project chat | ☑ (WS-04 v0.2 conforms; PR #8) |
 | 14 | Review the WS-08a spec, canon and draft content; answer OQ-W1–W6 and OQ-C1–C3; approve or request changes | Sean | ◐ (OQ-W1/W2/W4/W6, OQ-C2 accepted 2026-11-27; approval pending) |
 | 15 | If OQ-W1 and OQ-W2 are accepted: edit WS-02 (ARC-090 bench to 47 polities and 132 regions; optional `RegionEdge.chokepoint` in §6) | Project → repo | ☑ (WS-02 v1.1, ConOps v0.4) |
@@ -45,6 +45,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 17 | M4: port `prototypes/ws08a-content-check` types and `wld_*` tests into `sim-core`, then delete the prototype | Code session | ☐ |
 | 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☐ |
 | 19 | Review WS-04 v0.2 (8 axes, 9 institutions, services split, WS-03 §2.4 conformance); answer OQ-G7–G9; approve or request changes | Sean (PR #8) | ◐ (OQ-G7–G9 accepted 2026-11-27; approval pending) |
+| 20 | Review WS-03 v0.2 (household panel for key wealth, CBI ownership, WS-08a band mapping); OQ-E7 decided in M2(a) | Sean (PR below) | ☐ |
 | 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ◐ (wealth rule, key count and rents note done in PR #8; CBI ownership pending) |
 | 21 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
 
@@ -67,3 +68,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | OQ-W1/W2/W4/W6 and OQ-C2 accepted: ConOps v0.4 (~20–45 macro polities), WS-02 v1.1 (ARC-090 bench 47 polities/132 regions; optional `RegionEdge.chokepoint`). Low-fidelity 1955 map `docs/setting/date/map-1955.svg` plus renderer; Kalimantan centroid moved onto land |
 | 2026-11-27 | WS-04 governance spec Draft v0.2 and M2(c) prototype plan (PR #8). v0.1 (GOV-001–098) revised per Sean: 8 TI-inspired axes (Economy, Welfare, Knowledge, Government, Oppression, Military, Nuclear, Space) with 2–3 salient per faction; Unity as a program; 9 institutions (control points) with archetype weights replacing veto players and strength weights; Military + Navy/Aerospace split by size; conforms to WS-03 §2.4 (rents as private goods); presets for all 8 WS-08a `Government` variants. OQ-G1–G6 closed; WS-03 edits requested as OQ-G7 |
 | 2026-11-27 | WS-03 amended (OQ-G7): `KeyOutcome.wealth` with a key-wealth rule (§3.5), Transfer/Public keys sectorless (≤ 240 keys), rents never key income; ECO-090 acceptance extended. OQ-G8 closed, OQ-G9 accepted |
+| 2026-11-27 | WS-03 v0.2: household panel for income/wealth (calibrated to Fed DFA, WIR 2022, SCF 2022; `prototypes/economy/calib_wealth.py`), ECO-048/049 added, ECO-040/042/090 revised; CBI read only from WS-04 (closes WS-04 OQ-G7); WS-08a fields mapped (§5.1, WLD-022); OQ-E3 closed |
