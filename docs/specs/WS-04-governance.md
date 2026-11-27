@@ -1,8 +1,16 @@
 # WS-04 — Governance & Factions
-Status: Draft v0.3 · Parent: ConOps §3, §5 (P-3, P-4, P-6, P-7, P-8), §6 governance/factions/services rows, SYS-002, SYS-004, SYS-006, SYS-007, SYS-008 · Depends on: WS-02 v1.1, WS-03 Draft v0.3 (§2.4 contract), WS-08a Draft v0.1 (§3.5 field ownership) · Last updated: 2026-11-27
+Status: Draft v0.4 · Parent: ConOps §3, §5 (P-3, P-4, P-6, P-7, P-8), §6 governance/factions/services rows, SYS-002, SYS-004, SYS-006, SYS-007, SYS-008 · Depends on: WS-02 v1.1, WS-03 Draft v0.3 (§2.4 contract), WS-08a Draft v0.1 (§3.5 field ownership), WS-08b Draft v0.3 (§3.4, §4.6, §8 P-04a–e) · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source linked) · **[R]** recalled, not checked · **[D]** design choice (to be tuned in the M2(c) prototype).
 Prototype plan: `prototypes/governance/PLAN.md`.
+
+**v0.4 changes (WS-08b v0.3 requests P-04a–e, 2026-11-27):**
+- §6.4 gains the royalty rate and the `resource_development` and `exploration` lines.
+- §3.4 gates WS-08b's `Survey` and `DevelopDeposit`.
+- §6.2 splits agriculture-and-extraction owners between Landowners and Industrialists by the sector's extraction share.
+- §4.4 labels diverted resource rents separately.
+- OQ-G8 records WS-08b's answer.
+- New input asks to WS-03/WS-08b: OQ-G11.
 
 **v0.3 changes (WS-03 v0.3 sync, 2026-11-27):** §6.4 adds the default policy map, one row and one channel for every WS-03 and WS-04 instrument, including WS-03 v0.3's mortgage LTV cap, mortgage-interest deductibility, pension funded share and social housing. §4.2 states which wealth concept drives oligarch control. OQ-G10 is added.
 
@@ -114,12 +122,14 @@ Eight axes is more than v0.1's six. But each faction weighs only 2–3, so a pla
 | WS-04 → WS-11 | conscription and nuclear-posture law options; `coercion_loyalty[faction]` ∈ [−1, 1] | WS-11 decides how units follow a coup |
 | WS-05 ↔ WS-04 | in: `arms_dependency[j]`; out: `rnd_morale` = 1 + 0.1·A_Technocrats [D] | R&D efficiency multiplier |
 | WS-08a → WS-04 | `start.government` (8 variants), `start.stability` (5 bands), subject relations | §4.12, `archetype_map.ron` |
+| WS-03/WS-08b → WS-04 | Rents split into `{ leakage, resource_diversion }` (sum = the WS-03 corruption-rents amount); `extraction_share` ∈ [0, 1] = extraction's share of agriculture-and-extraction value added | OQ-G11; §4.4, §4.2 |
+| WS-04 → WS-08b | `gate_orders` results for `Survey`, `DevelopDeposit`; `shocks.capital_loss` | §3.4, §4.6 |
 
 ### 3.4 Orders and the gate
 
 WS-04 adds these `OrderKind` variants: `SetLaw { group, option }` · `FormCoalition { factions }` · `SetRentAllocation { shares }` · `SetSpoils { level }` · `SetUnity { intensity }` · `AuthorizeOverride { institution }` · `ProposeReform { target }` · `CancelReform` · `DecreeReform { target }`.
 
-WS-03 orders are gated by one pure function, which both subsystems call in R1:
+WS-03 and WS-08b budget-committing orders are gated by one pure function, which every caller uses in R1:
 
 ```rust
 pub fn gate_orders(world: &World, orders: &[Order]) -> Vec<Gate>;   // one per order, in log order
@@ -135,6 +145,7 @@ pub enum BlockReason { Unconstitutional { axis: AxisIdx }, Veto { institution: I
 | `Supplemental` | PC cost 5 per 1% of GDP [D] |
 | `SetRegulation`, `PublicInvestment`, `IndustrialConversion` | Ethics box; `law` veto scope |
 | `SetMonetary` | None (WS-03 scales it by 1 − CBI) |
+| `Survey`, `DevelopDeposit` (WS-08b §3.4) | Ethics box (forbidden instruments may include `resource_development` or `exploration`); PC cost 0 by default [D]. The money was already appropriated, and vetted, in the annual budget; WS-08b checks ownership, capability and funds itself |
 
 PC accumulates in log order within a tick. Both subsystems call the same function on the same inputs, so they always agree (GOV-064).
 
@@ -179,7 +190,7 @@ Presets (§6.1) are named parameter sets. A custom government is any valid set.
 
 **Keys.** At most 240 `EconKey`s per polity (20 bins × 5 sectors × Wage/Capital, plus 20 Transfer and 20 Public keys without a sector; empty keys are omitted). Each carries income, tax, transfer, unemployment, inflation and wealth fields, and the player never sees them directly.
 
-**Membership.** Content gives each faction an affinity a_fk ∈ [0, 1] over `EconKey` selectors (bin ranges, sectors, roles). Military factions' affinity on `Role::Public` keys equals each service's personnel ÷ public employment (WS-11 counts). Shares m_fk = a_fk / max(1, Σ_f a_fk); the remainder is apolitical; a key can split across factions (WS-03 §2.4, V3 precedent). WS-04 publishes m_fk as `FactionEconBehavior.membership`. A faction's population share is h_f = Σ_k m_fk·pop_k; its *core weight* on key k is w_fk ∝ m_fk·pop_k·real_disp_income_k (normalized; the politically relevant members).
+**Membership.** Content gives each faction an affinity a_fk ∈ [0, 1] over `EconKey` selectors (bin ranges, sectors, roles). Military factions' affinity on `Role::Public` keys equals each service's personnel ÷ public employment (WS-11 counts). An affinity may also be scaled by a published scalar input (`scale_by`), e.g., `extraction_share` for the agriculture-and-extraction sector (§6.2). Shares m_fk = a_fk / max(1, Σ_f a_fk); the remainder is apolitical; a key can split across factions (WS-03 §2.4, V3 precedent). WS-04 publishes m_fk as `FactionEconBehavior.membership`. A faction's population share is h_f = Σ_k m_fk·pop_k; its *core weight* on key k is w_fk ∝ m_fk·pop_k·real_disp_income_k (normalized; the politically relevant members).
 
 **Control rules** (content per institution; laws may override). Each gives control shares q_fi ≥ 0 with Σ_f q_fi = 1:
 
@@ -212,7 +223,7 @@ Units are a fraction of the faction's core income per month. Ē[·] is an EMA wi
 |---|---|---|
 | Material | mat_f = Σ_k w_fk·disp_growth_12m_k (WS-03). Breakdown: 12-month changes of the faction's core-weighted eff_tax_rate, transfers, inflation_loss and unemp_exposure, plus a residual "market income and membership change" term. The terms sum exactly. WS-04 keeps a 12-month ring of each faction's 5 core-weighted fields (≈ 720 values per polity). | fully adaptive (12-month window) |
 | Public goods | pub_f = β_f·G_pc / y_f, G_pc = Σ_{l∈public} v_l·spend_l / population | β_f content, default 2 [D] |
-| Private goods | prv_f = 1[f∈C]·Rents·r_f / (W_people·κ^C_f·y_f), where Rents is the WS-03 leakage amount, r_f the player's allocation and κ^C_f f's share of coalition clout | default r_f = κ^C_f |
+| Private goods | prv_f = 1[f∈C]·Rents·r_f / (W_people·κ^C_f·y_f), where Rents is the WS-03 corruption-rents amount (spending leakage plus WS-08b's diverted resource rents, two labeled breakdown terms), r_f the player's allocation and κ^C_f f's share of coalition clout | default r_f = κ^C_f |
 | Adapted level | X̃_f = X_f − κ·Ē[X_f] for X ∈ {pub, prv} | κ = 0.7 [D]: a permanent change keeps 30% of its effect |
 | Ideology | ide_f = −Σ_{a ∈ salient(f)} ω_fa·((p_a − i_fa)² − r²) | 2–3 salient axes per faction (GOV-016); ω default 0.03, r = 0.5 [D] |
 | Line interest | lin_f = Σ_l λ_fl·ln(spend_l / Ē[spend_l]) | e.g., Navy on its procurement share |
@@ -389,7 +400,7 @@ Failure modes: **stall** (π ≤ 0 after ≥ 6 ticks, or Sup < θ_r for 12 conse
 | GOV-061 | Ethics bounds policy. | An order moving p_Mil outside the box → `Unconstitutional{Military}`; a forbidden instrument (`price_controls`) → rejected and exported as illegal. | §4.7 |
 | GOV-062 | Institutional vetoes follow §4.7; overrides need `decree_powers`. | ΔU = −τ_i − 0.01 is blocked naming i; with `AuthorizeOverride` and `decree_powers` it passes and charges PC and L; without `decree_powers` it stays blocked; λ_i = 1 vs. 0.3 changes the outcome in a fixture where coalition loyalty is pivotal. | §4.7 |
 | GOV-063 | More vetoing institutions means fewer accepted changes. | 10,000 random proposals at the test start with 0–3 vetoing institutions: acceptance rate non-increasing. | §4.7 |
-| GOV-064 | WS-03 and WS-04 apply identical gates. | For 1,000 random order lists, the set WS-03 rejects equals the set `gate_orders` blocks, and PC charged equals Σ `pc_cost` of allowed orders. | P-4, §3.4 |
+| GOV-064 | WS-03, WS-08b and WS-04 apply identical gates. | For 1,000 random order lists including `Survey` and `DevelopDeposit`, the set WS-03 and WS-08b reject equals the set `gate_orders` blocks, and PC charged equals Σ `pc_cost` of allowed orders. | P-4, §3.4 |
 | GOV-065 | `EnactBudget` is scored with `econ::project`; a block keeps last year's budget. | Stub `project` returning a 5% income cut for the legislature's majority faction blocks the draft; the WS-03 stub keeps the old schedule (ECO-050 path). | WS-03 §2.5 |
 | GOV-066 | The discretion band scales with executive weight. | W_exec = 0.1, 0.2, 0.4, 0.8 → band 1, 2, 4, 4 pp; out-of-band `AdjustTax` → `OutOfBand`. | WS-03 OQ-E3 |
 | GOV-067 | The Unity program follows §4.8. | Intensity 2 with censored media (m = 1): L* + 0.1, R* × 0.8, PC −4/month; with free press (q_C,media = 0): m = 0.3. | Sean v0.2 |
@@ -459,9 +470,9 @@ Institution weights (exec, leg, jud, bur, sec, med, ind, oli, clg); **bold** = h
 
 | Faction | Members (EconKey selectors) | Salient axes: ideal | Real-world family [R] |
 |---|---|---|---|
-| Landowners | Capital, agriculture, bins ≥ 15 | Welfare −0.6, Knowledge −0.5, Oppression +0.3 | landed conservatives |
+| Landowners | Capital, agriculture & extraction, bins ≥ 15, scaled by 1 − `extraction_share` | Welfare −0.6, Knowledge −0.5, Oppression +0.3 | landed conservatives |
 | Rural Masses | Wage, agriculture, bins ≤ 10 | Welfare +0.5, Economy +0.4, Knowledge −0.3 | agrarian/peasant parties |
-| Industrialists | Capital, industry/defense/space | Economy −0.6, Welfare −0.5, Government +0.2 | business liberals |
+| Industrialists | Capital, industry/defense/space; Capital, agriculture & extraction, bins ≥ 15, scaled by `extraction_share` (mine and oil owners) | Economy −0.6, Welfare −0.5, Government +0.2 | business liberals |
 | Organized Labor | Wage, industry/defense, bins 5–15 | Welfare +0.7, Economy +0.5, Oppression −0.4 | trade unions, social democrats |
 | Professionals | Wage, services, bins ≥ 12 | Oppression −0.6, Government +0.5, Economy −0.3 | urban liberals |
 | Technocrats | Wage, space/defense + services bins ≥ 15 (tag: research) | Knowledge +0.7, Space +0.6, Government +0.3 | scientific-technical intelligentsia |
@@ -510,6 +521,11 @@ Every instrument has exactly one channel and a sparse row of axis weights (GOV-0
 | **Pension funded share** (`EnactBudget`; WS-03 v0.3) | incidence | Economy −●● |
 | Monetary financing share (`SetMonetary`) | incidence | Economy +● |
 | Debt rule, `DrawBailout`, `IndustrialConversion` | none | — |
+| **WS-08b instruments** ||
+| Resource royalty rate (tax on the rent base; WS-03 band applies) | incidence | Economy +● (a higher state take is the cooperative pole) |
+| `resource_development` line | incidence | Economy +● |
+| `exploration` line | none | Economy +● |
+| Missions, launches, facilities | — (paid from the space-program line, Space +●●●) | — |
 | **WS-04 instruments** ||
 | Spoils / corruption K | rents | Government −●●● |
 | Institution parameters: franchise breadth, election fairness, judicial independence | none | Government +●● each |
@@ -519,6 +535,8 @@ Three of WS-03's four new instruments map differently from its suggestion (all t
 - **The LTV cap goes to Economy.** It's macroprudential regulation, the same family as the other `SetRegulation` levers. Its distributional effect (renters priced out of ownership) already reaches factions through incidence.
 - **Deductibility is Welfare −, the elite-serving pole.** The subsidy rises with the marginal rate and the size of the mortgage, so its value goes mostly to upper-middle and upper homeowners [R].
 - **The funded pension share goes to Economy −, the competitive pole.** It shifts pension provision from state pay-as-you-go to market funds (the Chile 1981 model [R]). Its effect on measured wealth shares is WS-03's concern.
+
+For WS-08b's `exploration` line, the channel is **`none`** instead of the suggested `public (v 0.5)`. Survey spending isn't a service citizens consume. Its payoff (discovered deposits) already reaches factions later through rents, royalty and incidence. Valuing it as a public good would count it twice and turn surveys into a way to buy approval.
 
 ## 7. Verification
 
@@ -552,6 +570,7 @@ Estimated R5 cost per high-fidelity polity: 12 factions × ~240 keys membership,
 | OQ-G5 | WS-03 contract | **Closed: WS-04 conforms to WS-03 §2.4**; remaining asks moved to OQ-G7 |
 | OQ-G6 | Macro polities reform only by coup or revolution | **Closed: yes** |
 | OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | **Closed (2026-11-27).** Wealth, the rents note and CBI ownership are all done in WS-03 (v0.2 for CBI and the panel-based key wealth) |
-| OQ-G8 | Space axis poles: earthbound/expansionist (recommended) vs. extraction/ecocentric | **Closed (2026-11-27): earthbound/expansionist**; revisit when WS-08b adds resources |
+| OQ-G8 | Space axis poles: earthbound/expansionist (recommended) vs. extraction/ecocentric | **Closed (2026-11-27): earthbound/expansionist.** WS-08b v0.3 (P-04e) confirmed it: resources add rents but no environment state, and resource politics already reaches factions through incidence, Spoils (diverted rents) and wealth clout. Revisit only with a future environment model |
 | OQ-G9 | WS-11 must expose a strategic (nuclear) share of defense spending for the Nuclear axis | **Accepted (2026-11-27)**; a WS-11 kickoff input. Until then the Nuclear axis reads only the posture law |
 | OQ-G10 | Should anything react to *measured* rather than true inequality, e.g., ideological legitimacy or the media falling as the measured top-10% share rises, while power follows true wealth? | Not in the MVP; revisit in M2(c) if S5 shows inequality has no political bite |
+| OQ-G11 | WS-03/WS-08b to publish rents split into `{ leakage, resource_diversion }` and the agriculture-and-extraction sector's `extraction_share` | Until published: one Rents term, and extraction_share = content constant 0.3 per archetype [D] |
