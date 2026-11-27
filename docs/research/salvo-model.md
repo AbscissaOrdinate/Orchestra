@@ -109,6 +109,19 @@ Excluded: ESM/SIGINT, emission control (beyond a posture flag that lowers signat
 
 Weapon selection: each unit class's doctrine has a preference list per mission, for example `strike_ship: [AShM, glide_bomb, gun]`. The first class with stock > 0, a legal target, and `range_band ≥ required` is used. When AShM runs out, glide bombs are chosen, and because their range band falls below the defender's area band, M-9 exposes the aircraft. That is the intended cost.
 
+### 7.3 Doctrine parameters (preset per service, research-unlocked)
+
+| Parameter | Saturation | Measured | Conserve |
+|---|---|---|---|
+| `want` rule | All available | Smallest salvo with forecast P(kill) ≥ `p_target`, using Armstrong closed forms on the shooter's belief of the target (P-2) | Measured with `p_target` lowered |
+| `reserve_frac` | 0 | 0.25 | 0.5 |
+| `spt` (shots per threat) | 2 | 1–2 by threat class | 1 |
+| `engage_threshold` | Engage all | Engage predicted-threatening only (Iron Dome classification) | Same |
+| `break_loss` | 0.6 | 0.4 | 0.25 |
+| Target `priority` | By class weights | Same | Same |
+
+Values are placeholders for prototype tuning. Measured couples belief error to real outcomes: a polity that underestimates enemy defenses fires too little.
+
 ### 7.4 Munition lots (G-5)
 
 Requirement (Sean): researching a new design must not change stock already built. Options:
@@ -125,19 +138,6 @@ Rules for C [D]:
 - Lot choice when firing is a doctrine field: `best_first` (default), or `oldest_first` for Conserve, which burns obsolete stock in low-threat engagements.
 - Transfers between holders move lots with their stats, so a base's mixed stock goes onto a ship as it is.
 - Refit/modernization (WS-11) may convert a lot at a cost. It never happens automatically.
-
-### 7.3 Doctrine parameters (preset per service, research-unlocked)
-
-| Parameter | Saturation | Measured | Conserve |
-|---|---|---|---|
-| `want` rule | All available | Smallest salvo with forecast P(kill) ≥ `p_target`, using Armstrong closed forms on the shooter's belief of the target (P-2) | Measured with `p_target` lowered |
-| `reserve_frac` | 0 | 0.25 | 0.5 |
-| `spt` (shots per threat) | 2 | 1–2 by threat class | 1 |
-| `engage_threshold` | Engage all | Engage predicted-threatening only (Iron Dome classification) | Same |
-| `break_loss` | 0.6 | 0.4 | 0.25 |
-| Target `priority` | By class weights | Same | Same |
-
-Values are placeholders for prototype tuning. Measured couples belief error to real outcomes: a polity that underestimates enemy defenses fires too little.
 
 ## 8. Per-unit inputs WS-11 must provide
 
@@ -180,7 +180,7 @@ This is the contract. WS-11's rollup produces these from templates and designs; 
 | `range_band` | Ordinal: `point` < `area` < `extended` < `theater` |
 | `stock` / `cap` | When `consumes` is true |
 
-### 8.4 Munition class (content; stats from the polity's current WS-05 design)
+### 8.4 Munition class (content; each lot's stats come from the WS-05 design that delivered it, §7.4)
 
 | Field | Meaning |
 |---|---|
