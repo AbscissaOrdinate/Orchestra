@@ -12,7 +12,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ☑ |
 | M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ |
 | M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ☐ |
-| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03 draft in PR; WS-04–05 pending) |
+| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03 draft in PR; WS-04–05 pending; WS-08a/08b drafts in PR) |
 | M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
 | M5 | Core triad in Rust | Economy, governance, and R&D implemented to spec, with batch stability tests in CI | WS-03–05 | ☐ |
 | M6 | Forces & thin stubs | Force design (templates, lifecycle, manpower, basing, munitions, strategic forces) per WS-11; diplomacy/AI, combat kernel, space graph, and setting data at MVP depth | WS-06–08, WS-11 | ☐ |
@@ -43,7 +43,10 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 15 | If OQ-W1 and OQ-W2 are accepted: edit WS-02 (ARC-090 bench to 47 polities and 132 regions; optional `RegionEdge.chokepoint` in §6) | Project → repo | ☑ (WS-02 v1.1, ConOps v0.4) |
 | 16 | Verify the [R]-tagged DATE facts against ODIN (OQ-W3/OQ-C1): Sean saves the Internet Archive ODIN pages (PDF/HTML) and attaches them; Claude's web tools can't fetch the archive | Sean → Claude | ☐ |
 | 17 | M4: port `prototypes/ws08a-content-check` types and `wld_*` tests into `sim-core`, then delete the prototype | Code session | ☐ |
-| 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☐ |
+| 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☑ (WS-08b spec Draft v0.1, draft Sol and resource content, Sol-graph prototype; PR open) |
+| 19 | Review the WS-08b spec; answer OQ-S1–S5; accept or reject the proposed edits P-02a–P-CON (§8); approve or request changes | Sean | ☐ |
+| 20 | After WS-08b approval: apply the accepted §8 edits to WS-02, WS-03, WS-04 (PR #8), WS-08a and the salvo note; carry the WS-05/06/07/11 items into their kickoffs | Project → repo | ☐ |
+| 21 | Build M2(d), the rent-hook prototype (`prototypes/ws08b-sol/README.md` §2, ≈ 14 h), after M2(a) P1–P3 | `prototypes/economy/` | ☐ |
 
 ## Change log
 
@@ -61,4 +64,5 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-08a grader fixes: one primary owner per start field (WLD-022); no cascading errors (ARC-051); data-driven disclaimer headers; region IDs and names made physical (23 renamed); 1945–55 back-history all [ORIG], DATE facts F-1..F-8 kept separate; 52 passing tests |
 | 2026-11-26 | Salvo kernel research note `docs/research/salvo-model.md` (feeds WS-07, WS-11): framework F-1–F-8, gaps, munition lots option C, batteries as brigade templates; ConOps T-1/T-2 edits proposed, not made |
 | 2026-11-26 | WS-03 economy spec Draft v0.1 (ECO-001–133) and M2(a) prototype plan; closes WS-02 OQ-A4 (adds `gov_debt`, `treasury` to `Aggregates`); ConOps edits proposed in OQ-E5, not made |
+| 2026-11-27 | WS-08b spec Draft v0.1 (WLD-050–099): seeded Sol (28 template bodies + ≤ 16 generated), regime-node Δv graph, synodic windows, four-kind resource taxonomy, world commodity price block, rent hook into WS-03, prospecting, thin space ops. Draft content in `content/maps/sol/`, `content/maps/earth/resources.ron`, `content/core/resources/`; `prototypes/ws08b-sol/sol.py` checks (Mars windows match 1960–75 launches). Edits to other docs proposed (§8), not made |
 | 2026-11-27 | OQ-W1/W2/W4/W6 and OQ-C2 accepted: ConOps v0.4 (~20–45 macro polities), WS-02 v1.1 (ARC-090 bench 47 polities/132 regions; optional `RegionEdge.chokepoint`). Low-fidelity 1955 map `docs/setting/date/map-1955.svg` plus renderer; Kalimantan centroid moved onto land |

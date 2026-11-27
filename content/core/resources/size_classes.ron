@@ -1,0 +1,31 @@
+// content/core/resources/size_classes.ron — deposit truth priors per (kind, size class) and location qualifiers (WS-08b §4.4, WLD-076/077).
+// Truth: with probability p_dry the deposit is barren (size = dry_fraction × median); otherwise ln S ~ Normal(ln median, sigma_ln).
+// Grade g ~ LogNormal(0, grade_sigma); difficulty δ = base(qualifiers) × LogNormal(0, 0.2).
+// The public prior for the size subject is the same mixture, so beliefs are calibrated (P-1). Values [D] unless tagged.
+SizeClasses(
+    classes: [
+        // hydrocarbons, Gboe. Anchors [R]: the largest single fields hold 50–100+ Gboe; a typical major basin 5–20.
+        SizeClass(kind: "res.hydrocarbons", id: "minor",      median: 0.5,   sigma_ln: 0.8, p_dry: 0.40, grade_sigma: 0.15),
+        SizeClass(kind: "res.hydrocarbons", id: "major",      median: 5.0,   sigma_ln: 0.7, p_dry: 0.20, grade_sigma: 0.15),
+        SizeClass(kind: "res.hydrocarbons", id: "giant",      median: 30.0,  sigma_ln: 0.6, p_dry: 0.10, grade_sigma: 0.10),
+        SizeClass(kind: "res.hydrocarbons", id: "supergiant", median: 150.0, sigma_ln: 0.5, p_dry: 0.02, grade_sigma: 0.10),
+        // metals, Mt copper-equivalent
+        SizeClass(kind: "res.metals", id: "minor", median: 2.0,   sigma_ln: 0.8, p_dry: 0.35, grade_sigma: 0.30),
+        SizeClass(kind: "res.metals", id: "major", median: 20.0,  sigma_ln: 0.7, p_dry: 0.20, grade_sigma: 0.30),
+        SizeClass(kind: "res.metals", id: "giant", median: 100.0, sigma_ln: 0.6, p_dry: 0.10, grade_sigma: 0.25),
+        // fissile, kt U
+        SizeClass(kind: "res.fissile", id: "minor", median: 20.0,  sigma_ln: 0.8, p_dry: 0.35, grade_sigma: 0.40),
+        SizeClass(kind: "res.fissile", id: "major", median: 100.0, sigma_ln: 0.7, p_dry: 0.20, grade_sigma: 0.40),
+        SizeClass(kind: "res.fissile", id: "giant", median: 400.0, sigma_ln: 0.6, p_dry: 0.10, grade_sigma: 0.40),
+    ],
+    dry_fraction: 0.001,
+    // Location qualifiers: base difficulty multiplier and the WS-05 capability flag needed to discover or develop.
+    qualifiers: [
+        Qualifier(id: "offshore", difficulty: 2.0, requires: Some("cap.offshore")),   // e.g. North Sea: found 1969, first oil 1975 [R]
+        Qualifier(id: "arctic",   difficulty: 2.5, requires: Some("cap.arctic")),
+        Qualifier(id: "easy",     difficulty: 0.3, requires: None),                    // shallow, high-pressure fields (Gulf) [R]
+    ],
+    // Knowledge qualifiers set the public belief at 1955-01 (WS-08b §4.8): known = prior + one observation (sigma_ln 0.3);
+    // suspected = prior only; unknown = no belief (None) until a survey discovers it. Default: known.
+    knowledge: [("known", Some(0.3)), ("suspected", None), ("unknown", None)],
+)
