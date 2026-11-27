@@ -36,9 +36,9 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 9 | Describe the target TNO economy "feel" at the WS-03 kickoff | Sean | ☐ |
 | 12 | Resolve OQ-6 in the WS-02 review: add a `force` block (owner WS-11), its stage, and the combat-loss path; add force units to the ARC-090 bench scenario | WS-02 PR | ☑ (R5b/R6b, ARC-024, OQ-A6) |
 | 13 | Start the WS-11 design chat with `prompts/WS-11.md` once the WS-05 spec is approved | New Project chat | ☐ |
-| 14 | Review the WS-08a spec, canon and draft content; answer OQ-W1–W6 and OQ-C1–C3; approve or request changes | Sean | ☐ |
-| 15 | If OQ-W1 and OQ-W2 are accepted: edit WS-02 (ARC-090 bench to 47 polities and 132 regions; optional `RegionEdge.chokepoint` in §6) | Project → repo | ☐ |
-| 16 | Verify the [R]-tagged DATE facts against ODIN, which was unreachable from the cloud session (OQ-W3/OQ-C1) | Sean (browser) | ☐ |
+| 14 | Review the WS-08a spec, canon and draft content; answer OQ-W1–W6 and OQ-C1–C3; approve or request changes | Sean | ◐ (OQ-W1/W2/W4/W6, OQ-C2 accepted 2026-11-27; approval pending) |
+| 15 | If OQ-W1 and OQ-W2 are accepted: edit WS-02 (ARC-090 bench to 47 polities and 132 regions; optional `RegionEdge.chokepoint` in §6) | Project → repo | ☑ (WS-02 v1.1, ConOps v0.4) |
+| 16 | Verify the [R]-tagged DATE facts against ODIN (OQ-W3/OQ-C1): Sean saves the Internet Archive ODIN pages (PDF/HTML) and attaches them; Claude's web tools can't fetch the archive | Sean → Claude | ☐ |
 | 17 | M4: port `prototypes/ws08a-content-check` types and `wld_*` tests into `sim-core`, then delete the prototype | Code session | ☐ |
 | 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☐ |
 
@@ -57,3 +57,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-08a spec (Draft v0.1, WLD-001–049), canon v0.1, and draft Earth map (110 land + 22 sea regions, 366 edges) and DATE setting (47 polities) content; prototype content checker |
 | 2026-11-27 | WS-08a grader fixes: one primary owner per start field (WLD-022); no cascading errors (ARC-051); data-driven disclaimer headers; region IDs and names made physical (23 renamed); 1945–55 back-history all [ORIG], DATE facts F-1..F-8 kept separate; 52 passing tests |
 | 2026-11-26 | Salvo kernel research note `docs/research/salvo-model.md` (feeds WS-07, WS-11): framework F-1–F-8, gaps, munition lots option C, batteries as brigade templates; ConOps T-1/T-2 edits proposed, not made |
+| 2026-11-27 | OQ-W1/W2/W4/W6 and OQ-C2 accepted: ConOps v0.4 (~20–45 macro polities), WS-02 v1.1 (ARC-090 bench 47 polities/132 regions; optional `RegionEdge.chokepoint`). Low-fidelity 1955 map `docs/setting/date/map-1955.svg` plus renderer; Kalimantan centroid moved onto land |

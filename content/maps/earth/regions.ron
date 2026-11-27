@@ -104,7 +104,7 @@
     Region(id: "region.sumatra", name: "Sumatra", lat: 0.0, lon: 101.5, terrain: Jungle, island: true),
     Region(id: "region.java", name: "Java", lat: -7.3, lon: 110.0, terrain: Plains, island: true),
     Region(id: "region.borneo_north", name: "North Borneo", lat: 3.5, lon: 114.5, terrain: Jungle, island: true),
-    Region(id: "region.borneo_celebes", name: "Kalimantan, Celebes and Lesser Sundas", lat: -2.0, lon: 117.0, terrain: Jungle, island: true),
+    Region(id: "region.borneo_celebes", name: "Kalimantan, Celebes and Lesser Sundas", lat: -1.0, lon: 114.0, terrain: Jungle, island: true),
     Region(id: "region.timor", name: "Timor", lat: -9.0, lon: 125.0, terrain: Hills, island: true),
     Region(id: "region.new_guinea_west", name: "Western New Guinea", lat: -4.0, lon: 137.0, terrain: Jungle, island: true),
     Region(id: "region.new_guinea_east", name: "Eastern New Guinea", lat: -6.5, lon: 145.0, terrain: Jungle, island: true),

@@ -1,5 +1,5 @@
 # WS-08a — Setting, Canon & Earth Map
-Status: Draft v0.1 · Parent: ConOps §3, §4, P-6, P-7, SYS-006, SYS-007; ADR-0003; WS-02 §3.6, §6, ARC-050–052 · Last updated: 2026-11-27
+Status: Draft v0.2 · Parent: ConOps §3, §4, P-6, P-7, SYS-006, SYS-007; ADR-0003; WS-02 §3.6, §6, ARC-050–052 · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source given) · **[R]** recalled or secondary source, not checked against DATE primary material · **[D]** design choice.
 The companion canon document is `docs/setting/date/canon.md`. Draft content lives in `content/maps/earth/`, `content/settings/date/` and `content/scenarios/date_1955.ron`. Until M4 it is validated by the prototype `prototypes/ws08a-content-check/`.
@@ -222,6 +222,8 @@ The draft files listed in §3.1 are complete for the MVP start state:
 | `settings/date/status.ron` | 14 |
 | `settings/date/region_names.ron` | 1 (Pineland, `DateLegacy`) |
 
+**Derived map:** `docs/setting/date/map-1955.svg`, rendered from the content by `prototypes/ws08a-map-render/render_map.py` (Voronoi cells per landmass on Natural Earth 1:50m land, public domain). It is a picture of the data, not data: regenerate it after content changes.
+
 **Disclaimer placement (ADR-0003):** README (already present); `setting.ron` `disclaimer` field, which WS-09 shows on the credits screen; the header of every setting and scenario file; and the header of canon.md and of this spec. Map files contain only real geography and carry no DATE material.
 
 ## 7. Verification
@@ -235,9 +237,9 @@ The draft files listed in §3.1 are complete for the MVP start state:
 
 | ID | Question | Proposed resolution |
 |---|---|---|
-| OQ-W1 | The ARC-090 bench uses 46 polities and 100 regions; the draft has 47 polities and 132 regions (110 land, 22 sea). With the player and 4 high-fidelity AI, 42 polities are macro, above ConOps §3's "~20–40". | Accept 42 macro polities, since macro polities cost little per tick [D], and update the ARC-090 synthetic scenario to 47 polities and 132 regions (a WS-02 edit and a ConOps note, approved in the Project). Alternative: fold 2–4 DATE micro-states (Puller Islands, Fanu Rai, Gabal, Patani Baru) into their overlords. |
-| OQ-W2 | `RegionEdge` gains an optional `chokepoint` field beyond the WS-02 §6 `{ kind, cost }` shape. | Treat it as a compatible extension (default empty) and note it in WS-02 §6 at the next revision. |
-| OQ-W3 | Facts tagged [R] (European footprints, Bothnia's analog, Gabal on Palawan) were not checked against ODIN, which was unreachable from this session. | Verify when ODIN is reachable and adjust canon §5; data changes only. |
-| OQ-W4 | Legacy OE names (Atlantica, Krasnovia, Centralia, Attica, Ellisia, Pineland) come from training environments whose release status is less clearly documented than DATE's Distribution A [R]. | Only names are used. Keep them unless review says otherwise; the swap is a data edit (WLD-048). |
+| OQ-W1 | **Closed (accepted 2026-11-27):** ConOps v0.4 allows ~20–45 macro polities; ARC-090 bench updated to 47 polities and 132 regions (WS-02 v1.1). Original question: the ARC-090 bench uses 46 polities and 100 regions; the draft has 47 polities and 132 regions (110 land, 22 sea). With the player and 4 high-fidelity AI, 42 polities are macro, above ConOps §3's "~20–40". | Accept 42 macro polities, since macro polities cost little per tick [D], and update the ARC-090 synthetic scenario to 47 polities and 132 regions (a WS-02 edit and a ConOps note, approved in the Project). Alternative: fold 2–4 DATE micro-states (Puller Islands, Fanu Rai, Gabal, Patani Baru) into their overlords. |
+| OQ-W2 | **Closed (accepted):** added to WS-02 §6 in v1.1. Original question: `RegionEdge` gains an optional `chokepoint` field beyond the WS-02 §6 `{ kind, cost }` shape. | Treat it as a compatible extension (default empty) and note it in WS-02 §6 at the next revision. |
+| OQ-W3 | **Open.** ODIN is reachable only through the Internet Archive, which Claude's web tools cannot fetch; Sean to attach saved pages. Facts tagged [R] (European footprints, Bothnia's analog, Gabal on Palawan) were not checked against ODIN, which was unreachable from this session. | Verify when ODIN is reachable and adjust canon §5; data changes only. |
+| OQ-W4 | **Closed (accepted):** names kept. Legacy OE names (Atlantica, Krasnovia, Centralia, Attica, Ellisia, Pineland) come from training environments whose release status is less clearly documented than DATE's Distribution A [R]. | Only names are used. Keep them unless review says otherwise; the swap is a data edit (WLD-048). |
 | OQ-W5 | Directly held colonies (e.g. Hesperia's Guinea Coast) cannot become independent without runtime polity creation. | Post-MVP: either spawn latent polities or pre-create them as subjects. The MVP keeps them as `Colonial` regions. |
-| OQ-W6 | The prototype is Rust; CLAUDE.md names Python or MATLAB for prototypes. | Accept the exception for content-schema prototypes, because the Rust types are the schema (ADR-0001), or move the crate to `crates/` in M4. |
+| OQ-W6 | **Closed (accepted):** Rust exception for content-schema prototypes. The prototype is Rust; CLAUDE.md names Python or MATLAB for prototypes. | Accept the exception for content-schema prototypes, because the Rust types are the schema (ADR-0001), or move the crate to `crates/` in M4. |

@@ -219,6 +219,6 @@ Hooks are content for a future event system. In the MVP they are documentation o
 
 | ID | Question |
 |---|---|
-| OQ-C1 | Verify the DATE facts tagged [R] (European footprints, Bothnia's analog, Gabal on Palawan, Khorathidin's footprint) against ODIN when it is reachable, and adjust §5. |
-| OQ-C2 | Legacy OE names (Atlantica, Krasnovia, Centralia, Attica, Ellisia; Pineland as a region alias) come from Army training environments whose release status is less clearly documented than DATE's Distribution A [R]. Only names are used. Confirm this is acceptable, or swap them for originals by data edit. In the legacy material Atlantica was a Cold War adversary; its role here is reassigned. |
+| OQ-C1 | Open: Sean to attach saved ODIN pages (Internet Archive), then verify the DATE facts tagged [R] (European footprints, Bothnia's analog, Gabal on Palawan, Khorathidin's footprint) against ODIN when it is reachable, and adjust §5. |
+| OQ-C2 | **Closed (accepted 2026-11-27):** keep the legacy OE names. Legacy OE names (Atlantica, Krasnovia, Centralia, Attica, Ellisia; Pineland as a region alias) come from Army training environments whose release status is less clearly documented than DATE's Distribution A [R]. Only names are used. Confirm this is acceptable, or swap them for originals by data edit. In the legacy material Atlantica was a Cold War adversary; its role here is reassigned. |
 | OQ-C3 | Mojavia and Parumphia are unused and held in reserve for splitting a composite later, such as Centralia. |
