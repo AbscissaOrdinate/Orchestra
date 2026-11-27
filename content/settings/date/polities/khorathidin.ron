@@ -1,0 +1,14 @@
+// content/settings/date/polities/khorathidin.ron — polity Khorathidin (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.khorathidin",
+    name: "Kingdom of Khorathidin",
+    short_name: "Khorathidin",
+    adjective: "Khorathi",
+    provenance: Date,
+    analog_role: "Military-dominated monarchy aligned with Atlantica",
+    kind: NationState,
+    capital: "region.menam_mekong",
+    hf_candidate: false,
+)

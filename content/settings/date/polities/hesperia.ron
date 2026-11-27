@@ -1,0 +1,14 @@
+// content/settings/date/polities/hesperia.ron — polity Hesperia (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.hesperia",
+    name: "Kingdom of Hesperia",
+    short_name: "Hesperia",
+    adjective: "Hesperian",
+    provenance: Orchestra,
+    analog_role: "Declining maritime empire and Atlantica's closest ally",
+    kind: NationState,
+    capital: "region.british_isles",
+    hf_candidate: true,
+)

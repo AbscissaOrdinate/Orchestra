@@ -1,0 +1,14 @@
+// content/settings/date/polities/drakensia.ron — polity Drakensia (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.drakensia",
+    name: "Union of Drakensia",
+    short_name: "Drakensia",
+    adjective: "Drakensian",
+    provenance: Orchestra,
+    analog_role: "Minority-ruled southern dominion with mineral wealth",
+    kind: NationState,
+    capital: "region.cape",
+    hf_candidate: false,
+)

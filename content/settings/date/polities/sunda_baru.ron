@@ -1,0 +1,14 @@
+// content/settings/date/polities/sunda_baru.ron — polity Sunda (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.sunda_baru",
+    name: "Sunda Republic",
+    short_name: "Sunda",
+    adjective: "Sundan",
+    provenance: Date,
+    analog_role: "Archipelagic nonaligned republic (DATE present: Sunda Baru Federation, formed 1985)",
+    kind: NationState,
+    capital: "region.java",
+    hf_candidate: true,
+)
