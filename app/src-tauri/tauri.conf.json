@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Orchestra",
+  "identifier": "io.github.abscissaordinate.orchestra",
+  "build": { "frontendDist": "../src" },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [{ "title": "Orchestra", "width": 560, "height": 260 }],
+    "security": { "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'" }
+  },
+  "bundle": { "active": false, "icon": ["icons/icon.png", "icons/icon.ico"] }
+}

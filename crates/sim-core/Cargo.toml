@@ -1,0 +1,26 @@
+[package]
+name = "sim-core"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+# WS-02 §3.1. Nothing else (ARC-003, checked by ci/arc_003_dep_allowlist.sh).
+# RNG crates are pinned with `=` (ADR-0006). rand's default features are off so
+# thread-local and OS RNGs aren't compiled into sim-core at all (ARC-004).
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+ron = "~0.12"
+rand_core = "=0.10.1"
+rand_chacha = "=0.10.0"
+rand = { version = "=0.10.4", default-features = false, features = ["std"] }
+rand_distr = "=0.6.0"
+postcard = { version = "~1.2", features = ["use-std"] }
+blake3 = "~1.8"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(arc_004_probe)"] }
+
+# The §3.1 set is declared and pinned in M4a (ARC-003); M4b–M4e start using it.
+# Remove this once every dependency is used.
+[lints.cargo]
+unused_dependencies = "allow"

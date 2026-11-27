@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Orchestra</title></head>
+<body style="font-family: sans-serif">
+  <p>sim-core version: <code id="version"></code></p>
+  <p>seed <input id="seed" type="number" min="0" value="42"> <button id="go">Hash</button></p>
+  <p>new world hash: <code id="hash"></code></p>
+  <script>
+    const { invoke } = window.__TAURI__.core;
+    const $ = (id) => document.getElementById(id);
+    const show = (id) => (text) => { $(id).textContent = text; };
+    const hash = () => invoke("new_world_hash", { seed: Number($("seed").value) }).then(show("hash"), show("hash"));
+    invoke("sim_version").then(show("version"), show("version"));
+    $("go").onclick = hash;
+    hash();
+  </script>
+</body>
+</html>

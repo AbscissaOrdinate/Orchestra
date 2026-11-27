@@ -1,0 +1,20 @@
+# ARC-004: determinism bans for sim-core (WS-02 §3.1, ConOps P-4). `unsafe` is
+# forbidden by `#![forbid(unsafe_code)]` in crates/sim-core/src/lib.rs.
+# rand's thread/OS RNG features are off in sim-core, so those paths may not resolve
+# (allow-invalid); they are listed so that turning the features on can't let them in.
+disallowed-types = [
+    { path = "std::collections::HashMap", reason = "iteration order is random; use BTreeMap or a sorted Vec" },
+    { path = "std::collections::HashSet", reason = "iteration order is random; use BTreeSet or a sorted Vec" },
+    { path = "std::hash::RandomState", reason = "randomly seeded hasher" },
+    { path = "std::time::SystemTime", reason = "wall clock; use Tick" },
+    { path = "std::time::Instant", reason = "wall clock; timing lives in the CLI" },
+    { path = "rand::rngs::ThreadRng", reason = "thread-local RNG; use RngFactory::stream", allow-invalid = true },
+    { path = "rand::rngs::SysRng", reason = "OS RNG; use RngFactory::stream", allow-invalid = true },
+]
+disallowed-methods = [
+    { path = "std::time::SystemTime::now", reason = "wall clock; use Tick" },
+    { path = "std::time::Instant::now", reason = "wall clock; timing lives in the CLI" },
+    { path = "rand::rng", reason = "thread-local RNG; use RngFactory::stream", allow-invalid = true },
+    { path = "rand::random", reason = "thread-local RNG; use RngFactory::stream", allow-invalid = true },
+    { path = "rand::make_rng", reason = "OS-seeded RNG; use RngFactory::stream", allow-invalid = true },
+]
