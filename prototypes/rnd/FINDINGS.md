@@ -1,0 +1,30 @@
+
+## Findings and proposed spec edits (for approval; the spec is unchanged in this PR)
+
+Every finding below has a computed row in the table above (seeds 101/202/303) except S-8, which is a documentation point. The `xfail(strict)` tests in `test_rnd.py` (RND-005 as specified, RND-008, RND-012 for S-2 and S-3, RND-013, RND-038 plain stream) turn green when the matching edit lands. The `b2` fixture and the passing RND-012 tests assume S-2 and S-3: **RND-012 passes with S-2 and S-3 applied and fails as specified.**
+
+| ID | Spec location | Finding | Proposed edit |
+|---|---|---|---|
+| S-1 | §4.5.7, RND-038 | `estimate()` on 256 plain random draws reuses one noisy stream for every project. Over 20 stream seeds, P50 budgets were exceeded by 44–58% of projects and P80 budgets by 17–28% (targets 50 ± 5 and 20 ± 4), so about a quarter of stream seeds fail RND-038. A fixed 256-point scrambled Sobol set gives 49–51% and 20–21%. | "256 draws from a fixed stream" becomes "a fixed 256-point scrambled Sobol set". |
+| S-2 | §4.2.5, RND-012, RND-016 | The fixed cross-generation LRs (3 and 1/3) overstate the evidence a line's good or bad history gives: `p_works` reliability error 8.5–10.5 pp (limit 5). The exact update for a line-level Beta(α, β) is LR (α+1)/α after a success and β/(β+1) after a dead generation: 1.01/0.50 (Established), 1.04/0.67 (Promising), 1.13/0.67 (Speculative), 1.33/0.67 (Fringe). With it the error is 1.4–2.2 pp. | Replace LR 3 and 1/3 with the class-conjugate values derived from the content's Beta. Consequence for design: the mechanic is nearly inert for Established and Promising lines. |
+| S-3 | §0 (gates paragraph), §4.4, RND-023 | The spec says a gate finding must not be viability evidence, because it would break calibration. The reverse holds: a `Blocked` or `FeasibilityFinding` event can only occur for a tech that works (hard-dead techs are never gated). With the events ignored, techs at `p_works` ∈ [0.2, 0.9) after development (about 1,000 of 77,000 samples) worked 99.9% of the time against a mean `p_works` of 0.72. Treating the event as proof (ln LR = ln 10⁴, as for an acceptance pass) removes the gap. | `Blocked` and `FeasibilityFinding` push viability evidence ln LR = ln 10⁴. The UI reads "not a dead end; needs <field>". RND-023 changes to "viability belief jumps to ≥ 0.999". |
+| S-4 | §4.1.4, RND-008 | Σ g_k ≤ g0/(1 − d) does not hold, because the LogNormal(mean 1, CV 0.3) multiplier is unbounded: 2.5–5.0 × 10⁻⁵ of world-lines exceed it (max 0.611 vs 0.600). | Clip each multiplier at 1.27 (30 levels, g0 = 0.03, d = 0.95): the stated bound then holds by construction and the mean multiplier falls by about 4% (0.962, computed). Alternative: restate the bound as 1.2 × g0/(1 − d). |
+| S-5 | §4.1.2, RND-005 | An edge needs a source generation dated no later than the target, so the expected count is Σ p·P(valid), not Σ p. Here: 10.0 per world against Σ p = 16.5 (95 lines). The spec's "≈ 11 per world" is Σ p for 75 lines (0.002 × 75 × 74), so it is not the valid count. The prototype's `domain` stand-in for "different fields" also removes same-domain pairs, which lowers the count further (Σ p·P(valid) over different-domain pairs = 10.1). | RND-005 compares the mean edge count with Σ p·P(valid) over different-field pairs, computed from content, and the "≈ 11" is dropped. |
+| S-6 | RND-013 (third clause) | After 2 failed tests only 62% of hard dead ends have `p_works` < 0.10 (Established 15%, Promising 47%, Speculative 68%, Fringe 80%). After 4: 89%; after 5: 95%. Strong priors and a failure LR of only 1/3 make a dead Established tech hard to recognize, which is the intended sunk-cost lesson. | Criterion becomes "≥ 90% after 4 failed tests at u = 2/3, and ≥ 80% after 2 for Fringe". B4 sets the AI's `θ_kill`. |
+| S-7 | §4.5.4 | Variance shares 0.6/0.25/0.15 leave 66% of projects with a final CPI more than 10% from CPI at 20% (the [R] stability rule). 0.5/0.30/0.20 leaves 39%, with growth still front-loaded (phase cost rates 1.37, 1.30, 1.20). `params.py` already uses it. | Change the shares to (0.5, 0.30, 0.20), tag "tuned M2(b)". |
+| S-8 | §4.5.3, §7 | The spec cites `calib_growth.py` for the fit, but that script still uses the v0.1 targets and clamps u at 1. `b3_growth` now is the reference: with the spec constants and the belief σ the simulation produces, no refit was needed (cost growth 1.03 / 1.34–1.35 / 1.29–1.30, CV 0.75–0.78, schedule 1.19). | Cite `scenarios.b3_growth`; keep `calib_growth.py` only for the RND-011 check (or retire it). |
+
+## Test coverage gaps (NOT covered by `test_rnd.py`)
+
+- RND-005: "adding a line changes no edge" is tested only on the pair hash, not by calling `sample_edges` on content with an added line.
+- RND-007: no content validator exists yet, so cycle rejection of a cyclic fixture is untested (acyclicity of generated content is asserted); the "added unnamed line leaves gates bit-identical" test needs content-edit support in `content_gen.py`.
+- RND-008: only the gain-bound clause. Levels always working, never gated, level k+1 known after proof, the effort formula and gain application need the project loop (B2 full).
+- RND-012 and RND-013 use per-stage beliefs on every tech, not 6 polities × quarters or cumulative-effort deciles; the interval-coverage check is close to tautological because truth and prior share one model. The real tests are B2 full.
+- RND-004 runs at 4,000 worlds in pytest and 10,000 in `report.py`.
+
+## Not yet done (M2(b) is partly complete)
+
+- **B2 full** (1955–2060 time loop with `science.py`, the project loop, observing others, publication and espionage) and so the decade fans; B2-lite above shows the same belief mechanics per stage on every tech.
+- **B4** (kill-threshold ROC, `M_pause`), **B5** (portfolio, RND-104), **B6–B9** (production, market, spec churn, contracting).
+- Cross-line prerequisites, discovery and hidden-tech hazard are not in the synthetic content yet; B2-lite treats every tech as already known.
+- RND-012's decile test is run at the prior and after-development stages only; the all-quarter version needs B2 full.

@@ -1,2 +1,5 @@
 /target
 /app/src-tauri/gen
+prototypes/rnd/out/*.pkl
+prototypes/rnd/__pycache__/
+prototypes/rnd/.pytest_cache/
