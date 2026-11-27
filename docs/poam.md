@@ -46,9 +46,9 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☐ |
 | 19 | Review WS-04 v0.2 (8 axes, 9 institutions, services split, WS-03 §2.4 conformance); answer OQ-G7–G9; approve or request changes | Sean (PR #8) | ◐ (OQ-G7–G9 accepted 2026-11-27; approval pending) |
 | 20 | Review WS-03 v0.3 (household panel, five-group wealth dynamics, new housing/pension instruments, CBI ownership, WS-08a band mapping); OQ-E7/E8 | Sean (PR #13) | ☐ |
-| 21 | WS-04: add `policy_map.ron` rows and channels for the four new WS-03 instruments (LTV cap, mortgage deductibility, pension funded share, social housing) so GOV-021 validation passes; optionally use the distribution summary's measured vs. true shares | WS-04 chat | ☐ |
-| 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ◐ (wealth rule, key count and rents note done in PR #8; CBI ownership pending) |
-| 21 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
+| 21 | WS-04: add `policy_map.ron` rows and channels for the four new WS-03 instruments (LTV cap, mortgage deductibility, pension funded share, social housing) so GOV-021 validation passes; optionally use the distribution summary's measured vs. true shares | WS-04 chat | ☑ (WS-04 v0.3 §6.4 default policy map, PR #15; measured-inequality use deferred as OQ-G10) |
+| 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ☑ (wealth, CBI ownership and rents note all done in WS-03 v0.2/v0.3) |
+| 22 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
 
 ## Change log
 
@@ -71,3 +71,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-03 amended (OQ-G7): `KeyOutcome.wealth` with a key-wealth rule (§3.5), Transfer/Public keys sectorless (≤ 240 keys), rents never key income; ECO-090 acceptance extended. OQ-G8 closed, OQ-G9 accepted |
 | 2026-11-27 | WS-03 v0.2: household panel for income/wealth (calibrated to Fed DFA, WIR 2022, SCF 2022; `prototypes/economy/calib_wealth.py`), ECO-048/049 added, ECO-040/042/090 revised; CBI read only from WS-04 (closes WS-04 OQ-G7); WS-08a fields mapped (§5.1, WLD-022); OQ-E3 closed |
 | 2026-11-27 | WS-03 v0.3: five-group wealth stock-flow (saving, returns, asset prices, taxes, estates, mobility) with measured/true/augmented concepts; mortgage, pension-funding and social-housing instruments; 8,192 oversampled panel (`panel_size.py`); ECO-140–147 (US/UK paths, NL vs. BE) |
+| 2026-11-27 | WS-04 v0.3 (WS-03 v0.3 sync): §6.4 default policy map covering every WS-03/WS-04 instrument, including the LTV cap (Economy), mortgage-interest deductibility (Welfare −), pension funded share (Economy −) and social housing (Welfare +); wealth concept for oligarch control stated (true, offshore included); OQ-G10 added; prototype S5 to use WS-03 wealth dynamics once M2(a) exists |
