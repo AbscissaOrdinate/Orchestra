@@ -12,7 +12,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ☑ |
 | M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ |
 | M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ☐ |
-| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03–05 pending) |
+| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03 draft in PR; WS-04–05 pending) |
 | M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
 | M5 | Core triad in Rust | Economy, governance, and R&D implemented to spec, with batch stability tests in CI | WS-03–05 | ☐ |
 | M6 | Forces & thin stubs | Force design (templates, lifecycle, manpower, basing, munitions, strategic forces) per WS-11; diplomacy/AI, combat kernel, space graph, and setting data at MVP depth | WS-06–08, WS-11 | ☐ |
@@ -33,9 +33,12 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 8 | Start WS-02 design chat with `prompts/WS-02.md` | New Project chat | ☑ (spec + ADR-0004–0009 drafted, PR open) |
 | 10 | Review WS-02 spec and ADR-0004–0009; answer OQ-A1–A6; approve or request changes | Sean | ☑ (approved 2026-11-25, PR #3) |
 | 11 | After WS-02 approval: write the WS-02 Phase B prompt; start M4 (the ConOps §7 edit for OQ-A5 is already in PR #3) | Project → repo | ☐ |
-| 9 | Describe the target TNO economy "feel" at the WS-03 kickoff | Sean | ☐ |
+| 9 | Describe the target TNO economy "feel" at the WS-03 kickoff | Sean | ☑ (2026-11-26; spec §0) |
 | 12 | Resolve OQ-6 in the WS-02 review: add a `force` block (owner WS-11), its stage, and the combat-loss path; add force units to the ARC-090 bench scenario | WS-02 PR | ☑ (R5b/R6b, ARC-024, OQ-A6) |
 | 13 | Start the WS-11 design chat with `prompts/WS-11.md` once the WS-05 spec is approved | New Project chat | ☐ |
+| 14 | Review WS-03 spec draft; answer OQ-E1–E6 (incl. the ConOps edits proposed in OQ-E5); approve or request changes | Sean | ☐ |
+| 15 | Build the M2(a) economy prototype per `prototypes/economy/README.md` (≈ 32 h, P1–P5) | `prototypes/economy/` | ☐ |
+| 16 | Start the WS-04 design chat; it must conform to the WS-03 §2.4 contract (`EconKey`, `EconOutcomes`, `FactionEconBehavior`) | New Project chat | ☐ |
 
 ## Change log
 
@@ -50,3 +53,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-25 | WS-02 spec approved v1.0; ADR-0004–0009 accepted |
 | 2026-11-25 | OQ-4 closed: Project GitHub sync works for search (manual "Sync now"; files not openable by name); POAM item 6 done |
 | 2026-11-26 | Salvo kernel research note `docs/research/salvo-model.md` (feeds WS-07, WS-11): framework F-1–F-8, gaps, munition lots option C, batteries as brigade templates; ConOps T-1/T-2 edits proposed, not made |
+| 2026-11-26 | WS-03 economy spec Draft v0.1 (ECO-001–133) and M2(a) prototype plan; closes WS-02 OQ-A4 (adds `gov_debt`, `treasury` to `Aggregates`); ConOps edits proposed in OQ-E5, not made |
