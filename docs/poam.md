@@ -13,7 +13,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ |
 | M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ◐ ((a) and (c) planned: `prototypes/economy/README.md`, `prototypes/governance/PLAN.md`) |
 | M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved v1.2; WS-03 v0.4 and WS-04 v0.4 drafts, not yet marked approved; WS-05 pending) |
-| M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
+| M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ◐ (M4a done: workspace, toolchain 1.100.1, dep allowlist, clippy bans, CI, Tauri stub; M4b next) |
 | M5 | Core triad in Rust | Economy, governance, and R&D implemented to spec, with batch stability tests in CI | WS-03–05 | ☐ |
 | M6 | Forces & thin stubs | Force design (templates, lifecycle, manpower, basing, munitions, strategic forces) per WS-11; diplomacy/AI, combat kernel, space graph, and setting data at MVP depth | WS-06–08, WS-11 | ☐ |
 | M7 | UI thin client | Tauri client: budget/tax screen, R&D screen, faction screen, map (graph + 2525) | WS-09 | ☐ |
@@ -53,7 +53,9 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 24 | After WS-08b merges: WS-02 applies P-02a–g (v1.2); WS-08a drops `Region.resource_tags`, rewords WLD-047, adds WLD-017 and owns `deposit_start.ron`; WS-03 publishes `extraction_share` (WS-04 OQ-G11) | WS-02, WS-08a, WS-03 | ◐ (WS-08a part done: v0.3, PR #20; WS-02 part done: v1.2, PR ws02/v1.2-ws08b; WS-03 `extraction_share` open) |
 | 25 | Build M2(d), the rent-hook prototype (`prototypes/ws08b-sol/README.md` §2, ≈ 14 h), after M2(a) P1–P3; propose `deposit_start.ron` values for WS-08a review | `prototypes/economy/` | ☐ |
 
-| 30 | Run M4a–M4f in order with `prompts/M4.md`, one PR each, graded before the next | Claude Code sessions | ☐ |
+| 30 | Run M4a–M4f in order with `prompts/M4.md`, one PR each, graded before the next | Claude Code sessions | ◐ (M4a: ARC-001–004, ARC-100 graded PASS; next M4b: ARC-010–015, ARC-020–024) |
+| 32 | ARC-100 manual check after M4f: replace the `sim_core::new_world_hash` placeholder with the tick-0 `state_hash`, then confirm on the Windows dev machine that the Tauri window's hash matches `orchestra run --ticks 0 --seed <same>` (`cargo run -p orchestra-app`; use a seed below 2^53, since the page passes it as a JS number) | M4e/M4f session, then Sean | ☐ |
+| 33 | M4f: the root `clippy.toml` bans `Instant` workspace-wide, but `bench` timing lives in the CLI (§3.9). Use a scoped `#[allow(clippy::disallowed_methods, clippy::disallowed_types)]` on the bench timer (as `app/src-tauri` does for tauri's generated `HashMap`), or move `clippy.toml` into `crates/sim-core/` with a WS-02 §3.1 edit | M4f session / Sean | ☐ |
 | 31 | Approve WS-08a v0.3 and WS-08b v0.4, or freeze their §5 content schemas, before M4d ports them | Sean | ☐ |
 ## Change log
 
@@ -84,3 +86,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-08a v0.3 (WS-08b P-08a1/2): `Region.resource_tags` removed (WLD-047); new WLD-017 validates `settings/<s>/deposit_start.ron` against WS-08b deposit IDs; 58 passing tests. `deposit_start.ron` values wait on WS-08b M2(d) |
 | 2026-11-27 | WS-02 v1.2: WS-08b P-02a–g applied (`Sol` node graph, `resources`/`space` blocks, WS-08 in R2/R5b/R6b, `Owner::{Deposit, Facility, Node}`, observation units in ADR-0008, test-setting bodies, `Aggregates.orbital_assets`); ARC-013/015/080/081/090 and §5 memory updated |
 | 2026-11-27 | `prompts/M4.md` (M4a–M4f increments); duplicate next-action numbers renumbered (second 14/15/16/20 → 26–29) |
+| 2026-11-27 | M4a (ARC-001–004, ARC-100): Cargo workspace (sim-core, cli, app/src-tauri), Rust 1.100.1 pinned, sim-core deps limited to the §3.1 set with `=` RNG pins and a CI allowlist, clippy determinism bans with a lint probe, CI workflow (fmt, clippy, build, test, dependency checks, app build), Tauri 2 hello-world. `new_world_hash` is a placeholder until M4e/M4f (action 32) |

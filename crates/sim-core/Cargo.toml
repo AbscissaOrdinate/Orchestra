@@ -9,13 +9,13 @@ publish.workspace = true
 # thread-local and OS RNGs aren't compiled into sim-core at all (ARC-004).
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
-ron = "0.12"
+ron = "~0.12"
 rand_core = "=0.10.1"
 rand_chacha = "=0.10.0"
 rand = { version = "=0.10.4", default-features = false, features = ["std"] }
 rand_distr = "=0.6.0"
-postcard = { version = "1.2", features = ["use-std"] }
-blake3 = "1.8"
+postcard = { version = "~1.2", features = ["use-std"] }
+blake3 = "~1.8"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(arc_004_probe)"] }
