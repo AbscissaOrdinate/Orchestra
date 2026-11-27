@@ -1,0 +1,45 @@
+// content/core/resources/body_deposits.ron — off-Earth deposit candidates (WS-08b §4.4, WLD-078).
+// One candidate per (body, kind) rule. Truth: exists with p_exists, else barren; ln S ~ Normal(ln median, sigma_ln);
+// cost ratio ln(δ/g) ~ Normal(ln cost_ratio, 0.5). Real bodies use the by_body rules; generated bodies use by_composition.
+// Sizes are extractable reserves near the surface, not whole-body inventories. Values [D] unless tagged.
+BodyDeposits(
+    by_body: [
+        ("body.moon",     "res.volatiles", Rule(p_exists: 0.85, median: 600.0,  sigma_ln: 0.8, cost_ratio: 3.0)),  // [R] polar ice ~6e8 t (Chandrayaan-1 Mini-SAR, north pole)
+        ("body.moon",     "res.metals",    Rule(p_exists: 0.70, median: 50.0,   sigma_ln: 1.0, cost_ratio: 6.0)),  // ilmenite and regolith metals
+        ("body.moon",     "res.fissile",   Rule(p_exists: 0.50, median: 50.0,   sigma_ln: 1.0, cost_ratio: 8.0)),  // KREEP thorium [R]
+        ("body.mars",     "res.volatiles", Rule(p_exists: 0.95, median: 5000.0, sigma_ln: 1.0, cost_ratio: 2.0)),  // shallow ground ice [R]
+        ("body.mars",     "res.metals",    Rule(p_exists: 0.50, median: 50.0,   sigma_ln: 1.0, cost_ratio: 8.0)),
+        ("body.mercury",  "res.volatiles", Rule(p_exists: 0.60, median: 100.0,  sigma_ln: 1.0, cost_ratio: 4.0)),  // polar crater ice [R]
+        ("body.phobos",   "res.volatiles", Rule(p_exists: 0.30, median: 10.0,   sigma_ln: 1.0, cost_ratio: 2.0)),
+        ("body.deimos",   "res.volatiles", Rule(p_exists: 0.30, median: 5.0,    sigma_ln: 1.0, cost_ratio: 2.0)),
+        ("body.ceres",    "res.volatiles", Rule(p_exists: 0.95, median: 2000.0, sigma_ln: 1.0, cost_ratio: 1.5)),
+        ("body.pallas",   "res.volatiles", Rule(p_exists: 0.50, median: 200.0,  sigma_ln: 1.0, cost_ratio: 2.0)),
+        ("body.vesta",    "res.metals",    Rule(p_exists: 0.60, median: 100.0,  sigma_ln: 1.0, cost_ratio: 4.0)),
+        ("body.psyche",   "res.metals",    Rule(p_exists: 0.90, median: 1000.0, sigma_ln: 1.0, cost_ratio: 2.0)),
+        ("body.eros",     "res.metals",    Rule(p_exists: 0.50, median: 20.0,   sigma_ln: 1.0, cost_ratio: 3.0)),
+        ("body.juno",     "res.metals",    Rule(p_exists: 0.50, median: 50.0,   sigma_ln: 1.0, cost_ratio: 4.0)),
+        ("body.hygiea",   "res.volatiles", Rule(p_exists: 0.80, median: 500.0,  sigma_ln: 1.0, cost_ratio: 2.0)),
+        ("body.europa",   "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 3.0)),
+        ("body.ganymede", "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 3.0)),
+        ("body.callisto", "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 2.5)),
+        ("body.titan",    "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 3.0)),
+        ("body.enceladus","res.volatiles", Rule(p_exists: 1.00, median: 1000.0, sigma_ln: 0.5, cost_ratio: 1.5)),
+        ("body.rhea",     "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.iapetus",  "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.titania",  "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.oberon",   "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.triton",   "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.pluto",    "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.charon",   "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
+    ],
+    by_composition: [
+        (Carbonaceous, "res.volatiles", Rule(p_exists: 0.70, median: 1.0,  sigma_ln: 1.0, cost_ratio: 1.5)),   // per km of diameter^3, scaled
+        (Carbonaceous, "res.metals",    Rule(p_exists: 0.20, median: 0.2,  sigma_ln: 1.0, cost_ratio: 4.0)),
+        (Stony,        "res.metals",    Rule(p_exists: 0.50, median: 0.5,  sigma_ln: 1.0, cost_ratio: 3.0)),
+        (Metallic,     "res.metals",    Rule(p_exists: 0.95, median: 5.0,  sigma_ln: 0.8, cost_ratio: 1.5)),
+        (Icy,          "res.volatiles", Rule(p_exists: 1.00, median: 2.0,  sigma_ln: 0.5, cost_ratio: 2.0)),
+        (Rocky,        "res.metals",    Rule(p_exists: 0.30, median: 0.3,  sigma_ln: 1.0, cost_ratio: 4.0)),   // vulcanoids
+    ],
+    composition_scale: "diameter_km^3",   // generated-body medians are multiplied by D^3 (km): reserve scales with volume
+    max_candidates: 85,
+)

@@ -43,12 +43,15 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 15 | If OQ-W1 and OQ-W2 are accepted: edit WS-02 (ARC-090 bench to 47 polities and 132 regions; optional `RegionEdge.chokepoint` in §6) | Project → repo | ☑ (WS-02 v1.1, ConOps v0.4) |
 | 16 | Verify the [R]-tagged DATE facts against ODIN (OQ-W3/OQ-C1): Sean saves the Internet Archive ODIN pages (PDF/HTML) and attaches them; Claude's web tools can't fetch the archive | Sean → Claude | ☐ |
 | 17 | M4: port `prototypes/ws08a-content-check` types and `wld_*` tests into `sim-core`, then delete the prototype | Code session | ☐ |
-| 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☐ |
+| 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☑ (WS-08b spec v0.4, draft Sol and resource content, Sol-graph prototype; new PR after the #14 revert) |
 | 19 | Review WS-04 v0.2 (8 axes, 9 institutions, services split, WS-03 §2.4 conformance); answer OQ-G7–G9; approve or request changes | Sean (PR #8) | ◐ (OQ-G7–G9 accepted 2026-11-27; approval pending) |
 | 20 | Review WS-03 v0.3 (household panel, five-group wealth dynamics, new housing/pension instruments, CBI ownership, WS-08a band mapping); OQ-E7/E8 | Sean (PR #13) | ☐ |
 | 21 | WS-04: add `policy_map.ron` rows and channels for the four new WS-03 instruments (LTV cap, mortgage deductibility, pension funded share, social housing) so GOV-021 validation passes; optionally use the distribution summary's measured vs. true shares | WS-04 chat | ☑ (WS-04 v0.3 §6.4 default policy map, PR #15; measured-inequality use deferred as OQ-G10) |
 | 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ☑ (wealth, CBI ownership and rents note all done in WS-03 v0.2/v0.3) |
 | 22 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
+| 23 | Review and approve WS-08b v0.4 (all four workstreams' feedback applied; §8.1 lists what remains) | Sean | ☐ |
+| 24 | After WS-08b merges: WS-02 applies P-02a–g (v1.2); WS-08a drops `Region.resource_tags`, rewords WLD-047, adds WLD-017 and owns `deposit_start.ron`; WS-03 publishes `extraction_share` (WS-04 OQ-G11) | WS-02, WS-08a, WS-03 | ☐ |
+| 25 | Build M2(d), the rent-hook prototype (`prototypes/ws08b-sol/README.md` §2, ≈ 14 h), after M2(a) P1–P3; propose `deposit_start.ron` values for WS-08a review | `prototypes/economy/` | ☐ |
 
 ## Change log
 
@@ -74,3 +77,5 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-04 v0.3 (WS-03 v0.3 sync): §6.4 default policy map covering every WS-03/WS-04 instrument, including the LTV cap (Economy), mortgage-interest deductibility (Welfare −), pension funded share (Economy −) and social housing (Welfare +); wealth concept for oligarch control stated (true, offshore included); OQ-G10 added; prototype S5 to use WS-03 wealth dynamics once M2(a) exists |
 | 2026-11-27 | WS-04 v0.4 (WS-08b P-04a–e): royalty, `resource_development` and `exploration` rows in §6.4 (exploration channel `none`, not `public`); `gate_orders` covers `Survey`/`DevelopDeposit` (PC 0); Landowners/Industrialists split agriculture-and-extraction owners by `extraction_share`; diverted rents labeled; OQ-G8 answer recorded; OQ-G11 asks WS-03/WS-08b for the rents split and `extraction_share` |
 | 2026-11-27 | WS-03 v0.4: WS-08b P-03a–k applied; P-03j = separate resource-equity line (payout, not r_E); P-03f = separate non-commodity world factor f_w, λ_w 0.3 (corr 0.3 with f_g); archetype D, S22/S23 reserved for M2(d); S11 moved to M2(d); ECO-023, ECO-150–154 |
+| 2026-11-27 | WS-08b v0.1–v0.3 (PR #14, merged then reverted so WS-03 v0.4 could land): seeded Sol (32 canonical bodies + ≤ 18 generated from real small-body populations), regime-node Δv graph with synodic windows, four-kind resource taxonomy, commodity price block, rent hook, prospecting, thin space ops; OQ-S1–S5 closed |
+| 2026-11-27 | WS-08b v0.4 (new PR, rebuilt on main): marks P-03a–k and P-04a–e applied; `f_w` wording (λ_w 0.3); exploration channel `none`; extraction value added for `extraction_share` (WLD-058, WS-04 OQ-G11); WS-02 v1.2 items (delivery lag, per-regime `orbital_assets`, ≈ 0.18 MB snapshot); deposit IDs from tag text (SYS-007); `deposit_start.ron` header rule; OQ-S6 foreign concessions (non-blocking, default none) |

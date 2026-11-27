@@ -1,0 +1,12 @@
+// content/maps/sol/transfers.ron — edge overrides and extra edges for the Sol graph (WS-08b §3.3, WLD-065).
+// Every other edge is derived at worldgen from bodies.ron by the WS-08b §4.2 formulas; it is never listed here.
+// An entry here replaces the derived edge between the same two nodes, or adds an edge where none is derived
+// (Lagrange nodes have no two-body formula). Each entry is applied in both directions unless `one_way: true`.
+// dv in km/s; months = transit time in whole months (0 = completes within the tick).
+// Sources: [WIKI-DV] Wikipedia "Delta-v budget", Earth–Moon high-thrust table (secondary, [R]);
+//          [ARX-L1] Rodrigues et al., "Connecting Earth and Moon via the L1 Lagrangian point", arXiv:2502.11694 (EML1→LLO 0.648 km/s).
+[
+    Edge(from: "node.earth.low",         to: "node.earth.lagrange_eml1", dv: 3.77, months: 0, source: "[R] WIKI-DV LEO-Ken→EML-1"),
+    Edge(from: "node.earth.synchronous", to: "node.earth.lagrange_eml1", dv: 1.38, months: 0, source: "[R] WIKI-DV GEO→EML-1"),
+    Edge(from: "node.earth.lagrange_eml1", to: "node.moon.low",         dv: 0.64, months: 0, source: "[V] ARX-L1 0.6486 km/s; [R] WIKI-DV 0.64"),
+]
