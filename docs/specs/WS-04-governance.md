@@ -95,7 +95,9 @@ Eight axes is more than v0.1's six. But each faction weighs only 2–3, so a pla
 
 **Requested WS-03 edits (OQ-G7; WS-04 does not change WS-03):**
 1. ~~Add `wealth: f64` to `KeyOutcome`.~~ **Done (2026-11-27):** WS-03 §2.4 and §3.5 (key-wealth rule), ECO-090. Transfer and Public keys carry no sector, so there are at most 240 keys.
-2. CBI ownership. WS-03 lists `cbi_default` in archetypes and CBI in `start.ron`. Under WLD-022 (one primary owner per start field), CBI belongs to the WS-04 government type. WS-03 should read `cbi` only from WS-04 and drop its own default, or keep the default as a macro-tier fallback only.
+2. ~~CBI ownership.~~ **Done (2026-11-27, WS-03 v0.2):** WS-03 reads `cbi` only from WS-04, has no default, and keeps per-polity numbers out of `start.ron` (WS-03 §5.1).
+4. **Key wealth method (WS-03 v0.2 §3.5):** wealth per key now comes from a synthetic household panel calibrated to Fed DFA, WIR and SCF 2022 data, replacing the linear rule. The `KeyOutcome` fields are unchanged. ECO-090 now requires monotonicity only for bins pooled across roles; Transfer keys can be wealthier than their incomes imply.
+5. **WS-03 v0.3 (pending WS-04 action):** four new WS-03 instruments need `policy_map.ron` rows and a channel each (GOV-021): mortgage LTV cap and mortgage-interest deductibility (`SetRegulation`), pension funded share (`EnactBudget`), and a social housing line. Suggested: Welfare axis, channel `incidence`. Wealth now evolves through five-group dynamics, and WS-03 also publishes measured, true and pension-augmented top shares. `KeyOutcome.wealth` remains marketable true wealth (offshore included).
 3. **Done (2026-11-27, WS-03 §2.4 note).** Rents: WS-04 assumes corruption rents are *not* added to any key's `real_disp_income`. WS-03 §3.6 says WS-04 allocates them, so WS-04 counts them as private goods. WS-03 should state this, so rents are never counted twice.
 
 ### 3.3 WS-06, WS-11, WS-05, WS-08a contracts
@@ -501,6 +503,6 @@ Estimated R5 cost per high-fidelity polity: 12 factions × ~240 keys membership,
 | OQ-G4 | The player always keeps the state | **Closed: yes** |
 | OQ-G5 | WS-03 contract | **Closed: WS-04 conforms to WS-03 §2.4**; remaining asks moved to OQ-G7 |
 | OQ-G6 | Macro polities reform only by coup or revolution | **Closed: yes** |
-| OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | **Accepted (2026-11-27).** Wealth and the rents note are done in WS-03 (this PR); CBI ownership remains for WS-03 v0.2 |
+| OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | **Closed (2026-11-27).** Wealth, the rents note and CBI ownership are all done in WS-03 (v0.2 for CBI and the panel-based key wealth) |
 | OQ-G8 | Space axis poles: earthbound/expansionist (recommended) vs. extraction/ecocentric | **Closed (2026-11-27): earthbound/expansionist**; revisit when WS-08b adds resources |
 | OQ-G9 | WS-11 must expose a strategic (nuclear) share of defense spending for the Nuclear axis | **Accepted (2026-11-27)**; a WS-11 kickoff input. Until then the Nuclear axis reads only the posture law |
