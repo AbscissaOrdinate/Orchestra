@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Draft v0.2. Framework and gap recommendations confirmed 2026-11-26, except F-5/G-5 (revised below, pending); T-4 decided |
+| Status | v0.3. Framework, gaps, F-5/G-5 (option C) and T-4 confirmed by Sean 2026-11-26. Open: T-1/T-2 ConOps edits |
 | Feeds | WS-07 (combat kernel spec), WS-11 (unit stats and munitions) |
 | Parent | ConOps §3 (Combat, Munitions rows), §5 P-4/P-9/P-10, §6 Combat row, SYS-009; WS-02 §3.3, ARC-024 |
 | Date | 2026-11-26 |
@@ -43,7 +43,7 @@ Confidence tags follow `m1-findings.md`: **[V]** checked against the linked sour
 | F-2 | Truth comes from **sampling**: one stochastic realization per engagement, with vectorized binomial and multinomial draws over arrays (units × munition classes × layers). Armstrong closed forms are used only for (a) the verification oracle and (b) AI and doctrine forecasts on beliefs (P-2) | ☑ |
 | F-3 | An engagement is a set of rounds (salvo pulses), default `R_max = 3` per engagement per tick. The engagement generator (who meets whom, range band, first strike) is a separate WS-07 function fed by WS-11 deployments and WS-08 adjacency and launch windows | ☑ |
 | F-4 | Damage reduces the WS-02 strength fraction `s`. A unit is out of action at `s ≤ s_min` (content; default 0). Its offense and defense scale with `s` in the next round | ☑ |
-| F-5 | Munitions are tracked as **~8–12 aggregate classes** (§8.4). Each holder keeps per-class **lots** with their own stats (§7.4), so new research changes only new deliveries, never stock already held | ☐ pending §7.4 choice |
+| F-5 | Munitions are tracked as **~8–12 aggregate classes** (§8.4). Each holder keeps per-class **lots** with their own stats (§7.4), so new research changes only new deliveries, never stock already held | ☑ (option C) |
 | F-6 | Stock lives on the tracked unit for ships, batteries, and spacecraft. Air uses base stock with a per-sortie loadout | ☑ |
 | F-7 | Doctrine is a preset parameter set per service, unlocked by research (ConOps §3: no player-authored doctrine) | ☑ |
 | F-8 | EW is limited to the §6 terms | ☑ |
@@ -130,7 +130,7 @@ Requirement (Sean): researching a new design must not change stock already built
 |---|---|---|---|
 | A. Track every design | One count per design per class | Exact | Unbounded over 105 years; breaks the ConOps munitions scope |
 | B. One blended lot per class (Sean's proposal) | Count + count-weighted stats per class | Exact for the mean where stats enter linearly (`p_rel`, `lethality`); small bias where they don't (`eccm` inside the logistic, Pk via threat class) | 1× |
-| **C. B, plus a categorical split (recommended)** | Up to **2 lots** per class: blend only lots whose categorical fields match (`threat_class`, `range_band`, `legal_targets`); a third lot merges into its nearest match by those fields | Exact for categorical changes (a subsonic AShM and a hypersonic one never average into a fake "transonic" missile); B's small bias otherwise | ≤ 2× B; still a few classes |
+| **C. B, plus a categorical split (chosen 2026-11-26)** | Up to **2 lots** per class: blend only lots whose categorical fields match (`threat_class`, `range_band`, `legal_targets`); a third lot merges into its nearest match by those fields | Exact for categorical changes (a subsonic AShM and a hypersonic one never average into a fake "transonic" missile); B's small bias otherwise | ≤ 2× B; still a few classes |
 
 Rules for C [D]:
 - Deliveries from WS-05 production join the holder's matching lot by count-weighted average, or open the second lot.
@@ -237,7 +237,7 @@ Per engagement: participants; rounds run; first-strike side. Per unit: Δs, out-
 | G-2 | Detection contest is crude | **Address thin** (§6); belief-driven σ is a later WS-06 refinement |
 | G-3 | Target allocation realism | **Accept** multinomial-by-priority; tune in the prototype |
 | G-4 | BDA between rounds | **Accept** perfect BDA in MVP; imperfect BDA (Atkinson & Kress) deferred |
-| G-5 | Munition vintages within a class | **Sean:** new designs must not upgrade existing stock. Options and recommendation in §7.4 (pending) |
+| G-5 | Munition vintages within a class | **Sean:** new designs must not upgrade existing stock. **Decided: option C** (§7.4) |
 | G-6 | Salvo hits on ground brigades → Lanchester strength | **Address** in WS-07: hits convert to the Lanchester strength loss via `staying_power` |
 | G-7 | Space: debris, regimes, co-orbital transit time, maneuver as defense | **Accept thin:** maneuver = soft layer spending a Δv stock; debris = a WS-08 hazard increment per kill. Flag for WS-08 |
 | G-8 | Strikes on facilities and the economy (bases, infrastructure, cities) | **Address:** `facility` target class whose damage feeds WS-11 capacity and WS-03 capital |
