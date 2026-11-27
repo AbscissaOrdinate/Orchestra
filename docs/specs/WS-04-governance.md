@@ -499,6 +499,6 @@ Estimated R5 cost per high-fidelity polity: 12 factions × ~240 keys membership,
 | OQ-G4 | The player always keeps the state | **Closed: yes** |
 | OQ-G5 | WS-03 contract | **Closed: WS-04 conforms to WS-03 §2.4**; remaining asks moved to OQ-G7 |
 | OQ-G6 | Macro polities reform only by coup or revolution | **Closed: yes** |
-| OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | Make all three in WS-03 v0.2. Until then, the prototype uses the income^1.5 wealth proxy |
-| OQ-G8 | Space axis poles: earthbound/expansionist (recommended) vs. extraction/ecocentric | Earthbound/expansionist; revisit when WS-08b adds resources |
-| OQ-G9 | WS-11 must expose a strategic (nuclear) share of defense spending for the Nuclear axis | Assume WS-11 tags it; until then the Nuclear axis reads only the posture law |
+| OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | **Accepted (2026-11-27)**; to be made in WS-03 v0.2. Until then, the prototype uses the income^1.5 wealth proxy |
+| OQ-G8 | Space axis poles: earthbound/expansionist (recommended) vs. extraction/ecocentric | **Closed (2026-11-27): earthbound/expansionist**; revisit when WS-08b adds resources |
+| OQ-G9 | WS-11 must expose a strategic (nuclear) share of defense spending for the Nuclear axis | **Accepted (2026-11-27)**; a WS-11 kickoff input. Until then the Nuclear axis reads only the posture law |

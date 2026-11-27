@@ -44,7 +44,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 16 | Verify the [R]-tagged DATE facts against ODIN (OQ-W3/OQ-C1): Sean saves the Internet Archive ODIN pages (PDF/HTML) and attaches them; Claude's web tools can't fetch the archive | Sean → Claude | ☐ |
 | 17 | M4: port `prototypes/ws08a-content-check` types and `wld_*` tests into `sim-core`, then delete the prototype | Code session | ☐ |
 | 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☐ |
-| 19 | Review WS-04 v0.2 (8 axes, 9 institutions, services split, WS-03 §2.4 conformance); answer OQ-G7–G9; approve or request changes | Sean (PR #8) | ☐ |
+| 19 | Review WS-04 v0.2 (8 axes, 9 institutions, services split, WS-03 §2.4 conformance); answer OQ-G7–G9; approve or request changes | Sean (PR #8) | ◐ (OQ-G7–G9 accepted 2026-11-27; approval pending) |
 | 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ☐ |
 | 21 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
 
