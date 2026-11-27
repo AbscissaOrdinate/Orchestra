@@ -1,8 +1,17 @@
 # WS-05 — R&D Uncertainty, Craft Design, Defense Industry & Market
-Status: Draft v0.1 · Parent: ConOps §3 (R&D, craft design, defense market, corporations rows), §5 (P-1, P-2, P-3, P-4, P-6, P-7, P-8, P-10), §6 (R&D, craft design, defense industry rows), SYS-002, SYS-004, SYS-005, SYS-006, SYS-008, SYS-009 · Depends on: WS-02 v1.2, ADR-0006, ADR-0008, WS-03 Draft v0.4 (§2.2–2.3, §3.1, §3.6, §3.10), WS-04 Draft v0.4 (§3.3), WS-08a Draft v0.3 (§3.5), WS-08b Draft v0.4 (§8 P-05a/b), salvo note v0.3 (§7.4, §8) · Last updated: 2026-11-27
+Status: Draft v0.2 · Parent: ConOps §3 (R&D, craft design, defense market, corporations rows), §5 (P-1, P-2, P-3, P-4, P-6, P-7, P-8, P-10), §6 (R&D, craft design, defense industry rows), SYS-002, SYS-004, SYS-005, SYS-006, SYS-008, SYS-009 · Depends on: WS-02 v1.2, ADR-0006, ADR-0008, WS-03 Draft v0.4 (§2.2–2.3, §3.1, §3.6, §3.10), WS-04 Draft v0.4 (§3.3), WS-08a Draft v0.3 (§3.5), WS-08b Draft v0.4 (§8 P-05a/b), salvo note v0.3 (§7.4, §8) · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source linked, or computed and reproducible) · **[R]** recalled, not checked · **[D]** design choice (to be tuned in M2(b)).
 Prototype plan: `prototypes/rnd/PLAN.md`. Calibration seed: `prototypes/rnd/calib_growth.py`.
+
+**v0.2 changes (Sean's review of v0.1, 2026-11-27):**
+- **Soft dead ends outnumber hard ones** (≈ 52 vs. ≈ 21 per world): a soft dead end works physically but is gated by hidden enablers, either blocking (`Requires`) or making it achievable at a steep cost and performance penalty (`Penalty`) (§4.1.2–4.1.3, §4.4).
+- **Repeatable techs:** ≈ 12 incremental lines with up to 30 levels each and decaying gains, on top of the 300-node baseline (§4.1.4).
+- **GAO anchors take priority over ACAT** in the growth fit; OQ-R1–R5 are closed (§9).
+- **`M_s` is bounded and zero-sum** across high-fidelity polities, so no feedback spiral is possible (§4.9).
+- **Macro polities** run domain levels only and mostly buy or license their equipment (§4.8.8).
+- **Contracting** now has five contract types with risk trade-offs (§4.8.5). Contractors also get a capital memo account and stochastic private-venture innovation (§4.8.6), and an `auto_design` function (§3.10).
+- **Seller offers**, including military-aid grants (§4.8.2).
 
 ---
 
@@ -17,31 +26,33 @@ Innovation should feel uncertain, and the uncertainty should have causes the pla
 | Point estimates are optimistic; budget at a confidence level | The engineering estimate is the belief mean. The risk-adjusted P50/P80 comes from the belief plus the public growth distribution | 4.5.7 |
 | Value of information | Science and tests are paid for in money and time, and they buy σ reduction before commitment | 4.2, 4.3 |
 | Bayesian updating under ambiguous evidence; when to kill a program (sunk cost) | Test failures happen to working technologies too. A dead end is never confirmed with certainty, only made improbable | 4.2.3, 4.5.5 |
+| "Possible" is not "feasible": wait for enablers or pay to be early | Most dead ends are soft. A design review reveals the missing field and the premium; the player chooses between waiting and paying | 4.1.3, 4.4 |
+| Contract type allocates risk | Cost-plus, fixed-price, special-access and commercial-milestone contracts trade price, speed, risk bearer and IP (KC-46, U-2 and COTS as anchors) | 4.8.5 |
 | Earned value management | Spending, earned value and CPI are explicit; EAC = AC + (BAC − EV)/CPI with a cause breakdown | 4.5.4 |
 | Brooks's law and stretch-outs | Funding above the efficient rate has log returns; funding below it pays standing-army overhead | 4.5.2 |
 | Learning curves, rate effects and the unit-cost death spiral | Wright cumulative-average curve with flattening; a rate term; quantity cuts raise unit cost | 4.7 |
 | Lifecycle cost: O&S dominates | O&S per unit-year grows with age; it is about two thirds of 30-year lifecycle cost at default values | 4.7.4 |
 | Make, license or buy; supply-chain dependency | Four acquisition paths trade cost, lead time and dependency; component provenance carries embargo risk | 4.8 |
 | Fast-follower advantage | Fielding a design is public; everyone else learns that its technologies work | 4.2.4 |
-| Industrial base atrophy | Contractor competence decays without work | 4.8.5 |
+| Industrial base atrophy; a strong base creates options | Contractor competence decays without work; capital-rich firms with a strong home industrial base innovate privately | 4.8.5, 4.8.6 |
 
 ## 1. Purpose & scope
 
 WS-05 owns technology truth and every polity's knowledge of it; science programs; development and design projects; craft designs and their derived stats; production (learning, rate, capacity, lifecycle cost); and the defense market (spot buy, arms deal, license, in-house), with contractors as AI suppliers.
 
-**In (MVP):** P-1 truth per tech sampled at worldgen (viability, performance, cost, hidden enabler edges); P-2 beliefs (estimate ± σ) narrowed by science, tests, espionage and observing others; the science/engineering split; lognormal cost and schedule growth scaled by immaturity; beta-distributed line viability and binary test evidence; mixture performance priors; funding-scaled project slots with diminishing returns per project; hull presets, component slots and derived stats for 7 craft domains; component provenance; Wright learning with flattening, rate effects, capacity, O&S; four acquisition paths; contractors; civil technology effects on WS-03; a macro-tier reduced form; the WS-08a `tech.level` mapping.
+**In (MVP):** P-1 truth per tech sampled at worldgen (viability, performance, cost, hidden enabler edges); P-2 beliefs (estimate ± σ) narrowed by science, tests, espionage and observing others; the science/engineering split; lognormal cost and schedule growth scaled by immaturity; beta-distributed line viability, hard and soft dead ends, and binary test evidence; repeatable techs; mixture performance priors; funding-scaled project slots with diminishing returns per project; hull presets, component slots and derived stats for 7 craft domains; component provenance; Wright learning with flattening, rate effects, capacity, O&S; four acquisition paths, requested by buyers or offered by sellers; contractors with five contract types, capital and private ventures; civil technology effects on WS-03; a macro-tier reduced form; the WS-08a `tech.level` mapping.
 
-**Out:** movable external components having any stat effect (OQ-3: cosmetic only); 3D; supply chains beyond component provenance; corporate finance and private-venture designs (OQ-R4); per-munition-type stock (salvo F-5); doctrine (WS-11); combat resolution (WS-07); station and facility design (WS-08b templates); player-authored tech content at runtime.
+**Out:** movable external components having any stat effect (OQ-3: cosmetic only); 3D; supply chains beyond component provenance; contractor finance beyond a capital memo account (no equity, debt or share prices); per-munition-type stock (salvo F-5); doctrine (WS-11); combat resolution (WS-07); station and facility design (WS-08b templates); player-authored tech content at runtime.
 
 ## 2. Decisions
 
 | # | Decision | Recommendation |
 |---|---|---|
-| 1 | Tech graph granularity | **≈ 300 tech nodes over 12 engineering domains**, authored as **≈ 75 tech lines of 2–6 generations plus ≈ 20 singletons**, with per-generation parameters generated procedurally from each line's template. **10 science fields** sit beside the graph. §4.1, §6 |
+| 1 | Tech graph granularity | **≈ 300 tech nodes over 12 engineering domains**, authored as **≈ 75 tech lines of 2–6 generations plus ≈ 20 singletons**, with per-generation parameters generated procedurally from each line's template. **10 science fields** sit beside the graph. **≈ 12 repeatable lines** (up to 30 levels each, decaying gains) come on top of the baseline, and content may grow past 300 within the performance budget (§4.12). §4.1, §6 |
 | 2 | Belief representation and update rule | **ADR-0008 mixtures, exact Bayesian observations only, no σ decay.** Three subjects per tech: viability (a two-point mixture on a ±1 latent), performance (log, up to 3 components) and cost (log). Effort accrues precision, which is emitted as at most one pooled observation per subject per quarter. Binary test outcomes are converted to Gaussian observations that reproduce the exact Bernoulli likelihood ratio. §4.2 |
-| 3 | Dead ends | **A tech is a dead end when its sampled `works` is false.** `works` is drawn per generation from a line-level Beta (so lines are good or bad together), by viability class. Two other ways to disappoint: the low performance mode, and a hidden `Requires` enabler that blocks completion with a distinct event (never disguised as a dead end). The player learns from science (weak), tests (strong), others fielding it (decisive positive), espionage and adjacent generations. §4.1.2, §4.2.3 |
+| 3 | Dead ends | **Two kinds, mostly soft.** A **hard** dead end fails physically (`works` false; drawn per generation from a line-level Beta, so lines are good or bad together). A **soft** dead end works but is **gated** by 1–2 hidden enablers from authored candidate lines: a `Requires` gate blocks completion; a `Penalty` gate allows completion at ×3–10 effort and ×0.5–0.8 performance until the enablers are proven. With the default class mix, soft ≈ 52 and hard ≈ 21 per world. Hard dead ends are learned through viability evidence (science, tests, others fielding, espionage, adjacent generations). Soft gates are learned through hints (design-review findings, science, blocked tests), never through fake viability evidence. §4.1.2–4.1.3, §4.2.3, §4.4 |
 | 4 | Design performance from components | **Slot-and-budget sums plus four named laws.** Components fill typed slots and consume mass and power; stats combine by `sum`, `max`, `min` or `product`; four physics-lite laws (log mass ratio, Admiralty speed, power ratio, staged payload) give range, Δv, speed, mobility and payload. Every stat has an exact breakdown. §4.6 |
-| 5 | Market pricing and AI suppliers | **Cost-plus quotes**: seller's current marginal cost × a path markup × a utilization surcharge, in seller currency. **Rule-based sellers**: accept when the seller's export policy tier for the buyer covers the design's sensitivity tier and capacity allows. Contractors are domestic AI firms with domain competence that bid for home projects and sell their home polity's exportable designs. WS-06 sets AI export policy; WS-05 only applies it. §4.8 |
+| 5 | Market pricing and AI suppliers | **Cost-plus quotes**: seller's current marginal cost × a path markup × a utilization surcharge, in seller currency. **Rule-based sellers**: accept when the seller's export policy tier for the buyer covers the design's sensitivity tier and capacity allows. Sellers may also make offers (priced 0–1.5× quote; 0 = military aid). Contractors are domestic AI firms with domain competence and a capital account. They take government work under five contract types and innovate privately at a hazard driven by their capital and the strength of the home industrial base. WS-06 sets AI export policy and decides AI responses to offers; WS-05 applies them. §4.8 |
 
 ### 2.1 Options and trade-offs (condensed)
 
@@ -60,10 +71,11 @@ WS-05 owns technology truth and every polity's knowledge of it; science programs
 | Option | For | Against |
 |---|---|---|
 | Independent Bernoulli per tech | Simplest | Every generation is a fresh coin; no "this whole approach is a lemon" worlds |
-| **Line-level Beta, Bernoulli per generation, by viability class** | Lines are correlated, so world variety is meaningful; a dead generation ends its line in that world; class priors are legible ("speculative") | Needs a cross-generation inference rule, because beliefs are per subject (§4.2.5) |
+| Line-level Beta for hard failure only | Lines are correlated; legible class priors | Real dead ends are mostly "not yet feasible" (jet engines waited on alloys, laser weapons on solid-state power), not "impossible" |
 | Dead ends only through hidden enablers | No hard failure | Never "it just doesn't work"; muddles the lesson |
+| **Both: line-level Beta for hard failure, plus per-generation soft gates by class (chosen, Sean 2026-11-27)** | Soft outnumber hard ≈ 2.5:1; "possible but premature" becomes a decision (wait or pay); enablers come from authored candidates, so they are plausible | More truth per tech; candidate lists to author; needs a cross-generation inference rule (§4.2.5) |
 
-Requires-edges deliberately do **not** fail tests: a blocked project raises a distinct `Blocked` event naming the field of the missing enabler. If a blocked test counted as viability evidence, beliefs would become miscalibrated (RND-012) and the player would be taught a wrong inference.
+Gates deliberately do **not** fail tests. A `Requires` gate raises a distinct `Blocked` event, and a `Penalty` gate raises a `FeasibilityFinding`, each naming the field of the missing enabler. If a gate produced viability evidence, beliefs would become miscalibrated (RND-012) and the player would be taught a wrong inference.
 
 **D4 — Derived stats.**
 
@@ -95,9 +107,11 @@ Lags that follow from placement (stated so nobody is surprised): WS-03 productio
 
 ```rust
 // World truth (WS-02 Truth, private, immutable after worldgen; ARC-011)
-pub struct TechTruth { pub works: bool, pub perf: f64 /* multiplier on component stats */, pub cost: f64 /* κ, multiplier on dev and unit cost */ }
-pub struct EdgeTruth { pub from: TechIdx, pub to: TechIdx, pub kind: EdgeKind }
-pub enum EdgeKind { Requires, Boost(f64) /* effort × (1 − b) */ }
+pub struct TechTruth { pub works: bool, pub perf: f64 /* multiplier on component stats; per-level gain for repeatables */,
+                       pub cost: f64 /* κ, multiplier on dev and unit cost */, pub gate: Option<GateTruth> }
+pub struct GateTruth { pub kind: GateKind, pub enablers: Vec<TechIdx> /* 1–2 */ }
+pub enum GateKind { Requires, Penalty { cost_mult: f64, perf_mult: f64 } }
+pub struct EdgeTruth { pub from: TechIdx, pub to: TechIdx, pub boost: f64 /* effort × (1 − b) */ }
 
 pub struct RndBlock {
     pub fields: Vec<FieldState>,     // per science field: effort EMA (Tracked), classified flag
@@ -107,8 +121,10 @@ pub struct RndBlock {
     pub lines: Vec<ProductionLine>,
     pub contracts: Vec<Contract>,    // arms deals and licenses, as buyer or seller
     pub contractors: Vec<Contractor>,
+    pub offers: Vec<Offer>,          // open offers made or received (§4.8.2)
     pub export_policy: ExportPolicy, // tier per buyer, default tier
     pub known_edges: BTreeSet<EdgeIdx>, pub hints: BTreeSet<(TechIdx, FieldIdx)>,
+    pub findings: BTreeMap<TechIdx, Finding>,  // revealed gate kind and penalty factors (§4.4)
     pub stolen: BTreeMap<(PolityId, SubjectIdx), f64>,  // precision already copied (§4.2.6)
     pub slots: Tracked,
     pub outputs: RndOutputs,         // §3.4 and §3.8 values for other WS
@@ -121,7 +137,8 @@ pub struct TechState { pub status: TechStatus, pub m_sci: f64 /* science maturit
 
 pub struct Project {
     pub id: ProjectId, pub kind: ProjectKind, pub line: BudgetLine, pub funding: f64 /* requested, real per month */,
-    pub contractor: Option<ContractorId>,
+    pub sponsor: Sponsor,            // Government | PrivateVenture(ContractorId)
+    pub contractor: Option<ContractorId>, pub contract: ContractType,   // §4.8.5
     pub baseline: Estimate,          // BAC and months at start (point), plus P50/P80 shown at approval
     pub progress: f64, pub ev: f64, pub ac: Tracked, pub eac: Tracked, pub phase: Phase, pub frozen: bool,
     pub tests: Vec<TestRecord>, pub blocked: Option<FieldIdx>,
@@ -144,9 +161,15 @@ pub struct Provenance { pub origin: PolityId, pub source: Source /* InHouse | Li
 pub struct ProductionLine { pub design: DesignId, pub rate: f64 /* units/month */, pub n_cum: f64, pub n_reset: f64,
                             pub c1: f64, pub start_tick: Tick, pub first_delivery: Tick, pub site: Option<FacilityId>,
                             pub unit_cost: Tracked, acc: f64 /* fractional units */, pub halted: Option<HaltReason> }
+
+pub struct Contractor { pub id: ContractorId, pub home: PolityId, pub domains: Vec<Domain>, pub competence: Vec<f64>,
+                        pub capital: Tracked, pub state_owned: bool, pub revenue_12m: f64, pub venture: Option<ProjectId> }
+pub enum ContractType { Arsenal, CostPlus, FixedPrice { price: f64 }, SpecialAccess, CommercialMilestone { gov_share: f64 } }
+pub struct Offer { pub seller: PolityId, pub buyer: PolityId, pub item: Item, pub path: Path, pub quantity: u32,
+                   pub rate: f64, pub price_factor: f64 /* 0 = grant */, pub expires: Tick }
 ```
 
-`Tracked` variables per polity: `slots`, per field `effort`, per project `ac` and `eac`, per line `unit_cost`, and every §3.4/§3.8 output. Design stats don't change after acceptance, so they are stored as values; their breakdowns are rebuilt on query by the pure function `design_stats` (RND-056). SubjectIdx layout: three per tech, `tech_base + 3·t + k`, k ∈ {viability, perf, cost} (edit P-02a asks WS-02 to fix the per-subsystem subject ranges).
+`Tracked` variables per polity: `slots`, per field `effort`, per contractor `capital`, per project `ac` and `eac`, per line `unit_cost`, and every §3.4/§3.8 output. Design stats don't change after acceptance, so they are stored as values; their breakdowns are rebuilt on query by the pure function `design_stats` (RND-056). SubjectIdx layout: three per tech, `tech_base + 3·t + k`, k ∈ {viability, perf, cost} (edit P-02a asks WS-02 to fix the per-subsystem subject ranges).
 
 ### 3.3 Orders (WS-05 variants of `OrderKind`)
 
@@ -155,14 +178,17 @@ pub struct ProductionLine { pub design: DesignId, pub rate: f64 /* units/month *
 | `SetRndAllocation { line, targets: [(Target, real per month)] }` | Splits an R&D line among science fields and projects (Target = `Field(f)` or `Project(id)`) | none (within an enacted line) |
 | `SetResearchPriority { tech, weight }` | Weight within its field's science effort (default 1) | none |
 | `SetClassification { field, classified }` | Classified science is not published but runs at 0.8× information rate [D] | none |
-| `StartDevelopment { tech, line, funding, contractor }` | Development project, needs a free slot and `Known` with m_sci ≥ 1/3 | none |
-| `StartDesign { draft, line, funding, contractor }` / `ReviseDesign { base, draft, ... }` | Design project; draft must pass feasibility (RND-051) | none |
+| `StartDevelopment { tech, line, funding, contractor, contract }` | Development project, needs a free slot and `Known` with m_sci ≥ 1/3 | none |
+| `StartDesign { draft, line, funding, contractor, contract }` / `ReviseDesign { base, draft, ... }` | Design project; draft must pass feasibility (RND-051) | none |
+| `AdoptVenture { design }` | Procure a contractor's private-venture design without development cost (§4.8.6) | none |
+| `BailoutContractor { contractor, amount }` | Cover a distressed contractor's negative capital from `defense_procurement` | WS-04 (as `Supplemental`) |
 | `ChangeSpec { project, slot, component }` | Rework (§4.5.6) | none |
 | `SetProjectFunding { project, funding }` / `CancelProject { project }` | — | none |
 | `Procure { design, quantity, rate, site, line }` / `SetRate` / `StopProduction` | Production line (§4.7) | none |
 | `RequestAcquisition { seller, item, path, quantity, rate }` | Spot buy, arms deal or license (§4.8) | WS-04 (ethics only, PC 0; P-04a) |
 | `SetExportPolicy { buyer or default, tier }` | Seller-side policy; AI polities get it from WS-06 | WS-04 (ethics only; P-04a) |
-| `ReverseEngineer { design }` | Needs ≥ 1 held unit of a foreign design (§4.8.6) | none |
+| `OfferAcquisition { buyer, item, path, quantity, rate, price_factor }` / `RespondOffer { offer, accept }` | Seller-initiated deal, license or spot sale; price_factor ∈ [0, 1.5] (0 = grant aid paid from the seller's procurement line); expires after 3 months unanswered | WS-04 (ethics only; P-04a) |
+| `ReverseEngineer { design }` | Needs ≥ 1 held unit of a foreign design (§4.8.7) | none |
 
 Invalid orders become rejection events (ARC-022): no slot, unknown tech, infeasible draft, unaffordable line, policy refusal.
 
@@ -185,7 +211,7 @@ Invalid orders become rejection events (ARC-022): no slot, unknown tech, infeasi
 
 - **Espionage.** WS-06 decides the operation and its success. On success it calls `rnd::espionage_yield(world, thief, target, scope) -> (Vec<Observation>, Option<TechTransfer>)`, pushes the observations (source `"espionage"`) and emits the transfer as an event. Scopes: `Field(f)` (every subject the target knows in f), `Tech(t)` (one tech, plus m_sci transfer), `Design(d)` (blueprints: a 50% effort discount on a later `ReverseEngineer`) [D]. Yield is the target's knowledge minus what the thief already copied (§4.2.6). `RndBlock.fields[f].classified` is the counter-intelligence hook WS-06 may use.
 - **AI inputs (pure, `PolityView` only):** `estimate(view, draft)`, `market_quotes(view, item)`, `believed_stats(view, design)`.
-- **AI outputs consumed:** export policy per buyer (`SetExportPolicy`), acquisition requests, the access matrix `a_ij` (embargo: `a_ij` < 0.2 [D]).
+- **AI outputs consumed:** export policy per buyer (`SetExportPolicy`), acquisition requests and offers, `RespondOffer` for offers made to AI polities (WS-06 owns the acceptance logic and the relations effect of aid), the access matrix `a_ij` (embargo: `a_ij` < 0.2 [D]).
 - **Events WS-06 reads:** `DesignFielded { polity, design, hull, techs }` (public), `ArmsDeal`, `LicenseGranted`, `DeliveryHalted { reason: Embargo }`.
 
 ### 3.6 WS-11 and WS-07 contract: design stats
@@ -245,7 +271,7 @@ pub struct DesignStats {
 
 ### 3.10 Pure query functions (UI, AI)
 
-`estimate(view, draft) -> Estimate { point, p50, p80, months_p50, months_p80 }` (§4.5.7) · `market_quotes(view, item) -> Vec<Quote { seller, path, unit_price, lead_months, dependency }>` · `believed_stats(view, design) -> DesignStats` · `design_stats(content, truth, design) -> (DesignStats, Vec<Breakdown>)` (sim-only, for WS-11) · `p_works(belief) -> f64` = weight of the +1 component.
+`estimate(view, draft) -> Estimate { point, p50, p80, months_p50, months_p80 }` (§4.5.7) · `market_quotes(view, item) -> Vec<Quote { seller, path, unit_price, lead_months, dependency }>` · `believed_stats(view, design) -> DesignStats` · `design_stats(content, truth, design) -> (DesignStats, Vec<Breakdown>)` (sim-only, for WS-11) · `p_works(belief) -> f64` = weight of the +1 component · `auto_design(view, hull, objective) -> Option<DesignDraft>`: greedy slot fill, in slot order, choosing the placeable component with the highest marginal objective value per unit cost that keeps the draft feasible; ties break by component ID; objectives are per-hull-class weight vectors in content. AI polities (WS-06) and private ventures (§4.8.6) use it; the player may use it as a starting draft.
 
 ## 4. Model
 
@@ -253,23 +279,31 @@ Notation: monthly ticks; real amounts are deflated by WS-03's R&D cost index for
 
 ### 4.1 Tech graph and world truth (P-1)
 
-**4.1.1 Structure.** Content defines science fields, engineering domains, tech lines and singletons, components, hull classes and enabler candidates (§6). A line expands into generation techs `tech.<line>.g<k>`. Generation k+1 lists generation k as a prerequisite. Lines may list prerequisites in other lines. Each tech carries: field weights (1–2 fields), a domain, a nominal date D_t = `first + (k − 1)·step_years`, base development cost `base_dev × step_dev^(k−1)`, viability class, a performance prior, a cost prior, optional `grants`, `econ_effects` and component templates.
+**4.1.1 Structure.** Content defines science fields, engineering domains, tech lines and singletons, components, hull classes and enabler candidates (§6). A line expands into generation techs `tech.<line>.g<k>`. Generation k+1 lists generation k as a prerequisite. Lines may list prerequisites in other lines. Each tech carries: field weights (1–2 fields), a domain, a nominal date D_t = `first + (k − 1)·step_years`, base development cost `base_dev × step_dev^(k−1)`, viability class, a performance prior, a cost prior, `gate_candidates` (2–5 other lines that could plausibly enable it), optional `grants`, `econ_effects` and component templates.
 
 **4.1.2 Sampled truth** (`worldgen_stream(seed, id, purpose)`, ARC-034):
-- **Viability.** Per line: p_line ~ Beta(α_c, β_c) by class (key: line ID). Per generation: works ~ Bernoulli(p_line) (key: tech ID). Techs with D_t ≤ scenario start are `historical` and always work, with performance drawn from the nominal component.
+- **Outcome: works, soft-gated or hard dead.** Per line: p_line ~ Beta(α_c, β_c) by class (key: line ID) is the probability a generation is *not* hard-dead. Per generation (key: tech ID): works ~ Bernoulli(p_line); if it works, it is soft-gated with probability s_c (§4.1.3). Techs with D_t ≤ scenario start are `historical`: they work, are never gated and have nominal-mode performance.
 
-| Class | Beta(α, β) [D] | Mean |
-|---|---|---|
-| Established | (39, 1) | 0.975 |
-| Promising | (8, 2) | 0.80 |
-| Speculative | (2, 2) | 0.50 |
-| Fringe | (1, 4) | 0.20 |
+| Class | Beta(α, β) not hard-dead [D] | s_c (gated, given works) [D] | Works ungated / soft / hard |
+|---|---|---|---|
+| Established | (99, 1) | 0.06 | 0.93 / 0.06 / 0.01 |
+| Promising | (23, 2) | 0.29 | 0.65 / 0.27 / 0.08 |
+| Speculative | (8, 2) | 0.56 | 0.35 / 0.45 / 0.20 |
+| Fringe | (3, 2) | 0.83 | 0.10 / 0.50 / 0.40 |
 
 - **Performance** (Log): a mixture (disappointing, nominal, breakthrough) with weights (0.15, 0.75, 0.10), component medians (0.75, 1.0, 1.3) and log-σ 0.10 each [D]. A line may override it. Truth is drawn from the same mixture as the prior, so beliefs are calibrated.
 - **Cost** κ (Log): Normal(0, σ_κ) in logs, σ_κ = 0.35 [D]. κ multiplies the tech's development effort and the unit cost of components that use it.
-- **Enabler edges.** (a) Authored candidates (`enablers.ron`: from, to, p, kind), one draw each (key `edge:<from>><to>`). (b) Procedural: for every ordered pair of lines in different fields, an edge exists with p_rand = 0.002 [D] (≈ 11 per world with 75 lines), keyed by the pair, so adding a line only adds pairs. The target generation is drawn uniformly; the source is the source line's generation with the latest D ≤ target D. Kind: Requires with 0.2, else Boost(b ~ U[0.15, 0.40]) [D]. Every edge points from an earlier D to a later one, so the Requires graph plus prerequisites is acyclic by construction.
+- **Boost edges** (help, never gate). (a) Authored (`enablers.ron`: from, to, p, b), one draw each (key `edge:<from>><to>`). (b) Procedural: for every ordered pair of lines in different fields, an edge exists with p_rand = 0.002 [D] (≈ 11 per world with 75 lines), keyed by the pair, so adding a line only adds pairs. The target generation is drawn uniformly; the source is the source line's generation with the latest D ≤ target D; b ~ U[0.15, 0.40] [D].
 
-**Expected dead ends** with the §6 class mix (≈ 45 historical, 128 Established, 76 Promising, 36 Speculative, 15 Fringe): 128·0.025 + 76·0.2 + 36·0.5 + 15·0.8 ≈ 48 per world [D: arithmetic]. Not every dead end is encountered, because a dead generation truncates its line. M2(b) B1 reports both counts and their spread.
+**Expected dead ends** with the §6 class mix (≈ 45 historical, 128 Established, 76 Promising, 36 Speculative, 15 Fringe): hard 128·0.01 + 76·0.08 + 36·0.20 + 15·0.40 ≈ 21; soft 128·0.06 + 76·0.27 + 36·0.45 + 15·0.50 ≈ 52 per world [D: arithmetic]. Not every hard dead end is encountered, because a dead generation truncates its line. M2(b) B1 reports both counts and their spread.
+
+**4.1.3 Soft gates** (`GateTruth`, key `gate:<tech>`):
+- Enablers: 1 (p 0.7) or 2 (p 0.3) [D] lines drawn from the tech's `gate_candidates`. In each, the enabling generation is the one whose D is closest to D_t + Δ, Δ ~ U[−5, +25] years [D], so enablers often arrive *after* the tech's nominal date: the tech is possible before it is practical.
+- Kind: `Requires` with p 0.4, else `Penalty` with cost_mult ~ LogUniform[3, 10] and perf_mult ~ U[0.5, 0.8] [D].
+- Enablers come only from authored candidates, so a tech's gate depends only on its own content and its candidates' IDs (ARC-034). Content validation requires the line graph of prerequisites ∪ `gate_candidates` to be acyclic, so no gate cycle can be sampled.
+- Gates are satisfied for a polity when all enablers are `Proven` by it.
+
+**4.1.4 Repeatable techs.** A `Repeatable` line (≈ 12, about one per domain: engine efficiency, sensor sensitivity, computing density, specific strength, manufacturing productivity, crop yields, medicine, launch cost, power density, armor efficiency, quieting, guidance accuracy) has levels `tech.<line>.r<k>`, k ≤ max_levels (default 30), all sampled at worldgen. Level k: always works and is never gated; true gain g_k = g0 · d^(k−1) · LogNormal(mean 1, CV 0.3) [D] (g0 and d per line, e.g., 0.03 and 0.95); nominal date D_k = first + (k − 1)·cadence; effort = base_dev · step_dev^(k−1) · premature(D_k) (step_dev ≈ 1.35). Only level k+1 is `Known` when level k is `Proven`. It has one belief subject (gain, Log scale) and is developed by a development project at fixed u = 1/3 with no science phase. The cumulative effect exp(Σ g_k) multiplies the line's target stats (`effects: [(domain, stat)]`) in designs finalized afterwards, or enters §4.9 as an econ effect. Since Σ g_k ≤ g0/(1 − d), the gain is bounded (e.g., ≤ 0.6 in logs). Repeatables are not counted in the 300 baseline nodes.
 
 ### 4.2 Beliefs (P-2, ADR-0008)
 
@@ -277,11 +311,11 @@ Notation: monthly ticks; real amounts are deflated by WS-03's R&D cost index for
 
 | k | Subject | Scale | Prior (= sampling distribution) |
 |---|---|---|---|
-| 0 | viability v | Linear | 2 components at +1 (works) and −1 (dead), σ_c = 1e-3, weights (p̄_class, 1 − p̄_class) |
+| 0 | viability v | Linear | 2 components at +1 (not hard-dead) and −1 (hard-dead), σ_c = 1e-3, weights (p̄_class, 1 − p̄_class), p̄ = Beta mean |
 | 1 | performance | Log | the §4.1.2 mixture |
 | 2 | cost κ | Log | Normal(0, σ_κ) |
 
-Unknown techs are `None`. A tech becomes known by discovery (§4.4), by a prerequisite generation becoming `Proven`, by public fielding (§4.2.4), by espionage, or at start (§3.9).
+Gates have no belief subject: they are revealed as discrete findings (§4.4). Unknown techs are `None`. A tech becomes known by discovery (§4.4), by a prerequisite generation becoming `Proven`, by public fielding (§4.2.4), by espionage, or at start (§3.9).
 
 **4.2.2 Effort → precision → observations.** Science, tests and other sources add precision Δτ_k (on the subject's scale) to `acc[k]`. At most once per quarter per subject (in months where (month + field index) mod 3 = 0, which spreads the load), and at every test, an accumulated `acc[k]` is emitted as one `Observation` with noise σ = 1/√acc[k] and value = truth (perf, cost: truth × exp(N(0, σ)) on the Log scale; viability: v_true + N(0, σ)), then `acc[k]` is reset. Pooling is exact for Gaussian observations (D2).
 
@@ -311,7 +345,9 @@ m_sci is capped at 1 (TRL 4). One full science phase cuts perf σ from ≈ 0.17 
 ### 4.4 Discovery and hidden enablers
 
 - **Hidden techs.** A line's first generation (and singletons) start `Unknown` unless §3.9 makes them known. Monthly discovery hazard h_t = 1 − exp(−κ_d · (effort_f/e_ref,f) · r(year)), r = clamp((year − (D_t − 10))/10, 0, 1)², κ_d = 0.05 [D], `e_ref,f` from content (≈ a 1955 major power's effort in the field). Requires every prerequisite to be at least `Known`. One stream per (polity, field, tick) draws all of the field's discovery checks.
-- **Requires edges.** A project on B reaches its first test milestone (progress 0.7) and stops there with a `Blocked { field: field(A) }` event unless A is `Proven` by the polity. The hint (B, field(A)) is recorded. While blocked, spending buys no progress (§4.5.2); the player can pause. The edge itself is revealed when A becomes `Proven` and the hint exists, or by espionage on a polity that knows it.
+- **`Requires` gates.** A project on gated tech B reaches its integration milestone (progress 0.7) and stops there with a `Blocked { fields }` event unless the gate is satisfied. The hint (B, field of each missing enabler) is recorded. While blocked, spending buys no progress (§4.5.2); the player can pause.
+- **`Penalty` gates.** While the gate is unsatisfied, B's true effort is × cost_mult, and components of B placed in designs finalized meanwhile get perf × perf_mult. At the design review (progress 0.4), a `FeasibilityFinding { fields, cost_mult, perf_mult }` reveals the penalty exactly, and the EAC is re-baselined with it as its own breakdown term. The player decides: pay to be early (completion is allowed, e.g., an early, weak laser weapon) or pause until the enablers are proven. Once they are, the effort for remaining progress returns to normal, and a `ReviseDesign` restores full performance.
+- **Finding gates early.** Science in B's field reveals each gate's hint with monthly probability 1 − exp(−κ_g · e_B/E_sci,B), κ_g = 0.5 [D] (about 40% over a full science phase), and reveals a `Penalty` gate's factors as well with half that probability. Espionage on a polity that has the finding copies it. When every enabler is `Proven` and a hint exists, the gate is marked satisfied in the UI.
 - **Boost edges.** If A is `Proven` when B's project starts, B's true phase efforts are multiplied by (1 − b), so EAC shows an unexplained underrun. The edge is revealed (a) at that project's first test, or (b) monthly with probability 1 − exp(−κ_e · effort_field(B)/e_ref) while A is `Proven` and B is `Known`, κ_e = 0.02 [D] (Terra Invicta's random unlock, m1-findings §3.1).
 
 ### 4.5 Projects (engineering)
@@ -340,7 +376,7 @@ True months T_true = T̂ · S
 
 The estimation error κ_true/E_belief[κ] is not a separate draw: it is whatever the polity's belief gets wrong, and its spread is the belief σ (calibrated, RND-012). The fit below assumed a typical belief log-σ of 0.10 + 0.25u at project start; B3 refits G with the belief σ the simulation actually produces.
 
-Fitted by `prototypes/rnd/calib_growth.py` (400,000 draws) to a start mix of 16% fully mature (GAO-07-406SP [V]) and 84% with TRL_min ~ U[3, 5.5] [D]: mature mean growth 1.030 (GAO 1.026–1.048 [V]), immature 1.345 (GAO 1.323–1.349 [V]), overall mean 1.295 and CV 0.789 (ACAT I: 1.36 and 0.80 [V, m1-findings]); schedule mean 1.19 (RAND 1971: ≈ 15% slip [V]). The GAO split and the ACAT mean can't both be met exactly; the fit sits 0.065 below 1.36 (OQ-R3). By TRL_min: 3 → mean 1.57, 4 → 1.39, 5 → 1.21, 6 → 1.03.
+Fitted by `prototypes/rnd/calib_growth.py` (400,000 draws) to a start mix of 16% fully mature (GAO-07-406SP [V]) and 84% with TRL_min ~ U[3, 5.5] [D]: mature mean growth 1.030 (GAO 1.026–1.048 [V]), immature 1.345 (GAO 1.323–1.349 [V]), overall mean 1.295 and CV 0.789 (ACAT I: 1.36 and 0.80 [V, m1-findings]); schedule mean 1.19 (RAND 1971: ≈ 15% slip [V]). The GAO split and the ACAT mean can't both be met exactly. **The GAO split governs** (OQ-R3): the overall mean follows from the start mix (1.30), and only the CV is fitted to ACAT. By TRL_min: 3 → mean 1.57, 4 → 1.39, 5 → 1.21, 6 → 1.03.
 
 **4.5.4 Phases and earned value.** Phases Design [0, 0.4), Build [0.4, 0.7), Test [0.7, 1.0] of planned effort ω = (0.4, 0.3, 0.3). ln G is split across phases with variance shares (0.6, 0.25, 0.15) [D], so most growth appears early (tuned in M2(b) against the CPI stability rule [R: Christensen]). Reported monthly:
 
@@ -354,7 +390,7 @@ The true final cost is never shown. Terms sum exactly (ARC-041).
 
 **4.5.5 Tests.** Two milestones: integration test at progress 0.7 and acceptance at 1.0. For each tech the project matures:
 - If the tech works: the integration test fails iff the test-phase growth draw exceeds a threshold, so P(fail) = 0.15 + 0.25u [D]. Failure and overrun are the same event, not separate rolls. Acceptance passes with q = 0.9; each failure costs 10% of BAC and 2 months of rework [D].
-- If the tech is a dead end: tests pass with p_fp = 0.05 [D], and acceptance always fails, so a dead-end project can never complete.
+- If the tech is a hard dead end: tests pass with p_fp = 0.05 [D], and acceptance always fails, so a hard-dead project can never complete. (Soft gates act before tests, §4.4.)
 - Each outcome pushes binary evidence (LR from these probabilities; e.g., u = 0.67 gives LR 1/3.0 for a failure and 13.6 for a pass) plus perf precision 100 and cost precision 50 [D].
 - Completion: the tech becomes `Proven`; its components unlock; `grants` apply; the next generation becomes `Known`; the cost belief gets an observation with σ 0.05.
 
@@ -428,21 +464,56 @@ The local slope b/(1 + N/N_f) diminishes with N, so A flattens to a plateau ≈ 
 
 `mc` = the seller line's marginal unit cost at its current N; × (1 + 0.5·max(0, utilization − 0.8)) [D]. War Footing's ordering holds: deals are cheaper than spot buys, licensing is slow but cheapest per unit at volume [V: m1-findings §3.4]. With `component_rights` (×1.5 fee), licensed components can go into the buyer's own designs with `Licensed` provenance.
 
-**4.8.2 Seller behavior (minimal AI).** A request is accepted iff `export_policy[buyer] ≥ sensitivity(item)`, the buyer isn't embargoed (`a_ij ≥ 0.2`), and, for deals, the seller line has spare rate (otherwise the earliest start month is offered and auto-accepted if within 12 months) [D]. Sensitivity = hull class tier (content; e.g., SSBN and ICBM `Never`, fighters `Sensitive`, trucks `Surplus`) + 1 if any tech in the design was first fielded in the world < 5 years ago. Policy tiers: `None < Surplus < Standard < Sensitive < License`. Player sellers use the same rule with their own policy (OQ-R5).
+**4.8.2 Seller behavior (minimal AI).** A request is accepted iff `export_policy[buyer] ≥ sensitivity(item)`, the buyer isn't embargoed (`a_ij ≥ 0.2`), and, for deals, the seller line has spare rate (otherwise the earliest start month is offered and auto-accepted if within 12 months) [D]. Sensitivity = hull class tier (content; e.g., SSBN and ICBM `Never`, fighters `Sensitive`, trucks `Surplus`) + 1 if any tech in the design was first fielded in the world < 5 years ago. Policy tiers: `None < Surplus < Standard < Sensitive < License`. Player sellers use the same rule with their own policy (OQ-R5), and get a notification per accepted request.
+
+**Offers (seller-initiated).** `OfferAcquisition` sets price = quote × price_factor (0–1.5); 0 is grant aid, paid by the seller from its `defense_procurement` line at its own marginal cost (US Military Assistance Program-style [R]). The offer needs the same capacity check as a request and lapses after 3 months. Accepting creates the same contract a request would. AI buyers answer through WS-06 (P-06a); a player buyer answers with `RespondOffer`.
 
 **4.8.3 Provenance and embargo.** Every slot fill carries `Provenance`. If WS-06 access from the buyer to an origin polity drops below 0.2: production lines of designs with imported components from it halt (`DeliveryHalted`) until a `ReviseDesign` swaps the component (a spec change with its rework); open deals with it stop delivering; and foreign O&S shares are unfunded (§3.6). `arms_dependency` is reported to WS-04 (§3.8).
 
 **4.8.4 Second-hand.** WS-11 `Sell` lists units at A(N_ref) × (remaining life share) × 0.6 [D] as spot listings.
 
-**4.8.5 Contractors.** Each high-fidelity polity has contractors (setting content `contractors.ron`, optional; else two per domain cluster are generated with placeholder names from the polity name) with competence c_d ∈ [0.5, 1.5] per domain, start 1.0 [D]. A project's contractor scales G (§4.5.3). c_d += 0.05 per completed project in d, and decays 1%/year toward 0.5 without any project in d [D]: design teams atrophy. A contractor's export catalog is its home polity's designs in its domains that the home policy permits. Revenue is the home polity's arms export receipts; contractors have no finances in the MVP.
+**4.8.5 Contractors and contract types.** Each high-fidelity polity has contractors (setting content `contractors.ron`, optional; else two per domain cluster are generated with placeholder names from the polity name) with competence c_d ∈ [0.5, 1.5] per domain, start 1.0 [D]. Where WS-03 defense-sector `state_ownership` > 0.5, contractors are state design bureaus (`state_owned`). A project's contractor scales G (§4.5.3). c_d += 0.05 per completed project in d, and decays 1%/year toward 0.5 without any project in d [D]: design teams atrophy. A contractor's export catalog is the home polity's designs in its domains that the home policy permits, plus its own ventures.
 
-**4.8.6 Reverse engineering.** `ReverseEngineer` (≥ 1 unit held) is a project with effort 0.5 × the original design effort (0.25 with stolen blueprints), u from the polity's own TRLs; the result is a domestic copy, and the techs inside get strong observations (perf precision 100).
+The sponsoring government picks a contract type per project (default `CostPlus`; `Arsenal` for state bureaus):
 
-**4.8.7 Macro buyers.** Macro polities import a share 1 − ss_d of their procurement per domain, ss_d = clamp(L_d/L_front,d, 0, 1) × domestic capacity share [D]. Imports are allocated to sellers ∝ policy-allowed × alignment weight (WS-06) × quality^η (η = 2) of the seller's newest exportable design in the domain; units = spend / price. Sellers book receipts and add the units to their line's N. This gives the market about 40 buyers without macro AI.
+| Type | Government pays | Overrun borne by | Execution effect [D] | Eligibility and other effects | Anchor |
+|---|---|---|---|---|---|
+| `Arsenal` | actual cost | government | competence of the state organization (start 0.9) | No fee; IP state-owned; the only type for state bureaus besides `SpecialAccess` | U.S. arsenal system, Soviet design bureaus [R] |
+| `CostPlus` | actual cost + 8% fee | government | none | Default | DoD non-fixed-price margins are typically 5–12% [V] |
+| `FixedPrice` | price P = P80 estimate × 1.10, on milestones | contractor, from capital | (m_G − 1) × 0.85: an incentive to control cost | The contractor accepts iff its expected loss E[max(0, cost − P)] ≤ 0.2 × capital, judged on the same belief and growth distribution as `estimate()`, so firms refuse fixed price on immature technology unless they are rich | KC-46: a $4.9B fixed-price development ceiling; Boeing has paid > $7B of overruns itself [V] |
+| `SpecialAccess` | actual cost + 10% fee | government | (m_G − 1) × 0.6; CV × 0.8; schedule excess × 0.5 | Competence ≥ 1.2; funding ≤ 0.3·B_slot/12 per month (a small team); classified: never published, espionage yield halved; one per contractor at a time | U-2: design approved 9 Dec 1954, first flight 1 Aug 1955, with 25 engineers and 81 people in all [V] |
+| `CommercialMilestone` | fixed milestone payments = 0.5 × point estimate; the contractor co-invests the rest | contractor | base effort × 0.6, and (m_G − 1) × 0.6 | Market economy only (not `state_owned`); domains with commercial demand (launch vehicles, spacecraft, transport aircraft); contractor keeps the IP, sells to anyone its home policy allows, and the sponsor buys at unit price; if capital runs out, the project stalls and payments made are sunk | NASA's NAFCOM: Falcon 9 ≈ $4.0B the traditional way vs. a revised $1.4B (NASA) against $443M (commercial) [V]. The 0.6 factor is conservative relative to those ratios |
+
+**Capital (memo account).** capital' = capital + fees and margins (cost-plus and special-access fees; fixed-price P minus actual cost; 10% of export and commercial sales) − venture spending − co-investment − 10%/year dividends [D]. State bureaus accrue no capital; they get an initiative fund of 3% of the home `defense_rnd` paid amount instead [D]. Capital < −0.25 × 12-month revenue raises `ContractorDistress`. The home government may `BailoutContractor` (cf. the 1971 Lockheed loan guarantee [R]); otherwise the firm is restructured: competence −0.3 (floor 0.5), capital → 0, and an open fixed-price project converts to cost-plus at +10% (cf. Rolls-Royce's 1971 collapse on the RB211 [R]). P-03d asks WS-03 to treat contractor capital spending as defense/space-sector investment so it is not free money.
+
+**4.8.6 Private ventures.** A contractor without a running venture starts one each year with probability
+
+```
+h_pv = 1 − exp(−κ_pv · (capital / c_ref) · c_d,best · IB),   κ_pv = 0.5/yr [D]
+IB   = clamp((defense + space sector capacity / GDP) / 0.03, 0, 2)     (home industrial base strength)
+```
+
+(state bureaus use the initiative fund in place of capital). The venture is a design (80%) or a tech development (20%) [D]. The domain is the contractor's domain with the highest 3-year export demand (deals plus macro imports). A design venture is `auto_design` on that domain's best hull class with home-`Proven` components; a tech venture is the most promising `Known` tech in its fields (highest p_works × perf mean). It is a normal project (truth, growth, tests) with `sponsor: PrivateVenture`, outside government slots, funded from capital at x = 1 until capital is exhausted, after which it slows. Results: a tech becomes `Proven` for the home polity; a design joins the catalog as exportable and can be adopted at home with `AdoptVenture` (a recoupment of 50% of venture cost from the first lots). Real-world pattern: the self-funded Boeing 367-80 that became the 707 and KC-135, and Northrop's N-156 that became the export F-5 [R].
+
+**4.8.7 Reverse engineering.** `ReverseEngineer` (≥ 1 unit held) is a project with effort 0.5 × the original design effort (0.25 with stolen blueprints), u from the polity's own TRLs; the result is a domestic copy, and the techs inside get strong observations (perf precision 100).
+
+**4.8.8 Macro buyers.** Macro polities field mostly foreign-bought or licensed kit (OQ-R2). Per domain, their procurement splits into domestic design φ_dom = clamp((L_d − L_front,d + 1.5)/1.5, 0, 1)², licensed production φ_lic = 0.7·(1 − φ_dom)·clamp(L_d/L_front,d, 0, 1), and imports φ_imp = 1 − φ_dom − φ_lic [D]. Licensed production pays the §4.8.1 fee once per design and royalties per unit, and adds nothing to the seller's N. Imports are allocated to sellers ∝ policy-allowed × alignment weight (WS-06) × quality^η (η = 2) of the seller's newest exportable design in the domain; units = spend / price. Sellers book receipts and add the units to their line's N. This gives the market about 40 buyers without macro AI.
 
 ### 4.9 Civil technology effects (WS-03)
 
-After `Proven`, adoption follows a logistic a(τ) = 1/(1 + exp(−(τ − 8)/2)) in years since proof [D], or imitation of a tech proven elsewhere at half the rate, scaled by WS-03 access-weighted openness. Each tech's `econ_effects` list maps to sectors and indices with effect e × perf_true. `M_s = exp(Σ_t e_ts(a_tp − ā_t))`, with ā_t the world mean adoption over all polities (12-month lag, like WS-03's A_frontier), so world-level growth stays on WS-03's calibrated `g_front` and WS-05 supplies only relative advantage (OQ-R1). Health, contraception and skill-bias indices use the same form.
+After `Proven`, adoption follows a logistic a(τ) = 1/(1 + exp(−(τ − 8)/2)) in years since proof [D], or imitation of a tech proven elsewhere at half the rate, scaled by WS-03 access-weighted openness. Each tech's `econ_effects` list maps to sectors and indices with effect e × perf_true. Repeatable econ effects (§4.1.4) enter with a = 1 from proof.
+
+```
+x_s,p   = Σ_t e_ts · (a_tp − ā_t),     ā_t = mean of a_t over high-fidelity polities, 12 months old
+ln M_s,p = L_max · tanh(x_s,p / L_max),   L_max = 0.15 [D]
+```
+
+World-level growth stays on WS-03's calibrated `g_front`; WS-05 supplies only relative advantage (OQ-R1). Macro polities get no `M_s` (WS-03 §3.13 has its own catch-up). Why this can't spiral:
+1. ā is a mean of **adoption shares**, not of M. Adoption ∈ [0, 1] depends on proof dates and imitation, not on M, so there is no M → ā → M loop. Including every high-fidelity polity in the mean makes Σ_p x_s,p = 0 exactly: the effect is zero-sum among them.
+2. The economic loop (M → GDP → R&D budget → earlier proof → higher a) is capped by |ln M| ≤ L_max (≈ ±16% in level) and dies out as laggards imitate (a → 1 everywhere ⇒ x → 0).
+3. The 12-month lag puts no same-tick feedback into the stage order.
+
+If M2(b) B5 shows unwanted divergence anyway, the fallback is e_ts = 0 for civil techs (M_s ≡ 1), leaving tech-driven growth to WS-03 alone. Health, contraception and skill-bias indices use the same bounded form.
 
 ### 4.10 Macro tier (P-7, SYS-006)
 
@@ -454,24 +525,26 @@ L_front,d = max over high-fidelity polities of their level in d (12-month lag)
 level of a high-fidelity polity in d = Σ_{t ∈ d} prog_t / n_lines,d,   prog_t = clamp((TRL_t − 1)/5, 0, 1)
 ```
 
-`MacroRnd.level` feeds WS-11's macro equipment quality (`step_d^L`). Demotion sets L_d to the formula above. Promotion walks each domain's working techs in D order, setting them `Proven`, until the sum reaches L_d·n_lines,d, gives the last one a fractional TRL through m_sci (or a development project at progress p), and seeds beliefs with the band's observations; L_d is conserved within 1e-6 (ARC-081 pattern).
+Macro polities don't design (OQ-R2); their kit comes from §4.8.8, and `MacroRnd.level` feeds WS-11's macro equipment quality (`step_d^L`) for domestically made items. Demotion sets L_d to the formula above. Promotion walks each domain's working techs in D order, setting them `Proven`, until the sum reaches L_d·n_lines,d, gives the last one a fractional TRL through m_sci (or a development project at progress p), and seeds beliefs with the band's observations; L_d is conserved within 1e-6 (ARC-081 pattern).
 
 ### 4.11 RNG and explainability
 
 | Draw | Stream |
 |---|---|
-| Truth | `worldgen_stream(seed, line or tech ID or edge pair key, purpose ∈ {VIAB_LINE, VIAB, PERF, COST, EDGE})` |
+| Truth | `worldgen_stream(seed, line or tech ID or edge pair key, purpose ∈ {VIAB_LINE, VIAB, GATE, PERF, COST, EDGE, LEVEL})` |
 | Discovery, Boost reveal | `{tag "rnd", entity: polity << 16 | field, purpose: DISCOVER / REVEAL}` per tick |
 | Observation noise | `{tag "rnd", entity: polity << 16 | field, purpose: OBS}` per tick (sorted subject order) |
 | Project draws (E, G phases, S, tests) | `{tag "rnd", entity: polity << 32 | project seq, purpose: START}` once, at start |
 | Producibility | `{tag "rnd", entity: polity << 32 | line seq, purpose: PROD}` once |
+| Gate and hint reveal | `{tag "rnd", entity: polity << 16 | field, purpose: GATE}` per tick |
+| Private-venture start | `{tag "rnd", entity: contractor ID, purpose: VENTURE}` each January |
 | Estimate Monte Carlo | `{tag "rnd.est", entity: polity << 32 | draft hash, purpose: 0}` (pure functions use a local factory; not world state) |
 
 Breakdowns: EAC (§4.5.4), unit cost (learning × rate × producibility × factors via `Breakdown::product`), `M_s` (one term per tech), slots (budget terms), field effort (line terms), design stats (§4.6.3), dependency (per supplier).
 
 ### 4.12 Performance and memory (SYS-008, ARC-091)
 
-Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~300 techs × a few flops, ≤ 20 projects, ≤ 40 lines, ~20 RNG streams per tick (≈ 6 µs); macro polities 12 updates each; own and published observations total ≈ 4,500 per month after field staggering (≈ 0.5 ms in I1). Expected ≤ 3 ms. Memory: tech beliefs 6 polities × 900 subjects × ~80 B ≈ 0.43 MB (down from ≈ 3 MB if all 46 polities held them); `RndBlock`s ≤ 0.25 MB per high-fidelity polity; total ≤ 2 MB.
+Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~300 techs × a few flops, ≤ 20 projects, ≤ 40 lines, ~20 RNG streams per tick (≈ 6 µs); macro polities 12 updates each; own and published observations total ≈ 4,500 per month after field staggering (≈ 0.5 ms in I1). Expected ≤ 3 ms; content up to ≈ 600 nodes keeps this under 6 ms because every term is linear in node count. Memory: tech beliefs 6 polities × 900 subjects × ~80 B ≈ 0.43 MB (down from ≈ 3 MB if all 46 polities held them); `RndBlock`s ≤ 0.25 MB per high-fidelity polity; total ≤ 2 MB.
 
 ## 5. Requirements
 
@@ -481,13 +554,15 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-001 | Tech lines expand into generation techs with deterministic IDs, dense indices, dates and costs. | Fixture line (gens 4, first 1950, step 10, base_dev 100, step_dev 1.6): IDs `tech.x.g1..g4`, D = 1950/60/70/80, base_dev = 100/160/256/409.6 (exact); shuffling content files gives identical indices (ARC-053). | P-6, R-3 |
 | RND-002 | Truth per tech depends only on (seed, content ID) and is identical for every polity. | Adding an unrelated line leaves all existing `TechTruth` and edges bit-identical; every polity's view of truth is the same object (ARC-011/034). | SYS-005, P-1 |
 | RND-003 | Historical techs (D ≤ scenario start) always work and have nominal-mode performance. | Over 1,000 seeds, every historical tech has works = true and perf within the nominal component's ±4σ. | P-1 |
-| RND-004 | Viability and performance truth follow the content priors. | 10,000 worlds: share working per class within ±1.5 pp of the Beta mean; perf mode frequencies within ±1.5 pp of (0.15, 0.75, 0.10); ln κ mean within ±0.01 and sd within ±0.01 of (0, σ_κ). | SYS-005 |
-| RND-005 | Enabler edges follow §4.1.2 and are acyclic. | 1,000 worlds with default content: mean edge count within 3 SE of Σ p; zero cycles in Requires ∪ prerequisites; adding a line changes no edge between other lines. | P-1 |
-| RND-006 | Dead-end frequency matches the content class mix. | 10,000 worlds: mean dead ends per world within 3 SE of Σ (1 − class mean) over non-historical techs (≈ 48 with default content); M2(b) B1 reports p5–p95. | §0 |
+| RND-004 | Viability, gate and performance truth follow the content priors. | 10,000 worlds: shares of ungated / soft-gated / hard-dead per class within ±1.5 pp of the §4.1.2 table; Requires vs. Penalty share 0.4 ± 0.015; one vs. two enablers 0.7 ± 0.015; perf mode frequencies within ±1.5 pp of (0.15, 0.75, 0.10); ln κ mean within ±0.01 and sd within ±0.01 of (0, σ_κ). | SYS-005 |
+| RND-005 | Boost edges follow §4.1.2. | 1,000 worlds with default content: mean edge count within 3 SE of Σ p; every edge runs from an earlier to a later D; adding a line changes no edge between other lines. | P-1 |
+| RND-006 | Dead-end frequency matches the content class mix, and soft outnumber hard. | 10,000 worlds: mean hard dead ends per world within 3 SE of the class-mix expectation (≈ 21 with default content) and soft-gated within 3 SE of theirs (≈ 52); the ratio soft/hard ≥ 2 in the mean; M2(b) B1 reports p5–p95 of both. | §0 |
+| RND-007 | Soft gates are drawn per §4.1.3 from authored candidates only, and can't form cycles. | Unit: every sampled enabler belongs to a line in the tech's `gate_candidates`; adding a line that no candidate list names leaves every gate bit-identical (ARC-034); content validation rejects a fixture whose prerequisites ∪ `gate_candidates` line graph has a cycle. | P-1, P-6 |
+| RND-008 | Repeatable lines follow §4.1.4. | Unit: all levels are sampled at worldgen and always work, never gated; only level k+1 is known after level k is proven; level effort = base_dev·step_dev^(k−1)·premature (1e-12); Σ gains ≤ g0/(1 − d) for every world; the gain multiplies the target stats only in designs finalized after proof. | P-1, R-3 |
 | **Beliefs** ||||
 | RND-010 | Each known tech has the three §4.2.1 subjects with priors equal to the sampling distributions; unknown techs are `None`. | Unit: subjects created at discovery equal the content prior component-for-component (1e-12). | P-2, ADR-0008 |
 | RND-011 | Binary evidence reproduces the exact Bernoulli posterior. | For priors {0.1, 0.4, 0.8} × LR {1/20, 1/3, 3, 13.6, 50}: `p_works` after one observation equals p·LR/(p·LR + 1 − p) within 1e-6. | P-2 |
-| RND-012 | Beliefs are calibrated. | Batch (≥ 200 worlds × 6 high-fidelity polities, 1955–2060, B2 policy): 80% credible intervals of perf and cost contain truth in 80 ± 3% of (polity, tech, quarter) samples; in `p_works` deciles, the observed working frequency is within ± 5 pp of the decile mean. | SYS-005 |
+| RND-012 | Beliefs are calibrated. | Batch (≥ 200 worlds × 6 high-fidelity polities, 1955–2060, B2 policy): 80% credible intervals of perf and cost contain truth in 80 ± 3% of (polity, tech, quarter) samples; in `p_works` deciles, the observed not-hard-dead frequency is within ± 5 pp of the decile mean. | SYS-005 |
 | RND-013 | Beliefs converge toward truth as research increases. | B2: median perf σ ≤ 0.80 × prior after one full science phase and ≤ 0.45 × prior after development completes; median |ln(mean/truth)| decreases monotonically in cumulative effort deciles; dead-end p_works < 0.10 in ≥ 90% of cases after 2 failed tests at u ≤ 1. | SYS-005 |
 | RND-014 | Observations are pooled: at most one per subject per quarter (plus one per test), with precision equal to the accrued sum. | Unit: 3 months of accrual Δτ = 5, 7, 11 yields one observation with noise 1/√23 (1e-12); no subject emits twice in a tick (ARC-033 holds). | P-2, SYS-008 |
 | RND-015 | Fielding is public. | A stub design's first delivery makes every other high-fidelity polity know its techs and gives each viability LR 50 and one perf observation with σ = 0.25/(1 + intel_q). | P-2 |
@@ -499,7 +574,9 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-020 | Field effort is split by priority and converts to maturity and precision per §4.3. | Unit: e_f = 10, priorities (1, 3), equal weights, E_sci = 20 → Δm = (0.125, 0.375); classified → precision × 0.8; rnd_morale 1.1 scales both by 1.1 (1e-12). | §4.3 |
 | RND-021 | Premature work costs exp(Δyears/τ_p). | E_sci for a tech 8 years early = e × base value (1e-12); 0 years early = base. | §4.3 |
 | RND-022 | Discovery follows the hazard in §4.4 and needs known prerequisites. | 10⁵ trials at fixed effort: monthly discovery frequency within 3 SE of h_t; zero discoveries when a prerequisite is `Unknown` or year < D_t − 10. | §4.4 |
-| RND-023 | Requires edges block at progress 0.7 with a field hint and never push viability evidence. | Fixture: B requires A; B's project stops at 0.7 with `Blocked { field(A) }`, B's viability belief is unchanged; after A is `Proven`, the project resumes and the edge is revealed. | §4.4, RND-012 |
+| RND-023 | `Requires` gates block at progress 0.7 with field hints and never push viability evidence. | Fixture: B gated by A (Requires); B's project stops at 0.7 with `Blocked { [field(A)] }`; B's viability belief is unchanged; after A is `Proven`, the project resumes. | §4.4, RND-012 |
+| RND-025 | `Penalty` gates follow §4.4. | Fixture: B gated by A (Penalty 5×, perf 0.6): effort for progress made while A is unproven is × 5; `FeasibilityFinding` at progress 0.4 carries exactly (5, 0.6), and the EAC gains a gate-penalty term; B completes; a design finalized meanwhile has B's component perf × 0.6; after A is `Proven`, remaining effort is unpenalized and a `ReviseDesign` restores full perf. | §0, §4.4 |
+| RND-026 | Science reveals gate hints per §4.4. | 10⁵ trials at fixed effort: monthly hint frequency within 3 SE of 1 − exp(−κ_g·e/E_sci), and factor reveals at half that rate; no hint is ever produced for an ungated tech. | §4.4 |
 | RND-024 | Boost edges cut effort and are revealed per §4.4. | Fixture: A proven, b = 0.3: B's true effort = 0.7 × unboosted (1e-12); revealed at B's first test; reveal hazard in the passive path within 3 SE over 10⁵ trials. | §4.4 |
 | **Projects** ||||
 | RND-030 | Slots = clamp(round(√(B/B_slot)), 1, 20); new projects beyond slots are rejected. | B/B_slot ∈ {0, 1, 4, 25, 1000} → {1, 1, 2, 5, 20}; a 6th project at 5 slots → rejection event; a slot drop cancels nothing. | §4.5.1 |
@@ -512,6 +589,12 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-037 | Spec changes rework per §4.5.6. | p = 0.3, χ = 0.2 → Δp = 0.03 and 1 month halt; p = 0.6 (post-freeze) → Δp = 0.12; the changed share has a new phase draw. | §0 |
 | RND-038 | `estimate()` is calibrated. | B3: projects budgeted at P80 exceed it in 20 ± 4%; at P50 in 50 ± 5%; `estimate` is identical across repeated calls with the same view. | §0 |
 | RND-039 | Cancelling a project refunds nothing; evidence already gained stays. | Fixture: cancel at p = 0.5: AC unchanged, beliefs unchanged, slot freed next tick. | §0 |
+| RND-040 | Contract types apply the §4.8.5 payments, fees and execution modifiers. | For each type, a fixture project with fixed draws: government outlay, contractor margin and G/S modifiers match the table (1e-12); `CommercialMilestone` effort × 0.6. | §0, §4.8.5 |
+| RND-041 | Fixed-price risk falls on the contractor, and acceptance follows the expected-loss rule. | Fixture: overrun of 30% → government pays exactly P; contractor capital falls by cost − P; a contractor with capital below 5 × expected loss refuses; capital < −0.25 × revenue raises `ContractorDistress`; without `BailoutContractor`, restructuring sets competence −0.3 and capital 0 and converts the project to cost-plus. | §0, §4.8.5 |
+| RND-042 | Special-access eligibility and effects follow §4.8.5. | Contractor competence 1.1 → rejected; funding above the cap → clamped; its science and test observations are never published; espionage yield on its techs is halved. | §4.8.5 |
+| RND-043 | Commercial-milestone projects keep IP with the contractor and can stall. | Fixture: the resulting design is listed in the contractor's catalog and sold to a third polity under the home policy; when capital runs out mid-project, progress stops and milestone payments made stay sunk; rejected for state bureaus and for non-commercial domains. | §4.8.5 |
+| RND-044 | Private ventures start and run per §4.8.6. | 10⁵ contractor-years: start frequency within 3 SE of h_pv; IB = 0 → no ventures; a venture uses no government slot; `AdoptVenture` procures without development cost and pays the 50% recoupment from the first lots. | §0, §4.8.6 |
+| RND-045 | `auto_design` returns a deterministic feasible draft. | 1,000 random fixture inventories: output is always feasible or `None`; identical across calls; with two engines differing only in value per cost, the better one is chosen. | §3.10 |
 | **Design** ||||
 | RND-050 | Designs are built from 53 hull classes in 7 domains with typed slots. | Content validation: every hull class has a domain, target class, ≥ 1 slot and a sensitivity tier; every component's slot kind exists. | §4.6.1 |
 | RND-051 | Feasibility rejects drafts that break slot, mass or power limits and names the binding constraint. | Three fixture drafts (wrong slot kind, 1% over mass, 1 kW short) are rejected with those reasons; a feasible draft passes. | §4.6.3 |
@@ -539,11 +622,12 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-084 | Provenance is tracked per slot and drives embargo effects. | Embargo on the origin of one imported component halts the line (`DeliveryHalted`), sets that O&S share unfunded, and a `ReviseDesign` swapping it restores deliveries after its rework. | §4.8.3 |
 | RND-085 | `arms_dependency[j]` is the 12-month value share dependent on j. | Fixture with known flows: values match by hand (1e-12); Σ_j ≤ 1. | WS-04 |
 | RND-086 | Contractor competence scales growth and evolves per §4.8.5. | c = 1.5 → mean excess and CV ÷ 1.5 (1e-12); +0.05 per completed project; 10 idle years → c decays by 1%/yr to the 0.5 floor. | §0 |
-| RND-087 | Reverse engineering works per §4.8.6. | Requires a held unit (else rejected); effort 0.5 × (0.25 with blueprints); result has domestic provenance. | §4.8.6 |
-| RND-088 | Macro buyers allocate imports per §4.8.7. | Fixture: 2 sellers, alignment weights (2, 1), equal quality → spend split 2:1; seller N rises by units bought. | §4.8.7 |
+| RND-087 | Reverse engineering works per §4.8.7. | Requires a held unit (else rejected); effort 0.5 × (0.25 with blueprints); result has domestic provenance. | §4.8.6 |
+| RND-088 | Macro procurement splits and allocates per §4.8.8. | Fixture: L = L_front − 0.75 → φ_dom = 0.25, φ_lic = 0.7·0.75·clamp(L/L_front); imports to 2 sellers with alignment weights (2, 1) and equal quality split 2:1; seller N rises by imported units only. | §4.8.8, OQ-R2 |
+| RND-089 | Offers follow §4.8.2. | Fixture: an offer at price_factor 0.8 accepted → contract at 0.8 × quote; price_factor 0 → buyer pays nothing and the seller's procurement line pays marginal cost; unanswered offers lapse after 3 months; offers beyond capacity are rejected. | §4.8.2, OQ-R5 |
 | **Interfaces** ||||
 | RND-090 | WS-03 line demand and funding follow §3.4. | Stub WS-03 paying 50%: every project's and field's real funding is half its request, deflated by the cost index; demand equals Σ requests. | ECO-092 |
-| RND-091 | `M_s` and indices are relative to the world mean per §4.9. | Two-polity fixture with symmetric adoption: M_s = 1 for both (1e-12); one-sided adoption a = 1, e = 0.05: M_s = exp(0.025) and exp(−0.025). | ECO-092, OQ-R1 |
+| RND-091 | `M_s` and indices are relative and bounded per §4.9. | Two-polity fixture with symmetric adoption: M_s = 1 for both (1e-12); one-sided adoption a = 1, e = 0.05: ln M_s = ±0.15·tanh(1/6) = ±0.024771 (1e-6); every tick, Σ_p x_s,p = 0 over high-fidelity polities (1e-12) and |ln M_s| ≤ L_max. | ECO-092, OQ-R1 |
 | RND-092 | Espionage yield follows §4.2.6 and transfers maturity on the next R3. | Fixture: `Tech` theft → thief m_sci = max(own, 0.7 × target) after the next R3, observations applied in I1 of the theft tick. | WS-06 |
 | RND-093 | Deliveries reach WS-11 and WS-08 in the same tick. | A delivery produced in R3 is visible to stub WS-11 and WS-08 functions in R5b of the same tick. | WS-02 §3.3 |
 | RND-094 | The fissile multiplier follows P-05b. | Self-sufficiency 0 → nuclear-tagged costs × 2; 1 → × 1 (1e-12). | WS-08b P-05b |
@@ -552,6 +636,7 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-100 | Macro polities run §4.10 and hold no tech belief subjects. | Unit equations within 1e-12; promote then demote conserves every L_d within 1e-6; a macro polity has zero tech subjects. | SYS-006, P-7 |
 | RND-101 | Every WS-05 `Tracked` variable has a breakdown. | Property test over WS-05 keys after a 120-tick run (ARC-041). | SYS-004 |
 | RND-102 | WS-05 is deterministic and order-independent. | Two 240-tick runs with the same seed and inputs give identical hashes; reordering projects in the input log within one tick gives identical outcomes. | SYS-002 |
+| RND-104 | `M_s` can't spiral. | B5 coupled to a stub economy (GDP ∝ M_s, R&D ∝ GDP): the cross-polity sd of ln M_s in 2060 ≤ 0.8 × its 1955–2060 maximum in ≥ 90% of runs; no run exceeds L_max. | R-2, OQ-R1 |
 | RND-103 | WS-05 stays within its time and memory budgets. | `bench`: R3 WS-05 median ≤ 15 ms on the reference machine; WS-05 share of the `World` postcard ≤ 2 MB. | SYS-008 |
 
 ## 6. Content/data
@@ -562,12 +647,13 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 content/core/rnd/
   fields.ron          Field { id, name, e_ref }                                      10 entries
   domains.ron         Domain { id, name, structure_line, laws: [...], required_stats: [...] }   12 eng. + 7 craft
-  lines/<domain>.ron  TechLine { ... } and Tech { ... } (singletons)                 ≈ 75 lines + ≈ 20 singletons
+  lines/<domain>.ron  TechLine { ... } and Tech { ... } (singletons)                 ≈ 75 lines + ≈ 20 singletons + ≈ 12 repeatable lines
   components.ron      ComponentTemplate { id, line, slot, size, mass, power, cost, contrib: [(stat, op, base, step)] }  ≈ 90
   hulls/<domain>.ron  HullClass { id, domain, target_class, slots, mass_cap, base_stats, sensitivity, lead, slope, n_f }   53
-  enablers.ron        [(from, to, p, kind)]                                          ≈ 40
+  enablers.ron        [(from, to, p, b)]  Boost edges only (gates are line fields)  ≈ 40
   params.ron          every [D] constant in §4 (one file, tagged comments)
 content/settings/<s>/contractors.ron, rnd_start.ron   (optional)
+content/core/rnd/objectives.ron   auto_design value weights per hull class           53
 ```
 
 ### 6.2 Tech line schema (example)
@@ -582,10 +668,19 @@ TechLine(
     viability: Established,
     perf: Default, cost_sigma: Default,
     prereq: [("line.mat.superalloy", 1)],          // line, generation offset
+    gate_candidates: ["line.mat.ceramics", "line.comp.cfd", "line.mat.coatings"],   // soft-gate enablers (§4.1.3)
     components: ["comp.engine.turbofan"],
     econ_effects: [(Sector("services"), 0.004)],   // civil aviation spillover
     grants: [],
     tags: [],                                      // e.g. "fissile"
+)
+
+TechLine(
+    id: "line.rep.computing_density",
+    kind: Repeatable(max_levels: 30, g0: 0.05, decay: 0.93, gain_cv: 0.3, cadence_years: 2),
+    domain: "dom.computing", fields: [("field.solidstate", 1.0)],
+    first: 1962, base_dev: 150.0, step_dev: 1.35,
+    effects: [Stat("dom.sensors", "sensor"), Econ(Sector("services"), 1.0)],
 )
 ```
 
@@ -605,18 +700,18 @@ TechLine(
 | Space systems | 26 | satellite bus, life support, reentry, ISRU, survey instruments, docking |
 | Materials and manufacturing | 24 | alloys, superalloys, composites, ceramics, automation, additive |
 | Civil and biomedical | 24 | green revolution, antibiotics/vaccines, contraception, containerization, energy |
-| **Total** | **300** | |
+| **Total** | **300** | plus ≈ 12 repeatable lines (§4.1.4), not counted |
 
 Science fields (10): physics, nuclear physics, chemistry, materials science, fluid dynamics, solid-state electronics, computer and information science, life sciences, earth and planetary sciences, astronomy.
 
 Hull classes (53): **air** 9 (fighter, strike, bomber, AEW&C, maritime patrol, transport/tanker, reconnaissance, helicopter, UAV) · **surface** 9 (patrol/corvette, frigate, destroyer, cruiser, carrier, amphibious, mine warfare, replenishment, fast attack craft) · **subsurface** 3 (SSK, SSN, SSBN/SSGN) · **ground** 6 (MBT, IFV, APC, self-propelled artillery, air-defense vehicle, TEL) · **munition** 14 (the salvo §8.4 classes plus ICBM/SLBM) · **launch vehicle** 4 (small, medium, heavy, super-heavy) · **spacecraft** 8 (comsat, ISR, navigation, early warning, survey probe, crewed, lander, tug).
 
-Authoring: ≈ 75 lines + 20 singletons + 90 components + 53 hulls + 40 enablers + 10 fields ≈ 290 entries, against ≈ 600+ for hand-authored nodes. A content-check test (like WS-08a's) validates references, dates, cycles and the domain node counts.
+Authoring: ≈ 75 lines (each with 2–5 gate candidates) + 20 singletons + 12 repeatables + 90 components + 53 hulls + 53 objectives + 40 Boost edges + 10 fields ≈ 355 entries, against ≈ 600+ for hand-authored nodes. More depth is welcome: the schema and budget allow ≈ 600 nodes (§4.12), and 300 stays the baseline the prototypes tune against. A content-check test (like WS-08a's) validates references, dates, cycles and the domain node counts.
 
 ## 7. Verification
 
 - Unit and integration tests named `rnd_NNN_*`, one or more per requirement.
-- **M2(b) prototype** (`prototypes/rnd/PLAN.md`): Python + NumPy, vectorized over worlds and polities. Scenarios B1–B8 produce the three required outputs over 1955–2060 (belief convergence, dead-end frequency, cost-overrun distributions) and evaluate RND-004/005/006/012/013/033/038 at full batch size, plus the AI kill-threshold sweep that sets the default AI policy.
+- **M2(b) prototype** (`prototypes/rnd/PLAN.md`): Python + NumPy, vectorized over worlds and polities. Scenarios B1–B8 produce the three required outputs over 1955–2060 (belief convergence, dead-end frequency, cost-overrun distributions) and evaluate RND-004/005/006/012/013/033/038/104 at full batch size, plus the AI kill-threshold sweep that sets the default AI policy and a contracting/venture scenario (B9).
 - **Batch stability (WS-10):** in 200 × 1955–2060 runs with the B5 portfolio policy: every WS-05 `f64` finite; ≥ 60% of non-dead-end techs with D ≤ 2040 proven by some polity by 2060; median proof date of funded Established techs within ±6 years of D [D]; no polity's dead-end spending exceeds 25% of its cumulative R&D [D].
 - **Calibration seed (exists):** `python prototypes/rnd/calib_growth.py` reproduces the §4.5.3 fit and the RND-011 equivalence.
 
@@ -628,8 +723,9 @@ Authoring: ≈ 75 lines + 20 singletons + 90 components + 53 hulls + 40 enablers
 | P-03a | WS-03 §2.3, §3.1 | `M_s` is relative to the world mean (≈ 1 on average); `g_front` stays the world trend (if OQ-R1 is accepted) | §4.9 |
 | P-03b | WS-03 §3.6 | R&D, space and procurement lines pay min(appropriation, WS-05 demand) and report a funded fraction, like the WS-11 lines. The space-program line prorates between WS-05 (projects, hardware) and WS-08 (operations) demand | §3.4 |
 | P-03c | WS-03 §2.2–2.3 | Add the skill-bias index to the WS-05 inputs row (WS-03 §3.5 already reads it); note that WS-05 doesn't read the skilled-labor pool | §3.4 |
-| P-04a | WS-04 §3.4, §6.4 | `gate_orders` covers `RequestAcquisition` and `SetExportPolicy` (ethics-box limits only, PC 0); a policy-map row for export openness (channel `none`; axis to WS-04's choice) | GOV-021, GOV-064 |
-| P-06a | WS-06 | Use `rnd::espionage_yield`; set AI export policy tiers (suggested: alignment ≥ 0.8 `License`, ≥ 0.5 `Sensitive`, ≥ 0 `Standard`, ≥ −0.2 `Surplus`, else `None`); supply `intel_q`; read `DesignFielded`, `ArmsDeal`, `LicenseGranted`, `DeliveryHalted` | §3.5 |
+| P-03d | WS-03 §3.1, §3.6 | Contractor capital flows (fees and margins in; private-venture and co-investment spending out) are part of defense/space-sector profits and investment, not extra money; `BailoutContractor` is a `Supplemental` on `defense_procurement` | §4.8.5–4.8.6 |
+| P-04a | WS-04 §3.4, §6.4 | `gate_orders` covers `RequestAcquisition`, `OfferAcquisition`, `RespondOffer` and `SetExportPolicy` (ethics-box limits only, PC 0); a policy-map row for export openness and military aid (channel `none`; axis to WS-04's choice) | GOV-021, GOV-064 |
+| P-06a | WS-06 | Use `rnd::espionage_yield`; set AI export policy tiers (suggested: alignment ≥ 0.8 `License`, ≥ 0.5 `Sensitive`, ≥ 0 `Standard`, ≥ −0.2 `Surplus`, else `None`); supply `intel_q`; decide AI `RespondOffer` and AI offers (including military aid as an influence tool) and their relations effects; pick AI contract types and use `auto_design`; read `DesignFielded`, `ArmsDeal`, `LicenseGranted`, `DeliveryHalted`, `ContractorDistress` | §3.5, §4.8.2 |
 | P-11a | WS-11 | Build unit aggregates from `DesignStats.achieved`; consume `deliveries`; pay non-personnel O&S from §4.7.4 with the foreign share and embargo flag; refit = `ReviseDesign`; `Sell` → spot listing; macro equipment quality from `MacroRnd.level` | §3.6 |
 | P-SAL | salvo note §8 | `DesignStats` field names (§3.6) are the source of §8.1–8.4 unit inputs; ground units add `GroundStats` (G-6) | §3.6 |
 | P-08b | WS-08b §8 | Mark P-05a/b as accepted with the §3.7 forms | §3.7 |
@@ -637,13 +733,15 @@ Authoring: ≈ 75 lines + 20 singletons + 90 components + 53 hulls + 40 enablers
 
 ## 9. Open questions
 
-| ID | Question | Default if unanswered |
+All five closed 2026-11-27 (Sean: accept the defaults, with the additions noted).
+
+| ID | Question | Resolution |
 |---|---|---|
-| OQ-R1 | Civil tech effects on WS-03: **relative** to the world mean (recommended: WS-03's calibration is untouched, and techs give advantage, not world growth), or **absolute** (a world where computing disappoints grows slower, but WS-03 must recalibrate `g_front` and its catch-up term against WS-05)? | Relative |
-| OQ-R2 | Macro polities hold domain levels only and no per-tech beliefs (recommended: −2.5 MB of snapshot, and macro polities don't design). They can't be espionage targets for specific techs, only for domain levels. | Levels only |
-| OQ-R3 | The m1-findings ACAT triple (mean 1.36, CV 0.80, p85 3.1) is inconsistent: a lognormal with mean 1.36 has p85 ≤ 2.33 for any CV [V: computed]. Please check the source (Defense ARJ 32(1), p. 47); the p85 may be for a different measure. The fit uses mean and CV. | Fit mean and CV; treat p85 as unverified |
-| OQ-R4 | Contractors: domestic AI firms with competence and catalogs only (recommended). Private-venture export designs (a contractor designs on its own money, e.g., for export) are post-MVP. | Post-MVP |
-| OQ-R5 | When the player is the seller, requests are decided automatically by the player's export policy, with a notification (recommended), not a per-request prompt. | Automatic |
+| OQ-R1 | Civil tech effects on WS-03: relative to the world mean, or absolute? | **Closed: relative**, with a guard against feedback spirals: the mean is over adoption shares (no M → mean → M loop), zero-sum across high-fidelity polities, tanh-bounded at L_max = 0.15 and lagged 12 months (§4.9, RND-091, RND-104). Fallback if B5 diverges: no civil effects in `M_s`. |
+| OQ-R2 | Macro polities: domain levels only, no per-tech beliefs? | **Closed: levels only.** Their kit is mostly imported or license-built (§4.8.8). |
+| OQ-R3 | The ACAT triple (mean 1.36, CV 0.80, p85 3.1) is internally inconsistent under a lognormal. | **Closed: GAO governs.** The GAO split sets the means; the CV is fitted to ACAT's 0.80; the ACAT mean and p85 are reported, not targeted (§4.5.3). |
+| OQ-R4 | Contractors: catalogs only, or more? | **Closed: more.** Contractors get a capital memo account, five contract types with real-world trade-offs (§4.8.5), and stochastic private ventures driven by capital and home industrial-base strength (§4.8.6). |
+| OQ-R5 | Player as seller: automatic by export policy? | **Closed: automatic**, with notifications. Sellers can also make offers, including grant aid (§4.8.2); AI responses to offers are WS-06's (P-06a). |
 
 ## 10. Sources
 
@@ -657,4 +755,7 @@ Authoring: ≈ 75 lines + 20 singletons + 90 components + 53 hulls + 40 enablers
 - Moore (2015), AFIT thesis: Wright cumulative-average model as DoD standard (via m1-findings §3.3). https://apps.dtic.mil/sti/pdfs/ADA616177.pdf [V via m1-findings]
 - AFIT AD1016823: steeper learning slope after configuration changes (via m1-findings §3.3). https://apps.dtic.mil/sti/tr/pdf/AD1016823.pdf [V via m1-findings]
 - Terra Invicta wiki and DD #10; War Footing Dev Blog #4 (via m1-findings §3.1, §3.4) [V via m1-findings]
-- EVM CPI method, CPI stability after 20% complete (Christensen) [R]; Breguet, Tsiolkovsky, Admiralty coefficient [R: textbook]
+- NASA, *Falcon 9 Launch Vehicle NAFCOM Cost Estimates* (Aug 2011) and the Scientific American summary: $4.0B traditional-approach estimate; revised $1.4B (NASA approach) vs. $443M (commercial). https://www.nasa.gov/wp-content/uploads/2015/01/586023main_8-3-11_NAFCOM.pdf; https://www.scientificamerican.com/blog/observations/nasa-figures-show-that-commercial-spaceflight-costs-half-as-much-as-government-run-effort-would/ [V]
+- U-2: design approved 9 Dec 1954 with 25 engineers among 81 staff; first flight 1 Aug 1955. https://www.cia.gov/stories/story/area-51-and-the-accidental-test-flight; https://www.everand.com/book/402300279 [V]
+- KC-46: $4.9B fixed-price development ceiling, more than $7B absorbed by Boeing; non-fixed-price margins typically 5–12%. https://breakingdefense.com/2026/01/boeing-runs-up-fresh-565m-loss-on-kc-46-tanker/; https://news.yahoo.com/cautionary-tale-boeing-won-us-110000005.html [V]
+- EVM CPI method, CPI stability after 20% complete (Christensen) [R]; Breguet, Tsiolkovsky, Admiralty coefficient [R: textbook]; Boeing 367-80, Northrop N-156/F-5, Lockheed 1971 loan guarantee, Rolls-Royce RB211 1971, U.S. Military Assistance Program [R]
