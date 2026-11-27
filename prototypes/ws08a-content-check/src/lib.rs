@@ -285,6 +285,8 @@ pub struct Content {
     pub region_names: Vec<(String, String, Provenance)>,
     /// IDs of polity files that failed to parse; references to them don't cascade into more errors (ARC-051).
     pub unparsed_polities: Vec<String>,
+    /// False if setting.ron failed to parse; setting-dependent checks are then skipped (ARC-051).
+    pub setting_parsed: bool,
 }
 
 /// Load and validate a scenario. Returns every error found (ARC-051).
@@ -322,6 +324,7 @@ pub fn load(root: &Path, scenario_id: &str) -> Result<Content, Vec<String>> {
             polities.push(p);
         }
     }
+    let setting_parsed = setting.is_some();
     let content = Content {
         scenario,
         regions,
@@ -343,10 +346,17 @@ pub fn load(root: &Path, scenario_id: &str) -> Result<Content, Vec<String>> {
         start: parse(&set_dir.join("start.ron"), &mut errs).unwrap_or_default(),
         region_names: parse(&set_dir.join("region_names.ron"), &mut errs).unwrap_or_default(),
         unparsed_polities,
+        setting_parsed,
     };
     let scenario_path = root.join(format!("scenarios/{scenario_id}.ron"));
-    let disclaimer = content.setting.disclaimer.clone();
-    check_text(&map_dir, &set_dir, &scenario_path, &disclaimer, &mut errs);
+    let disclaimer = setting_parsed.then(|| content.setting.disclaimer.clone());
+    check_text(
+        &map_dir,
+        &set_dir,
+        &scenario_path,
+        disclaimer.as_deref(),
+        &mut errs,
+    );
     validate(&content, &mut errs);
     if errs.is_empty() {
         Ok(content)
@@ -361,7 +371,7 @@ fn check_text(
     map_dir: &Path,
     set_dir: &Path,
     scenario: &Path,
-    disclaimer: &str,
+    disclaimer: Option<&str>,
     errs: &mut Vec<String>,
 ) {
     for path in files_recursive(map_dir) {
@@ -373,6 +383,8 @@ fn check_text(
             ));
         }
     }
+    // Without a parsed setting there is no disclaimer to check against; the parse error stands alone.
+    let Some(disclaimer) = disclaimer else { return };
     for path in files_recursive(set_dir) {
         let text = fs::read_to_string(&path).unwrap_or_default();
         let head: String = text.lines().take(6).collect::<Vec<_>>().join("\n");
@@ -393,19 +405,19 @@ fn check_text(
 /// Structural and referential rules across map and setting.
 pub fn validate(c: &Content, errs: &mut Vec<String>) {
     let s = &c.setting;
-    if s.map != c.scenario.map {
+    if c.setting_parsed && s.map != c.scenario.map {
         errs.push(format!(
             "setting.ron: map {} != scenario map {}",
             s.map, c.scenario.map
         ));
     }
-    if s.id != c.scenario.setting {
+    if c.setting_parsed && s.id != c.scenario.setting {
         errs.push(format!(
             "setting.ron: id {} != scenario setting {}",
             s.id, c.scenario.setting
         ));
     }
-    if s.disclaimer.trim().is_empty() {
+    if c.setting_parsed && s.disclaimer.trim().is_empty() {
         errs.push("setting.ron: disclaimer text missing".into());
     }
 

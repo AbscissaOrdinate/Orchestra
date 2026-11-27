@@ -54,4 +54,5 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-25 | WS-02 v0.2: OQ-A1–A6 closed (same-platform determinism; user-set history ring/autosave {1–24}, 3 autosaves kept; reference machine Ryzen 7 5800H; debt/treasury deferred to WS-03; `Lazy` unit-level breakdowns). Added ARC-044–046 and `explain_change`; ARC-021/024/031/042/043/062/090 revised; ADR-0006/0007/0009 revised |
 | 2026-11-25 | WS-02 spec approved v1.0; ADR-0004–0009 accepted |
 | 2026-11-25 | OQ-4 closed: Project GitHub sync works for search (manual "Sync now"; files not openable by name); POAM item 6 done |
-| 2026-11-27 | WS-08a spec (Draft v0.1, WLD-001–049), canon v0.1, and draft Earth map (110 land + 22 sea regions, 366 edges) and DATE setting (47 polities) content; prototype content checker with 41 passing tests |
+| 2026-11-27 | WS-08a spec (Draft v0.1, WLD-001–049), canon v0.1, and draft Earth map (110 land + 22 sea regions, 366 edges) and DATE setting (47 polities) content; prototype content checker |
+| 2026-11-27 | WS-08a grader fixes: one primary owner per start field (WLD-022); no cascading errors (ARC-051); data-driven disclaimer headers; region IDs and names made physical (23 renamed); 1945–55 back-history all [ORIG], DATE facts F-1..F-8 kept separate; 52 passing tests |

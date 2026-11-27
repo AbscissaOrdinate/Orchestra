@@ -28,7 +28,7 @@ An event hook (§6) is tagged [DATE] only if DATE itself gives its date (F-2, F-
 | F-5 | Belesia is a young democracy whose independence from colonial rule was turbulent | [V] DATE Indo-Pacific overview |
 | F-6 | Himaldesh is a nonaligned, nuclear-armed democracy; Bagansait is led by a military junta | [V] DATE overviews |
 | F-7 | Olvana is a communist would-be regional hegemon with the region's largest military, and has disputed territory with South Torbia | [V] DATE Olvana overview; DATE OPORD |
-| F-8 | Present-day roles of the other DATE polities (Atropia, Gorgas, Limaria, Pirtuni, Ariana, Nyumba, Kujenga, Amari, Ziwa, Fanu Rai, Volcani Tura) as listed in §4.1 | [V] Volcani Tura (DATE); the rest [R], from secondary summaries |
+| F-8 | Present-day roles of the other DATE polities (Atropia, Gorgas, Limaria, Pirtuni, Ariana, Nyumba, Kujenga, Amari, Ziwa, Fanu Rai, Volcani Tura) as listed in §4.1, and South Torbia's standing among the wealthiest economies | [V] Volcani Tura (DATE); the rest [R], from secondary summaries |
 
 The DATE source is the Australian Army's DATE site (date.army.gov.au) and its published country studies and operation orders. The TRADOC ODIN knowledge base could not be reached when this was written (OQ-C1).
 

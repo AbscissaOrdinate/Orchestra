@@ -45,7 +45,7 @@ content/settings/date/claims.ron        [(region, claimant, ClaimKind)]
 content/settings/date/subjects.ron      [(subject, overlord, SubjectKind)]
 content/settings/date/alliances.ron     [Alliance]
 content/settings/date/start.ron         [StartState]                   (keyed by `polity`)
-content/settings/date/region_names.ron  [(region, display name)]       setting-level aliases
+content/settings/date/region_names.ron  [(region, display name, Provenance)]  setting-level aliases
 ```
 
 Load order and validation follow WS-02 §3.6. Setting files reference map region IDs and never define geography. Map files never mention polities (ARC-052).
@@ -203,7 +203,7 @@ Verification column: **C** = prototype checker test (named `wld_NNN_*` in `proto
 ### 5.1 DATE OE names (29) [V: date.army.gov.au region pages; secondary: Wikipedia "DATE World"]
 Eurasia: Ariana, Atropia, Donovia, Gorgas, Limaria, Pirtuni. Indo-Pacific: Bagansait, Belesia, Fanu Rai, Gabal, Himaldesh, Khorathidin, North Torbia, Olvana, Patani Baru, Puller Islands, South Torbia, Sunda Baru, Sungzon, Volcani Tura. Europe (legacy DATE): Arnland, Bothnia, Framland, Otso, Torrike. Africa: Amari, Kujenga, Nyumba, Ziwa.
 
-DATE facts used as constraints, with confidence: South Torbia holds most of southern Luzon [V]; Gabal emerged from the joint rule of two Western European countries in 1977 [V]; the Sunda Baru Federation formed in 1985 from Indonesia plus Malayan provinces and calls Patani Baru illegitimate [V]; Volcani Tura holds eastern New Guinea [V]; Himaldesh is a nonaligned, nuclear-armed democracy [V]; Bagansait is junta-led [V]; Belesia's independence from colonial rule was turbulent [V]; Donovia was its region's dominant power until about two decades before DATE's present [V]; Olvana covers eastern and south-central China, and Arnland, Framland and Torrike share Sweden's footprint [R].
+DATE facts used as constraints, with confidence: South Torbia holds most of southern Luzon [V]; Gabal emerged from the joint rule of two Western European countries in 1977 [V]; the Sunda Baru Federation formed in 1985 from Indonesia plus Malayan provinces and calls Patani Baru illegitimate [V]; Volcani Tura holds eastern New Guinea [V]; each Torbia claims the other and the Song family has ruled North Torbia since its founding [V: DATE MNF-OBA JIPOE]; Olvana is a communist would-be regional hegemon with the region's largest military and disputes territory with South Torbia [V: DATE Indo-Pacific overview; MNF-OBA JIPOE]; Himaldesh is a nonaligned, nuclear-armed democracy [V]; Bagansait is junta-led [V]; Belesia's independence from colonial rule was turbulent [V]; Donovia was its region's dominant power until about two decades before DATE's present [V]; Olvana covers eastern and south-central China, Arnland, Framland and Torrike share Sweden's footprint, and South Torbia ranks among the wealthiest economies [R: secondary summaries].
 
 ## 6. Content/data
 
@@ -226,7 +226,7 @@ The draft files listed in §3.1 are complete for the MVP start state:
 
 ## 7. Verification
 
-- `cargo test` in `prototypes/ws08a-content-check/` runs 51 tests, covering every WLD requirement marked C plus ARC-051 (exact error count, and no cascade after a parse failure).
+- `cargo test` in `prototypes/ws08a-content-check/` runs 52 tests, covering every WLD requirement marked C plus ARC-051 (exact error count; no cascade after a polity or setting.ron parse failure).
 - `cargo run -- ../../content date_1955` prints `ok: scenario date_1955 — 132 regions, 366 edges, 47 polities`.
 - `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` pass.
 - In M4 the schema types and tests move into `sim-core` under the same test names, and the prototype is deleted.

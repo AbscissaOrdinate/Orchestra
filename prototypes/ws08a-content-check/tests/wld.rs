@@ -844,6 +844,15 @@ fn arc_051_all_errors_in_one_pass() {
 }
 
 #[test]
+fn arc_051_setting_parse_failure_does_not_cascade() {
+    let dir = fixture("arc051s");
+    edit(&dir, "settings/date/setting.ron", "version:", "verzion:");
+    let errs = errors(&dir);
+    assert_eq!(errs.len(), 1, "only the parse error: {errs:#?}");
+    assert!(has(&errs, "setting.ron"));
+}
+
+#[test]
 fn arc_051_parse_failure_does_not_cascade() {
     let dir = fixture("arc051p");
     edit(&dir, "settings/date/polities/otso.ron", "name:", "nmae:");
