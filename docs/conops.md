@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Status | Baseline v0.3 |
+| Status | Baseline v0.4 |
 | Owner | Sean |
 | Workstream | WS-01 |
-| Last updated | 2026-11-24 |
+| Last updated | 2026-11-27 |
 
 This is the top-level design document. Workstream specs (`docs/specs/`) derive from it and trace back to the `SYS-` requirements in §9. If a spec conflicts with this document, this document wins until it is formally revised (see `CLAUDE.md`).
 
@@ -39,7 +39,7 @@ There are no win conditions. The game is a sandbox with optional retrospective s
 | Area | MVP (in) | Deferred (out) |
 |---|---|---|
 | Playable polity | Nation-state only. The polity data model stays generic. | Corporations, national unions, nonstate actors as playable |
-| AI polities | Player + 3–5 high-fidelity AI + ~20–40 macro-level polities. Tiers can be promoted or demoted. | — |
+| AI polities | Player + 3–5 high-fidelity AI + ~20–45 macro-level polities (default setting: 42, WS-08a). Tiers can be promoted or demoted. | — |
 | Corporations | AI-only, as defense and space contractors supplying the component and design market | Stock market, corporate bonds, corporate play |
 | Nonstate actors | Macro-level AI only | Playable nonstate mechanics |
 | Timeframe | 1955–2060 | Out to 2150 |

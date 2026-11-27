@@ -1,5 +1,5 @@
 # WS-02 — Architecture & Data Model
-Status: Approved v1.0 (2026-11-25) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-25
+Status: Approved v1.1 (2026-11-27; v1.0 2026-11-25) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source or measurement given) · **[R]** recalled, not checked · **[D]** design choice.
 Decisions are recorded in ADR-0004 to ADR-0009. This spec is the contract that WS-03 to WS-09 code against.
@@ -373,7 +373,7 @@ Batch uses `std::thread::scope`; each run is single-threaded; results are gather
 | ARC-081 | A tier switch conserves aggregates. | Test: promote then demote a stub polity; each conserved quantity is within 1e-6 relative of its pre-switch value at both steps. | SYS-006 |
 | ARC-082 | Tier switches happen only in R7 and only by order. | Test: a `SetTier` order issued in D1 changes `tier` only after R7 of the same tick; no other stage changes `tier`. | SYS-006 |
 | **Performance** |||
-| ARC-090 | Pipeline overhead (stubs that touch every tracked variable) is ≤ 5 ms/tick at MVP scale. | `orchestra bench` on a synthetic scenario (1 player + 5 high + 40 macro polities, 100 regions, 50 bodies, 300 techs, ~300 stub tracked units per high-fidelity polity with ~8 `Lazy` variables each, ~1,600 polity-level `Tracked` vars), release build: median ≤ 5 ms on the reference machine (§5); CI threshold 10 ms. `bench` also reports the postcard size of one `World`, which must be ≤ 8 MB. | SYS-008 |
+| ARC-090 | Pipeline overhead (stubs that touch every tracked variable) is ≤ 5 ms/tick at MVP scale. | `orchestra bench` on a synthetic scenario (1 player + 5 high + 41 macro polities, 132 regions, 50 bodies, 300 techs, ~300 stub tracked units per high-fidelity polity with ~8 `Lazy` variables each, ~1,600 polity-level `Tracked` vars), release build: median ≤ 5 ms on the reference machine (§5); CI threshold 10 ms. `bench` also reports the postcard size of one `World`, which must be ≤ 8 MB. | SYS-008 |
 | ARC-091 | Per-subsystem budgets sum to the SYS-008 total. | Budget table (§5) is in this spec; each WS spec states its own budget; `bench` prints per-stage medians. | SYS-008 |
 | **Tauri stub** |||
 | ARC-100 | The Tauri app builds and calls sim-core. | Manual check on the dev machine: the window shows the version and a world hash that matches `orchestra run --ticks 0 --seed <same>`. | ADR-0002 |
@@ -404,7 +404,7 @@ Memory budget [D]: ≤ 8 MB per `World` snapshot (measured as postcard size). Th
 The schemas themselves belong to each WS. WS-02 fixes only these:
 
 - `content/scenarios/<id>.ron`: `Scenario { id, map: String, setting: String, start: (year, month), end: (year, month), overrides: [...] }`
-- `content/maps/earth/regions.ron`: `[Region { id, name, lat, lon, terrain, ... }]`, `edges.ron`: `[(from_id, to_id, RegionEdge { kind, cost })]`
+- `content/maps/earth/regions.ron`: `[Region { id, name, lat, lon, terrain, ... }]`, `edges.ron`: `[(from_id, to_id, RegionEdge { kind, cost, chokepoint })]` (`chokepoint` optional, default empty; added in v1.1 per WS-08a OQ-W2)
 - `content/settings/<setting>/polities/*.ron` (one per polity), `ownership.ron`: `[(region_id, polity_id)]`, `start.ron`: start values keyed by polity ID
 - `content/maps/sol/bodies.ron`, `transfers.ron`: template nodes and delta-v edges; WS-08 defines the seeded variant
 - `crates/sim-core/tests/content/`: a minimal test setting (3 polities, 6 regions, 4 bodies, 5 techs) used by every ARC test
