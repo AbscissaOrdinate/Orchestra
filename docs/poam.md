@@ -11,8 +11,8 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 |---|---|---|---|---|
 | M0 | Project setup | Repo scaffolded; ConOps baselined; spec template, grader agent, and kickoff prompts committed | WS-01, WS-10 | ☑ |
 | M1 | Research & key ADRs | Research backlog (ConOps §12) closed; ADRs for the stack, content format, and setting licensing (OQ-1, OQ-2, OQ-5) | WS-01, WS-02, WS-08 | ☑ |
-| M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ☐ |
-| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03 draft in PR; WS-04–05 pending) |
+| M2 | Model prototypes | Python/MATLAB prototypes of: (a) fiscal + tax + bonds, (b) the R&D latent-truth/belief model, (c) faction/selectorate stability. Each is batch-run and shown stable over 1955–2060. | WS-03, WS-04, WS-05 | ◐ ((a) and (c) planned: `prototypes/economy/README.md`, `prototypes/governance/PLAN.md`) |
+| M3 | Core specs approved | WS-02, 03, 04, and 05 specs with numbered requirements and acceptance criteria | WS-02–05 | ◐ (WS-02 approved; WS-03 v0.1 and WS-04 v0.2 drafts in review; WS-05 pending) |
 | M4 | Sim-core skeleton | Tick loop, seeded RNG, content loading, breakdown/explain API, CLI batch runner. SYS-002, 003, 004, and 007 pass. | WS-02, WS-10 | ☐ |
 | M5 | Core triad in Rust | Economy, governance, and R&D implemented to spec, with batch stability tests in CI | WS-03–05 | ☐ |
 | M6 | Forces & thin stubs | Force design (templates, lifecycle, manpower, basing, munitions, strategic forces) per WS-11; diplomacy/AI, combat kernel, space graph, and setting data at MVP depth | WS-06–08, WS-11 | ☐ |
@@ -38,12 +38,15 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 13 | Start the WS-11 design chat with `prompts/WS-11.md` once the WS-05 spec is approved | New Project chat | ☐ |
 | 14 | Review WS-03 spec draft; answer OQ-E1–E6 (incl. the ConOps edits proposed in OQ-E5); approve or request changes | Sean | ☐ |
 | 15 | Build the M2(a) economy prototype per `prototypes/economy/README.md` (≈ 32 h, P1–P5) | `prototypes/economy/` | ☐ |
-| 16 | Start the WS-04 design chat; it must conform to the WS-03 §2.4 contract (`EconKey`, `EconOutcomes`, `FactionEconBehavior`) | New Project chat | ☐ |
+| 16 | Start the WS-04 design chat; it must conform to the WS-03 §2.4 contract (`EconKey`, `EconOutcomes`, `FactionEconBehavior`) | New Project chat | ☑ (WS-04 v0.2 conforms; PR #8) |
 | 14 | Review the WS-08a spec, canon and draft content; answer OQ-W1–W6 and OQ-C1–C3; approve or request changes | Sean | ◐ (OQ-W1/W2/W4/W6, OQ-C2 accepted 2026-11-27; approval pending) |
 | 15 | If OQ-W1 and OQ-W2 are accepted: edit WS-02 (ARC-090 bench to 47 polities and 132 regions; optional `RegionEdge.chokepoint` in §6) | Project → repo | ☑ (WS-02 v1.1, ConOps v0.4) |
 | 16 | Verify the [R]-tagged DATE facts against ODIN (OQ-W3/OQ-C1): Sean saves the Internet Archive ODIN pages (PDF/HTML) and attaches them; Claude's web tools can't fetch the archive | Sean → Claude | ☐ |
 | 17 | M4: port `prototypes/ws08a-content-check` types and `wld_*` tests into `sim-core`, then delete the prototype | Code session | ☐ |
 | 18 | Start WS-08b (Solar System and resources) with `prompts/WS-08b.md` | New Project chat | ☐ |
+| 19 | Review WS-04 v0.2 (8 axes, 9 institutions, services split, WS-03 §2.4 conformance); answer OQ-G7–G9; approve or request changes | Sean (PR #8) | ◐ (OQ-G7–G9 accepted 2026-11-27; approval pending) |
+| 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ◐ (wealth rule, key count and rents note done in PR #8; CBI ownership pending) |
+| 21 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
 
 ## Change log
 
@@ -62,3 +65,5 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-26 | Salvo kernel research note `docs/research/salvo-model.md` (feeds WS-07, WS-11): framework F-1–F-8, gaps, munition lots option C, batteries as brigade templates; ConOps T-1/T-2 edits proposed, not made |
 | 2026-11-26 | WS-03 economy spec Draft v0.1 (ECO-001–133) and M2(a) prototype plan; closes WS-02 OQ-A4 (adds `gov_debt`, `treasury` to `Aggregates`); ConOps edits proposed in OQ-E5, not made |
 | 2026-11-27 | OQ-W1/W2/W4/W6 and OQ-C2 accepted: ConOps v0.4 (~20–45 macro polities), WS-02 v1.1 (ARC-090 bench 47 polities/132 regions; optional `RegionEdge.chokepoint`). Low-fidelity 1955 map `docs/setting/date/map-1955.svg` plus renderer; Kalimantan centroid moved onto land |
+| 2026-11-27 | WS-04 governance spec Draft v0.2 and M2(c) prototype plan (PR #8). v0.1 (GOV-001–098) revised per Sean: 8 TI-inspired axes (Economy, Welfare, Knowledge, Government, Oppression, Military, Nuclear, Space) with 2–3 salient per faction; Unity as a program; 9 institutions (control points) with archetype weights replacing veto players and strength weights; Military + Navy/Aerospace split by size; conforms to WS-03 §2.4 (rents as private goods); presets for all 8 WS-08a `Government` variants. OQ-G1–G6 closed; WS-03 edits requested as OQ-G7 |
+| 2026-11-27 | WS-03 amended (OQ-G7): `KeyOutcome.wealth` with a key-wealth rule (§3.5), Transfer/Public keys sectorless (≤ 240 keys), rents never key income; ECO-090 acceptance extended. OQ-G8 closed, OQ-G9 accepted |
