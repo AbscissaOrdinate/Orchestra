@@ -1,8 +1,10 @@
 # WS-04 — Governance & Factions
-Status: Draft v0.2 · Parent: ConOps §3, §5 (P-3, P-4, P-6, P-7, P-8), §6 governance/factions/services rows, SYS-002, SYS-004, SYS-006, SYS-007, SYS-008 · Depends on: WS-02 v1.1, WS-03 Draft v0.1 (§2.4 contract), WS-08a Draft v0.1 (§3.5 field ownership) · Last updated: 2026-11-27
+Status: Draft v0.3 · Parent: ConOps §3, §5 (P-3, P-4, P-6, P-7, P-8), §6 governance/factions/services rows, SYS-002, SYS-004, SYS-006, SYS-007, SYS-008 · Depends on: WS-02 v1.1, WS-03 Draft v0.3 (§2.4 contract), WS-08a Draft v0.1 (§3.5 field ownership) · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source linked) · **[R]** recalled, not checked · **[D]** design choice (to be tuned in the M2(c) prototype).
 Prototype plan: `prototypes/governance/PLAN.md`.
+
+**v0.3 changes (WS-03 v0.3 sync, 2026-11-27):** §6.4 adds the default policy map, one row and one channel for every WS-03 and WS-04 instrument, including WS-03 v0.3's mortgage LTV cap, mortgage-interest deductibility, pension funded share and social housing. §4.2 states which wealth concept drives oligarch control. OQ-G10 is added.
 
 **v0.2 changes (Sean's review, 2026-11-27):** the policy space is now eight TI-inspired axes, and each faction cares about 2–3 of them. Unity is now a discretionary program rather than an axis. Faction power now comes from nine **institutions** (control points) whose weights vary by government archetype, and these institutions also replace the separate veto-player list. Services are now three factions (Military, Navy, Aerospace), and Navy and Aerospace split off only when their service is large enough. The WS-03 interface now follows the WS-03 §2.4 contract exactly: `EconKey`, `EconOutcomes`, corruption rents as private goods, `FactionEconBehavior`. Presets now cover every WS-08a `Government` variant. OQ-G1–G4 and G6 are closed.
 
@@ -94,7 +96,7 @@ Eight axes is more than v0.1's six. But each faction weighs only 2–3, so a pla
 | `shocks` (coup, revolution) | capital_loss, output_loss ∈ [0, 0.5] | §4.6; WS-03 applies them in R2 via its event-capital-destruction input |
 
 **Requested WS-03 edits (OQ-G7; WS-04 does not change WS-03):**
-1. ~~Add `wealth: f64` to `KeyOutcome`.~~ **Done (2026-11-27):** WS-03 §2.4 and §3.5 (key-wealth rule), ECO-090. Transfer and Public keys carry no sector, so there are at most 240 keys.
+1. ~~Add `wealth: f64` to `KeyOutcome`.~~ **Done (2026-11-27):** WS-03 §2.4; since WS-03 v0.2, key wealth comes from the household panel (§3.5), and since v0.3 it evolves through five-group wealth dynamics (ECO-090). Transfer and Public keys carry no sector, so there are at most 240 keys.
 2. ~~CBI ownership.~~ **Done (2026-11-27, WS-03 v0.2):** WS-03 reads `cbi` only from WS-04, has no default, and keeps per-polity numbers out of `start.ron` (WS-03 §5.1).
 4. **Key wealth method (WS-03 v0.2 §3.5):** wealth per key now comes from a synthetic household panel calibrated to Fed DFA, WIR and SCF 2022 data, replacing the linear rule. The `KeyOutcome` fields are unchanged. ECO-090 now requires monotonicity only for bins pooled across roles; Transfer keys can be wealthier than their incomes imply.
 5. **WS-03 v0.3 (pending WS-04 action):** four new WS-03 instruments need `policy_map.ron` rows and a channel each (GOV-021): mortgage LTV cap and mortgage-interest deductibility (`SetRegulation`), pension funded share (`EnactBudget`), and a social housing line. Suggested: Welfare axis, channel `incidence`. Wealth now evolves through five-group dynamics, and WS-03 also publishes measured, true and pension-augmented top shares. `KeyOutcome.wealth` remains marketable true wealth (offshore included).
@@ -172,6 +174,8 @@ All quantities are per polity per monthly tick. Indices: k EconKey, f faction, i
 Presets (§6.1) are named parameter sets. A custom government is any valid set.
 
 ### 4.2 Keys, membership, institution control, clout
+
+**Wealth concept.** `KeyOutcome.wealth` is WS-03's *true* marketable wealth, offshore holdings included. Oligarch control therefore survives capital flight: moving wealth abroad shelters it from tax without giving up domestic influence [D]. WS-03's *measured* (excluding offshore) and *pension-augmented* top shares are in its distribution summary; WS-04 doesn't use them in the MVP (OQ-G10).
 
 **Keys.** At most 240 `EconKey`s per polity (20 bins × 5 sectors × Wage/Capital, plus 20 Transfer and 20 Public keys without a sector; empty keys are omitted). Each carries income, tax, transfer, unemployment, inflation and wealth fields, and the player never sees them directly.
 
@@ -472,6 +476,50 @@ Institution weights (exec, leg, jud, bur, sec, med, ind, oli, clg); **bold** = h
 
 Conscription (none / selective / universal) · Press (free / restricted / censored) · Assembly & labor (free unions / regulated / banned) · Internal security (civilian police / gendarmerie / secret police) · Civil-military relations (civilian control / autonomous / praetorian) · Judicial independence (independent / captured) · Religion & state (secular / established / theocratic) · Nuclear posture (no program / minimal deterrence / assured destruction) · Pension age (55 / 60 / 65) · Women's status (restricted / partial / equal) · Price controls (banned / permitted). State ownership, regulation and capital controls are WS-03 `SetRegulation` instruments, not laws.
 
+### 6.4 Default policy map [D]
+
+Every instrument has exactly one channel and a sparse row of axis weights (GOV-021). Weights: ●●● strong (1.0), ●● moderate (0.5), ● weak (0.2), each applied to (x − x⁰) in the instrument's own content scale; the sign gives the pole. `incidence` means the money effect reaches factions through WS-03 `EconOutcomes` and the axis row carries only ideology.
+
+| Instrument (owner) | Channel | Axis row |
+|---|---|---|
+| **Budget lines (WS-03 §3.6), as share of GDP** ||
+| Defense personnel, O&S, procurement, defense R&D (conventional part) | incidence | Military +●●● |
+| Strategic share of defense spending (WS-11 tag, OQ-G9) | incidence | Nuclear +●●●, Military −● |
+| Space program | incidence | Space +●●● |
+| Civil R&D | public (v 0.5) | Knowledge +●●● |
+| Education | public (v 1.0) | Knowledge +●●, Welfare +● |
+| Health | public (v 1.0) | Welfare +●● |
+| Pensions, welfare transfers, unemployment benefits | incidence | Welfare +●●● |
+| **Social housing** (WS-03 v0.3) | incidence | Welfare +●●● |
+| Infrastructure / `PublicInvestment` | public (v 0.8) | Economy +● |
+| Administration & enforcement | none (acts through K_floor, §4.6, and WS-03 compliance) | Government +●● |
+| Internal security | public (v 0.2) | Oppression +●● |
+| Subsidies | incidence | Economy +●● |
+| Interest | none | — |
+| **Taxes (WS-03 §3.5)** ||
+| Personal income tax progressivity index | incidence | Welfare +●●● |
+| Payroll | incidence | Welfare +● |
+| Corporate | incidence | Economy +●, Welfare +● |
+| Capital gains, wealth, estate | incidence | Welfare +●● |
+| VAT/sales | incidence | Welfare −● (regressive) |
+| Tariffs | incidence | Economy +●● |
+| **Regulation (`SetRegulation`) and budget fields** ||
+| Regulation level, price controls, capital controls, investment directives, state ownership | incidence | Economy +●● |
+| **Mortgage LTV cap** (tightness = 1 − cap; WS-03 v0.3) | incidence | Economy +● |
+| **Mortgage-interest deductibility** (WS-03 v0.3) | incidence | Welfare −●● |
+| **Pension funded share** (`EnactBudget`; WS-03 v0.3) | incidence | Economy −●● |
+| Monetary financing share (`SetMonetary`) | incidence | Economy +● |
+| Debt rule, `DrawBailout`, `IndustrialConversion` | none | — |
+| **WS-04 instruments** ||
+| Spoils / corruption K | rents | Government −●●● |
+| Institution parameters: franchise breadth, election fairness, judicial independence | none | Government +●● each |
+| Laws (§6.3) | none | conscription Military +●●; press, assembly, internal security, civil-military Oppression +●● (toward the restrictive option); religion & state Knowledge −●●; nuclear posture Nuclear +●●●; pension age (lower) Welfare +●; women's status (equal) Knowledge +●●; price controls (permitted) Economy +● |
+
+Three of WS-03's four new instruments map differently from its suggestion (all to Welfare):
+- **The LTV cap goes to Economy.** It's macroprudential regulation, the same family as the other `SetRegulation` levers. Its distributional effect (renters priced out of ownership) already reaches factions through incidence.
+- **Deductibility is Welfare −, the elite-serving pole.** The subsidy rises with the marginal rate and the size of the mortgage, so its value goes mostly to upper-middle and upper homeowners [R].
+- **The funded pension share goes to Economy −, the competitive pole.** It shifts pension provision from state pay-as-you-go to market funds (the Chile 1981 model [R]). Its effect on measured wealth shares is WS-03's concern.
+
 ## 7. Verification
 
 ### 7.1 Tests and stubs
@@ -506,3 +554,4 @@ Estimated R5 cost per high-fidelity polity: 12 factions × ~240 keys membership,
 | OQ-G7 | WS-03 edits requested (§3.2): `wealth` in `KeyOutcome`; CBI owned by WS-04 (drop or demote WS-03's `cbi_default`); rents never added to key incomes | **Closed (2026-11-27).** Wealth, the rents note and CBI ownership are all done in WS-03 (v0.2 for CBI and the panel-based key wealth) |
 | OQ-G8 | Space axis poles: earthbound/expansionist (recommended) vs. extraction/ecocentric | **Closed (2026-11-27): earthbound/expansionist**; revisit when WS-08b adds resources |
 | OQ-G9 | WS-11 must expose a strategic (nuclear) share of defense spending for the Nuclear axis | **Accepted (2026-11-27)**; a WS-11 kickoff input. Until then the Nuclear axis reads only the posture law |
+| OQ-G10 | Should anything react to *measured* rather than true inequality, e.g., ideological legitimacy or the media falling as the measured top-10% share rises, while power follows true wealth? | Not in the MVP; revisit in M2(c) if S5 shows inequality has no political bite |
