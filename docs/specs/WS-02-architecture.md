@@ -1,5 +1,5 @@
 # WS-02 — Architecture & Data Model
-Status: Approved v1.2 (2026-11-27; v1.1 2026-11-27, v1.0 2026-11-25) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-27
+Status: Approved v1.3 (2026-11-27; v1.2, v1.1 2026-11-27, v1.0 2026-11-25) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source or measurement given) · **[R]** recalled, not checked · **[D]** design choice.
 Decisions are recorded in ADR-0004 to ADR-0009. This spec is the contract that WS-03 to WS-09 code against.
@@ -113,7 +113,17 @@ pub struct Graph<N, E> { pub nodes: Vec<N>, pub edges: Vec<(u16, u16, E)>, adj: 
 
 Rules: every collection in `World` is a `Vec` or `BTreeMap`. Subsystem blocks hold the high-fidelity detail as `Option<Box<Detail>>` (`None` for macro polities). Caches that can be rebuilt are `#[serde(skip)]` and rebuilt after load.
 
-**Truth vs. belief (P-1, P-2).** `Truth` holds every latent value sampled at world generation (tech parameters, deposits, hidden enabler edges). It is constructed only by `worldgen` and exposed only as `&Truth`. Beliefs live per polity in `BeliefBlock { by_subject: Vec<Option<Belief>> }`, indexed by a dense `SubjectIdx` (`None` = the polity doesn't know the subject exists).
+**Truth vs. belief (P-1, P-2).** `Truth` holds every latent value sampled at world generation (tech parameters, deposits, hidden enabler edges). It is constructed only by `worldgen` and exposed only as `&Truth`. Beliefs live per polity in a `BeliefBlock`, indexed by a dense `SubjectIdx` (`None` = the polity doesn't know the subject exists, or doesn't hold that subsystem's range).
+
+**Subject ranges (v1.3, WS-05 P-02a).** Worldgen assigns each subsystem one contiguous `SubjectIdx` range, in a fixed order: WS-03 structural, then WS-05 tech (3 per tech: viability, perf, cost, `tech_base + 3·t + k`), then WS-08b deposits. The ranges are recorded in `World.header` and are identical for every polity. A polity's `BeliefBlock` stores one optional slice per range, so a macro polity omits the WS-05 range entirely: it holds only `MacroRnd { level: [f64; 12] }` and no tech beliefs.
+
+```rust
+pub struct SubjectRange { pub owner: Cow<'static, str>, pub start: u32, pub len: u32 }
+pub struct BeliefBlock { ranges: Vec<Option<Vec<Option<Belief>>>> }   // one entry per SubjectRange
+impl BeliefBlock {
+    pub fn get(&self, s: SubjectIdx) -> Option<&Belief>;   // None if unknown or range omitted
+}   // the only accessor: callers never index storage directly
+```
 
 ```rust
 pub enum Scale { Linear, Log, Logit }           // positive quantities use Log, probabilities Logit
@@ -347,6 +357,7 @@ Batch uses `std::thread::scope`; each run is single-threaded; results are gather
 | ARC-013 | `Belief` supports 1–3 Gaussian components on a linear, log or logit scale, with moment-matched mean and σ; observations are in natural units with σ on the belief's scale. | Unit tests: (a) a single-component update matches the Kalman closed form within 1e-12; (b) a two-component belief observed near one mode shifts > 90% weight to that mode; (c) mean/σ of a mixture equal analytic moments within 1e-12; (d) 100 unbiased observations of a truth bring σ below 10% of its prior and the mean within 3σ of truth; (e) on a Log belief, 100 observations of truth × exp(N(0, 0.3)) bring the log-space mean within 3σ of ln(truth). | P-2, SYS-005 |
 | ARC-014 | All belief updates go through `Observation`s applied in stage I1. | Test: a stub subsystem's observations change `beliefs` only after I1; no other code path writes `world.beliefs` (pub(crate) setter; reviewed by grader). | P-2 |
 | ARC-015 | The region graph and the Sol node graph support neighbor queries and minimum-cost paths. | Test: on a 5-node fixture graph (Sol nodes: surface/orbit regimes of the test bodies), `shortest_path` returns the known optimum delta-v path and cost; adjacency lists are sorted. | ConOps §3 |
+| ARC-016 | `SubjectIdx` ranges are assigned per subsystem in a fixed order, and a polity may omit a range. | Tests: (a) the test setting's ranges are WS-03, WS-05, WS-08b in that order, contiguous, and identical across two worldgens with shuffled content files; (b) a macro polity's `BeliefBlock::get` returns `None` for every WS-05 subject and stores no slice for that range; (c) `BeliefBlock` storage is private (only `get` and the I1 writer touch it). | P-2, WS-05 P-02a |
 | **Pipeline** |||
 | ARC-020 | Each tick runs stages D1, D2, R1–R5, R5b, R6, R6b, R7, I1, I2 in that order. | Test: stub subsystems append their stage name to an event list; the per-tick sequence equals the table in §3.3. | ConOps §2 |
 | ARC-021 | Within a stage, every subsystem reads the stage-start state; blocks commit at stage end; each block has exactly one writer per stage. | Test: two stub subsystems in one stage each read the other's block; results are identical when their call order is swapped. Ownership holds because subsystem functions take `&World` (compile-enforced). | P-4 |
@@ -410,7 +421,7 @@ Target: median ≤ 100 ms per tick, release build, with 1 player + 5 high-fideli
 | I1 Observe, I2 Report, R7 Tier | 5 |
 | Margin | 5 |
 
-Memory budget [D]: ≤ 8 MB per `World` snapshot (measured as postcard size). The rough mix is beliefs ≈ 3.6 MB (including WS-08b's ≈ 0.72 MB of deposit subjects), polity-level breakdowns ≈ 0.4 MB, force units with composition ≈ 2 MB, and `resources` + `space` ≈ 0.18 MB (WS-08b §4.12): ≈ 6.2 MB in all [D]. Ring memory is `(ring + 1) × snapshot`: ≤ 104 MB at the default of 12 and ≤ 200 MB at the maximum of 24, both small next to 16 GB. If a WS pushes the snapshot past 8 MB, move its bulk state to `Lazy` or share unchanged data between snapshots before raising the budget.
+Memory budget [D]: ≤ 8 MB per `World` snapshot (measured as postcard size). The rough mix is beliefs ≈ 3.6 MB budgeted (of which WS-05 tech beliefs ≈ 0.43 MB, high-fidelity polities only, and WS-08b deposits ≈ 0.72 MB), polity-level breakdowns ≈ 0.4 MB, force units with composition ≈ 2 MB, and `resources` + `space` ≈ 0.18 MB (WS-08b §4.12): ≈ 6.2 MB in all [D]. Ring memory is `(ring + 1) × snapshot`: ≤ 104 MB at the default of 12 and ≤ 200 MB at the maximum of 24, both small next to 16 GB. If a WS pushes the snapshot past 8 MB, move its bulk state to `Lazy` or share unchanged data between snapshots before raising the budget.
 
 ## 6. Content/data
 
