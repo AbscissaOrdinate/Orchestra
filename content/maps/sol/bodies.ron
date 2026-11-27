@@ -8,7 +8,9 @@
 //   [NSSDC-A] NASA NSSDC Asteroid Fact Sheet: a, i, mass, dimensions;  [IMCCE] Psyche a, i;  [PDS-E] Eros elements, mass
 //   [R] recalled/secondary, not checked against a primary source;  [D] design choice
 // Units: gm km^3/s^2; radius_km, alt_km km; a: Au(..) heliocentric or Km(..) planetocentric; angles deg.
-// mean_lon: Some((L0 at J2000, rate deg/century)); None = phase sampled at worldgen (WS-08b §3.2 rule G-6).
+// mean_lon: Some((L0 at J2000, rate deg/century)); None = phase sampled at worldgen (WS-08b §4.1 G-2).
+// Every body here is canonical: present in every world with these values. discovered: Some(year) after the scenario start
+// means the body exists but starts unknown, like a generated body (WS-08b §4.1 G-5); default None = known.
 // Node alt_km is altitude above radius_km; High nodes are ellipses (alt_km = periapsis, apo_alt_km = apoapsis).
 [
     Body(id: "body.sun", name: "Sun", parent: None, class: Star, gm: 1.32712440018e11, radius_km: 695700.0,   // [R] IAU/DE GM_sun
@@ -76,6 +78,14 @@
          composition: Stony, atmosphere: Airless,
          nodes: [Node(regime: Surface, hub: true)]),
 
+    Body(id: "body.juno", name: "Juno", parent: Some("body.sun"), class: Asteroid, gm: 1.335, radius_km: 117.0,    // [NSSDC-A] 20,000e15 kg; D 234 km
+         orbit: Some(Orbit(a: Au(2.670), inc_deg: 12.99, mean_lon: None)),                                             // [NSSDC-A]
+         composition: Stony, atmosphere: Airless,
+         nodes: [Node(regime: Surface, hub: true)]),
+    Body(id: "body.hygiea", name: "Hygiea", parent: Some("body.sun"), class: Asteroid, gm: 5.83, radius_km: 215.0,   // [R] mass ~8.7e19 kg; radius 215 km (secondary)
+         orbit: Some(Orbit(a: Au(3.14), inc_deg: 3.8, mean_lon: None)),                                                // [R] secondary
+         composition: Carbonaceous, atmosphere: Airless,
+         nodes: [Node(regime: Surface, hub: true)]),
     // Moons of the giant planets: GM, radius [JPL-SP]; a, i [JPL-SE]. Planet a, I, L [JPL-AP]; radius [JPL-PP]; GM [JPL-SP].
     // ── Giant planets: hub is an elliptical capture orbit (periapsis 1.5 R, apoapsis 100 R) [D] ──
     Body(id: "body.jupiter", name: "Jupiter", parent: Some("body.sun"), class: Planet, gm: 126686531.9, radius_km: 71492.0,  // [JPL-SP], [JPL-PP]
@@ -127,4 +137,14 @@
     Body(id: "body.triton", name: "Triton", parent: Some("body.neptune"), class: Moon, gm: 1428.49546, radius_km: 1352.60,
          orbit: Some(Orbit(a: Km(354800.0), inc_deg: 157.3, mean_lon: None)), composition: Icy, atmosphere: Airless,   // retrograde: plane ignored [D]
          nodes: [Node(regime: Surface), Node(regime: Low, alt_km: 100.0, hub: true)]),
+
+    // ── Pluto system (canonical; no edge within the 240-month cap until gravity assists exist, so isolated in the MVP) ──
+    Body(id: "body.pluto", name: "Pluto", parent: Some("body.sun"), class: DwarfPlanet, gm: 869.3, radius_km: 1188.3,   // [JPL-PP] mass 13024.6e18 kg
+         orbit: Some(Orbit(a: Au(39.48211675), inc_deg: 17.14001206, mean_lon: Some((238.92903833, 145.20780515)))),   // [R] JPL mean elements (1800–2050, older table)
+         composition: Icy, atmosphere: Thin,
+         nodes: [Node(regime: Surface), Node(regime: Low, alt_km: 100.0, hub: true)]),
+    Body(id: "body.charon", name: "Charon", parent: Some("body.pluto"), class: Moon, gm: 106.1, radius_km: 606.0,   // [JPL-SP]
+         orbit: Some(Orbit(a: Km(19591.0), inc_deg: 0.0, mean_lon: None)), discovered: Some(1978),                  // [R] a; discovered 1978 [R]
+         composition: Icy, atmosphere: Airless,
+         nodes: [Node(regime: Surface), Node(regime: Low, alt_km: 50.0, hub: true)]),
 ]

@@ -70,24 +70,35 @@ def main(content):
     print(f"  synodic period {synodic_months(by_id['body.earth'], by_id['body.mars']):.2f} months")
 
     print("\n== Hypothetical bodies over 2,000 seeds ==")
-    counts, violations, sizes = [], 0, []
+    counts, violations, sizes, groups, belt = [], 0, [], {}, []
     for seed in range(2000):
         gen = generate_bodies(rules, by_id, np.random.Generator(np.random.PCG64(seed)))
         counts.append(len(gen))
         violations += sum(not g["ok"] for g in gen)
+        for g in gen:
+            if g["group"]:
+                groups.setdefault(g["cls"], []).append(g["group"])
+            if g["cls"] == "gen.belt":
+                belt.append((g["body"]["orbit"]["a"][1][0], g["body"]["composition"]))
         all_bodies = bodies + [g["body"] for g in gen]
         n, e = build_graph(all_bodies, {b["id"]: b for b in all_bodies}, overrides)
         sizes.append((len(all_bodies), len(n), len(e)))
     sizes = np.array(sizes)
     print(f"  generated per world: mean {np.mean(counts):.2f}, max {max(counts)}; constraint violations {violations}")
     print(f"  bodies max {sizes[:, 0].max()}, nodes max {sizes[:, 1].max()}, directed edges max {sizes[:, 2].max()}")
+    for cid, gs in groups.items():
+        shares = {k: round(gs.count(k) / len(gs), 3) for k in sorted(set(gs))}
+        print(f"  {cid}: n = {len(gs)}, shares {shares}")
+    inner = [c for a, c in belt if a < 2.5]
+    outer = [c for a, c in belt if a > 2.82]
+    print(f"  belt Stony share: inner (<2.5 AU) {inner.count('Stony') / len(inner):.2f}, outer (>2.82 AU) {outer.count('Stony') / len(outer):.2f}")
 
     print("\n== Resource candidates and belief subjects ==")
     earth = parse_ron((content / "maps/earth/resources.ron").read_text())
     n_earth = sum(len(tags) for _, tags in earth)
     deposits = parse_ron((content / "core/resources/body_deposits.ron").read_text())
     n_body = len(deposits["by_body"])
-    max_gen = sum(c["max"] for c in rules["classes"]) * 2   # ≤ 2 composition rules match any one class
+    max_gen = sum(c["max"] for c in rules["classes"]) * 2   # ≤ 2 composition rules match any one composition
     print(f"  Earth tags {n_earth}; real off-Earth candidates {n_body}; generated ≤ {max_gen}")
     print(f"  subjects ≤ {n_earth + 2 * (n_body + max_gen)} (Earth 1 each, off-Earth 2 each)")
 
@@ -294,59 +305,112 @@ def ym_to_tick(ym):
 
 
 def generate_bodies(rules, by_id, rng):
-    """Seeded hypothetical bodies per gen_rules.ron; returns [{'body': dict, 'ok': bool}]."""
+    """Seeded hypothetical bodies per gen_rules.ron; returns [{'body', 'cls', 'group', 'ok'}]."""
     out = []
     for cls in rules["classes"]:
         n = min(rng.poisson(cls["count_mean"]), cls["max"])
         parent = by_id[cls["parent"]]
         siblings = [orbit_a_km(b) for b in by_id.values() if b.get("parent") == cls["parent"]]
+        kind = cls["orbit"]["_t"] if isinstance(cls["orbit"], dict) else cls["orbit"][0]
         for k in range(n):
             d_lo, d_hi = cls["diameter_km"]
-            u = rng.random()
             s = cls["size_slope"]
-            d = (d_lo ** -s - u * (d_lo ** -s - d_hi ** -s)) ** (-1 / s)    # truncated power law
-            comp = choose(rng, cls["composition"])
+            d = (d_lo ** -s - rng.random() * (d_lo ** -s - d_hi ** -s)) ** (-1 / s)    # truncated power law
             inc = rng.rayleigh(cls["inc_rayleigh_deg"])
-            if cls["parent"] == "body.sun":
-                a, ok = sample_helio(cls, rng)
-                orbit = {"a": ("Au", [a]), "inc_deg": inc, "mean_lon": None}
-            else:
-                a, ok = sample_moon(cls, parent, siblings, rng)
-                orbit = {"a": ("Km", [a]), "inc_deg": inc, "mean_lon": None}
+            group, mean_lon = None, None
+            if kind == "Belt":
+                a, e, ok = sample_belt(cls["orbit"], rng)
+                inc = min(inc, cls["orbit"].get("inc_max_deg") or 180.0)   # Hildas: i < 20°
+                orbit = {"a": ("Au", [a]), "inc_deg": inc, "mean_lon": None, "ecc": e}
+            elif kind == "NeoGroups":
+                group = choose(rng, cls["orbit"][1][0])
+                a, e, ok = sample_neo(group, rng)
+                orbit = {"a": ("Au", [a]), "inc_deg": inc, "mean_lon": None, "ecc": e}
+            elif kind == "Trojan":
+                host = by_id[cls["orbit"]["of"]]
+                group = "L4" if rng.random() < cls["orbit"]["l4_share"] else "L5"
+                lib = rng.uniform(-1, 1) * cls["orbit"]["libration_deg"]
+                l0, rate = host["orbit"]["mean_lon"]
+                mean_lon = (l0 + (60.0 if group == "L4" else -60.0) + lib, rate)    # leads (L4) or trails (L5) the host
+                a, ok = orbit_a_km(host) / AU_KM, True
+                orbit = {"a": ("Au", [a]), "inc_deg": inc, "mean_lon": mean_lon, "ecc": 0.0}
+            else:                                                                   # Moon
+                a, ok = sample_moon(cls["orbit"], parent, siblings, rng)
                 siblings.append(a)
-            body = {"id": f"body.{cls['id'].split('.', 1)[1]}_{k}", "parent": cls["parent"], "gm": 0.0,
+                orbit = {"a": ("Km", [a]), "inc_deg": inc, "mean_lon": None, "ecc": 0.0}
+            comp = sample_composition(cls["composition"], orbit, rng)
+            rho = dict(rules["densities_g_cm3"])[comp] * 1000
+            body = {"id": f"body.{cls['id'].split('.', 1)[1]}_{k}", "parent": cls["parent"],
+                    "gm": 6.6743e-20 * 4 / 3 * math.pi * (d / 2 * 1e3) ** 3 * rho,
                     "radius_km": d / 2, "orbit": orbit, "composition": comp, "atmosphere": "Airless",
                     "nodes": [{"regime": "Surface", "hub": True}]}
-            body["gm"] = 6.6743e-20 * 4 / 3 * math.pi * (d / 2 * 1e3) ** 3 * 2000
-            out.append({"body": body, "ok": ok})
+            ok = ok and d_lo <= d <= d_hi
+            out.append({"body": body, "cls": cls["id"], "group": group, "ok": ok})
     return out
 
 
-def sample_helio(cls, rng):
-    lo, hi = cls["a_au"]
+def sample_belt(o, rng):
+    lo, hi = o["a_au"]
     for _ in range(100):                                # rejection sampling on the plausibility rules
         a = rng.uniform(lo, hi)
-        if any(abs(a - g) < w for g, w in cls.get("gaps_au", [])):
+        if any(abs(a - g) < w for g, w in o.get("gaps_au", [])):
             continue
-        q_max, apo_max = cls.get("q_max_au"), cls.get("apo_max_au")
-        if q_max is None:
-            return a, True
-        e_min = max(0.0, 1 - q_max / a)
-        e_max = apo_max / a - 1
-        if e_min <= e_max:
-            e = rng.uniform(e_min, min(e_max, 0.9))
-            return a, a * (1 - e) <= q_max + 1e-9 and a * (1 + e) <= apo_max + 1e-9
-    return a, False
+        e = rng.rayleigh(o["ecc_rayleigh"])
+        if e < (o.get("ecc_max") or 0.9):
+            return a, e, True
+    return a, e, False
 
 
-def sample_moon(cls, parent, siblings, rng):
-    star_a = orbit_a_km(parent)
-    r_hill = star_a * (parent["gm"] / (3 * MU_SUN)) ** (1 / 3)
-    lo, hi = cls["hill_fraction"]
-    r_min = max(lo * r_hill, cls.get("roche_factor", 0) * 2.44 * parent["radius_km"])
+def sample_neo(group, rng):
+    """(a, e) inside the NEO group definitions: Amor 1.017 < q ≤ 1.3; Apollo a > 1, q < 1.017;
+    Aten a < 1, Q > 0.983; Atira Q < 0.983. All NEOs: q < 1.3, a < 4.2 AU."""
+    for _ in range(100):
+        if group == "Amor":
+            q, a = rng.uniform(1.017, 1.3), rng.uniform(1.05, 3.0)
+        elif group == "Apollo":
+            q, a = rng.uniform(0.3, 1.017), rng.uniform(1.0, 3.0)
+        elif group == "Aten":
+            a = rng.uniform(0.7, 1.0)
+            e_min = max(0.0, 0.983 / a - 1)
+            q = a * (1 - rng.uniform(e_min, min(0.9, e_min + 0.6)))
+        else:
+            a = rng.uniform(0.5, 0.95)
+            q = a * (1 - rng.uniform(0.0, max(0.0, 0.983 / a - 1)))
+        if q >= a:
+            continue
+        e = 1 - q / a
+        if neo_group(a, e) == group:
+            return a, e, True
+    return a, e, False
+
+
+def neo_group(a, e):
+    q, big_q = a * (1 - e), a * (1 + e)
+    if q >= 1.3 or a >= 4.2:
+        return None
+    if a < 1.0:
+        return "Atira" if big_q < 0.983 else "Aten"
+    return "Apollo" if q < 1.017 else "Amor"
+
+
+def sample_composition(spec, orbit, rng):
+    kind, val = (spec["_t"], spec) if isinstance(spec, dict) else (spec[0], spec[1][0])
+    if kind == "Fixed":
+        return choose(rng, val)
+    a = orbit["a"][1][0]
+    (lo, hi), (s_lo, s_hi) = val["a_au"], val["stony"]
+    f = min(1.0, max(0.0, (a - lo) / (hi - lo)))
+    p_s = s_lo + f * (s_hi - s_lo)
+    return choose(rng, [("Stony", p_s), ("Metallic", val["metallic"]), ("Carbonaceous", 1 - p_s - val["metallic"])])
+
+
+def sample_moon(o, parent, siblings, rng):
+    r_hill = orbit_a_km(parent) * (parent["gm"] / (3 * MU_SUN)) ** (1 / 3)
+    lo, hi = o["hill_fraction"]
+    r_min = max(lo * r_hill, o["roche_factor"] * 2.44 * parent["radius_km"])
     for _ in range(100):
         a = rng.uniform(r_min, hi * r_hill)
-        if all(abs(a - s) / s >= cls["min_rel_spacing"] for s in siblings):
+        if all(abs(a - s) / s >= o["min_rel_spacing"] for s in siblings):
             return a, True
     return a, False
 

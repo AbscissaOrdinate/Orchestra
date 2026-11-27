@@ -1,4 +1,4 @@
-// content/maps/earth/resources.ron — Earth resource layer: tags per land region (WS-08b §4.4, WLD-076). DRAFT, pending OQ-S1.
+// content/maps/earth/resources.ron — Earth resource layer: tags per land region (WS-08b §4.4, WLD-076). Draft values; layout accepted (OQ-S1).
 // Geology is physical geography: setting-agnostic, no polity IDs (ARC-052). Offshore fields attach to the coastal land
 // region because sea zones are never owned (WLD-010). Tag grammar: <kind>.<size class>[.<qualifier>]*, kind without "res.".
 // Knowledge at 1955-01 [R, from the real discovery history]: default known; "suspected" = basin known, size not;

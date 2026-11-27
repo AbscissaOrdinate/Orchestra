@@ -17,6 +17,8 @@ BodyDeposits(
         ("body.vesta",    "res.metals",    Rule(p_exists: 0.60, median: 100.0,  sigma_ln: 1.0, cost_ratio: 4.0)),
         ("body.psyche",   "res.metals",    Rule(p_exists: 0.90, median: 1000.0, sigma_ln: 1.0, cost_ratio: 2.0)),
         ("body.eros",     "res.metals",    Rule(p_exists: 0.50, median: 20.0,   sigma_ln: 1.0, cost_ratio: 3.0)),
+        ("body.juno",     "res.metals",    Rule(p_exists: 0.50, median: 50.0,   sigma_ln: 1.0, cost_ratio: 4.0)),
+        ("body.hygiea",   "res.volatiles", Rule(p_exists: 0.80, median: 500.0,  sigma_ln: 1.0, cost_ratio: 2.0)),
         ("body.europa",   "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 3.0)),
         ("body.ganymede", "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 3.0)),
         ("body.callisto", "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 2.5)),
@@ -27,6 +29,8 @@ BodyDeposits(
         ("body.titania",  "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
         ("body.oberon",   "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
         ("body.triton",   "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.pluto",    "res.volatiles", Rule(p_exists: 1.00, median: 1.0e4,  sigma_ln: 0.5, cost_ratio: 2.0)),
+        ("body.charon",   "res.volatiles", Rule(p_exists: 1.00, median: 5000.0, sigma_ln: 0.5, cost_ratio: 2.0)),
     ],
     by_composition: [
         (Carbonaceous, "res.volatiles", Rule(p_exists: 0.70, median: 1.0,  sigma_ln: 1.0, cost_ratio: 1.5)),   // per km of diameter^3, scaled
@@ -34,6 +38,7 @@ BodyDeposits(
         (Stony,        "res.metals",    Rule(p_exists: 0.50, median: 0.5,  sigma_ln: 1.0, cost_ratio: 3.0)),
         (Metallic,     "res.metals",    Rule(p_exists: 0.95, median: 5.0,  sigma_ln: 0.8, cost_ratio: 1.5)),
         (Icy,          "res.volatiles", Rule(p_exists: 1.00, median: 2.0,  sigma_ln: 0.5, cost_ratio: 2.0)),
+        (Rocky,        "res.metals",    Rule(p_exists: 0.30, median: 0.3,  sigma_ln: 1.0, cost_ratio: 4.0)),   // vulcanoids
     ],
     composition_scale: "diameter_km^3",   // generated-body medians are multiplied by D^3 (km): reserve scales with volume
     max_candidates: 85,
