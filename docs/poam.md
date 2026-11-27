@@ -52,13 +52,14 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 23 | Review and approve WS-08b v0.4 (all four workstreams' feedback applied; §8.1 lists what remains) | Sean | ☐ |
 | 24 | After WS-08b merges: WS-02 applies P-02a–g (v1.2); WS-08a drops `Region.resource_tags`, rewords WLD-047, adds WLD-017 and owns `deposit_start.ron`; WS-03 publishes `extraction_share` (WS-04 OQ-G11) | WS-02, WS-08a, WS-03 | ◐ (WS-08a part done: v0.3, PR #20; WS-02 part done: v1.2, PR ws02/v1.2-ws08b; WS-03 `extraction_share` open) |
 | 25 | Build M2(d), the rent-hook prototype (`prototypes/ws08b-sol/README.md` §2, ≈ 14 h), after M2(a) P1–P3; propose `deposit_start.ron` values for WS-08a review | `prototypes/economy/` | ☐ |
-| 26 | Review WS-05 spec Draft v0.1 (RND-001–103, five decisions); answer OQ-R1–R5 (incl. checking the ACAT p85 source, OQ-R3); approve or request changes | Sean (PR ws05/rnd-spec) | ☐ |
-| 27 | After WS-05 approval: carry its edits to other documents (WS-05 §8: P-02a, P-03a–c, P-04a, P-06a, P-11a, P-SAL, P-08b, P-CON) | WS-02, 03, 04, 06, 08b, 11 owners | ☐ |
-| 28 | Build the M2(b) R&D prototype per `prototypes/rnd/PLAN.md` (≈ 30–40 h; B1, B3, B2 first); write tuned values back to WS-05 §4 | Claude Code session | ☐ |
-| 29 | Author `content/core/rnd/` (≈ 75 lines, 20 singletons, 90 components, 53 hulls, 40 enablers, 10 fields) with a content-check test, after M2(b) fixes the class mix | Content session | ☐ |
-
 | 30 | Run M4a–M4f in order with `prompts/M4.md`, one PR each, graded before the next | Claude Code sessions | ☐ |
 | 31 | Approve WS-08a v0.3 and WS-08b v0.4, or freeze their §5 content schemas, before M4d ports them | Sean | ☐ |
+| 32 | Review WS-05 spec; answer OQ-R1–R5; approve or request changes | Sean | ◐ (v0.1 merged, PR #23; OQ-R1–R5 closed 2026-11-27 and applied in v0.2; approval of v0.2 pending) |
+| 33 | After WS-05 approval: carry its edits to other documents (WS-05 §8: P-03a–d, P-04a, P-06a, P-11a, P-SAL, P-08b, P-CON; P-02a is #36) | WS-03, 04, 06, 08b, 11 owners | ☐ |
+| 34 | Build the M2(b) R&D prototype per `prototypes/rnd/PLAN.md` (≈ 35–45 h; B1, B3, B2 first); write tuned values back to WS-05 §4 | Claude Code session | ☐ |
+| 35 | Author `content/core/rnd/` (≈ 75 lines with gate candidates, 20 singletons, 12 repeatables, 90 components, 53 hulls and objectives, 40 Boost edges, 10 fields) with a content-check test, after M2(b) fixes the class mix | Content session | ☐ |
+| 36 | Before M4b: WS-02 v1.3 applies WS-05 P-02a (per-subsystem `SubjectIdx` ranges; a macro polity's `BeliefBlock` may omit the tech range; memory mix ≈ 0.43 MB tech beliefs), so M4b builds the belief store once. Noted in `prompts/M4.md` | WS-02 owner | ☐ |
+
 ## Change log
 
 | Date | Change |
@@ -89,3 +90,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-02 v1.2: WS-08b P-02a–g applied (`Sol` node graph, `resources`/`space` blocks, WS-08 in R2/R5b/R6b, `Owner::{Deposit, Facility, Node}`, observation units in ADR-0008, test-setting bodies, `Aggregates.orbital_assets`); ARC-013/015/080/081/090 and §5 memory updated |
 | 2026-11-27 | WS-05 R&D spec Draft v0.1 (RND-001–103) and M2(b) prototype plan: ≈ 300 techs as 75 lines × generations over 12 domains + 10 science fields; ADR-0008 beliefs with pooled exact observations and binary test evidence; line-level Beta dead ends; TRL-scaled lognormal growth fitted to GAO/ACAT/RAND anchors (`prototypes/rnd/calib_growth.py`: 1.03 mature / 1.35 immature, CV 0.79); EVM; 53 hull classes in 7 craft domains with slot-and-budget stats and 4 laws; Wright learning with a plateau; four acquisition paths with cost-plus quotes; WS-03/04/06/07/08b/11 contracts; WS-08b P-05a/b accepted; edits to other docs proposed in §8, not made; OQ-R1–R5 |
 | 2026-11-27 | `prompts/M4.md` (M4a–M4f increments); duplicate next-action numbers renumbered (second 14/15/16/20 → 26–29) |
+| 2026-11-27 | WS-05 v0.2 (Sean's review; OQ-R1–R5 closed): soft dead ends (Requires/Penalty gates from authored candidates) outnumber hard ≈ 52:21; ≈ 12 repeatable lines; GAO governs the growth fit; `M_s` zero-sum and tanh-bounded (no spiral, RND-104); macro kit mostly imported or licensed; five contract types (Arsenal, CostPlus, FixedPrice, SpecialAccess, CommercialMilestone; KC-46, U-2, NAFCOM anchors), contractor capital, private ventures, `auto_design`; seller offers and grant aid; RND-007/008/025/026/040–045/089/104 added; P-03d new, P-04a/P-06a widened. POAM: merge-duplicated IDs 26–29 renumbered to 32–35; #36 gates M4b on P-02a |
