@@ -23,6 +23,42 @@ def main():
     write(rows, keep)
 
 
+def cpi_spec(b3raw):
+    import projects as PR
+    old = P["phase_var_share"].copy(); P["phase_var_share"] = np.array([.6, .25, .15])
+    m = PR.phase_multipliers(b3raw["g"]); P["phase_var_share"] = old
+    return (np.abs((1 / b3raw["g"]) / (1 / m[:, 0]) - 1) > .10).mean()
+
+
+def exact_err():
+    import belief as B
+    return max(abs(B.p_works(B.observe_binary(B.prior_viability(np.array(p)), np.log(lr))) - p * lr / (p * lr + 1 - p)) for p in (.1, .4, .8) for lr in (1 / 20, 1 / 3, 3, 13.6, 50))
+
+
+def edge_row(seed):
+    import truth as T
+    c = S.make_content(1)
+    n = np.bincount(T.sample_edges(c, seed, np.arange(1000)).world, minlength=1000)
+    first = c.line_D[:, 0]
+    valid = np.array([[np.mean(first[a] <= c.line_D[b, :c.ngen[b]]) for b in range(c.n_lines)] for a in range(c.n_lines)])
+    same = c.domain[:, None] == c.domain[None, :]
+    return "%.1f / %.1f / %.1f" % (n.mean(), P["p_edge"] * c.n_lines * (c.n_lines - 1), P["p_edge"] * (valid * ~same).sum()),
+
+
+def s1_row():
+    import projects as PR, belief as B
+    from params import immaturity
+    rng = np.random.default_rng(5); n = 20_000
+    trl = np.where(rng.random(n) < .16, 6.0, rng.uniform(3, 5.5, n)); u = immaturity(trl)
+    lk = .35 * rng.standard_normal(n); b = PR.start_belief(trl, lk, rng)
+    ratio = np.exp(lk) / B.mean(b, log=True) * PR.growth(u, rng.standard_normal((n, 2)))[0]
+    out = []
+    for stream in ("plain", "sobol"):
+        x = np.array([[(ratio > q).mean() for q in PR.estimate(b, u, seed=s, stream=stream)[0]] for s in range(20)])
+        out.append("%s %.2f-%.2f / %.2f-%.2f" % (stream, x[:, 0].min(), x[:, 0].max(), x[:, 1].min(), x[:, 1].max()))
+    return "; ".join(out)
+
+
 def checks(seed, b1, b2, b2_spec, b2_nog, b3, b3raw, b2_raw, b2_nog_raw):
     r = lambda req, name, val, crit, ok: (seed, req, name, val, crit, bool(ok))
     dev = lambda s, st: 100 * np.abs(s["reliability"][st][:, 0] - s["reliability"][st][:, 1]).max()
@@ -36,8 +72,12 @@ def checks(seed, b1, b2, b2_spec, b2_nog, b3, b3raw, b2_raw, b2_nog_raw):
         r("RND-012", "interval coverage min..max over stages", f"{min(cov):.3f}..{max(cov):.3f}", "0.77..0.83", 0.77 <= min(cov) and max(cov) <= 0.83),
         r("RND-012", "p_works reliability max dev, prior (pp), LR beta", dev(b2, "prior"), "< 5", dev(b2, "prior") < 5),
         r("RND-012", "p_works reliability max dev, prior (pp), LR 3 as specified", dev(b2_spec, "prior"), "< 5", dev(b2_spec, "prior") < 5),
-        r("RND-012", "p_works in [0.2, 0.9) after dev: |mean p - observed| (pp), Blocked is not evidence", mid_gap(b2_nog_raw), "< 5", mid_gap(b2_nog_raw) < 5),
-        r("RND-012", "same, Blocked / FeasibilityFinding is evidence (proposed; 0 = under 30 samples left in the bin)", mid_gap(b2_raw), "< 5", mid_gap(b2_raw) < 5),
+        r("RND-012", "p_works in [0.2, 0.9) after dev: gap (pp) / n, Blocked is not evidence (spec)", "%.1f / %d" % S.mid_gap(b2_nog_raw), "< 5, n >= 30", S.mid_gap(b2_nog_raw)[0] < 5),
+        r("RND-012", "same, Blocked is evidence (S-3)", "n/a: n = %d < 30, bin empty" % S.mid_gap(b2_raw)[1], "< 5, n >= 30", True),
+        r("RND-011", "max |posterior - exact| over 15 cases", exact_err(), "< 1e-6", exact_err() < 1e-6),
+        r("RND-005", "mean edges / sum p / sum p*P(valid)", edge_row(seed)[0], "3 SE of sum p (spec); 3 SE of valid (S-5)", False),
+        r("S-1", "estimate(): P50 / P80 exceedance range over 20 stream seeds, plain vs Sobol", s1_row(), "0.50±.05 / 0.20±.04", False),
+        r("S-6", "hard-dead below 0.10 after 2 / 4 / 5 failed tests; by class after 2", "%.2f / %.2f / %.2f; %s" % (b2["dead_below_010_all"][1], b2["dead_below_010_all"][3], b2["dead_below_010_all"][4], np.round(b2["dead_below_010"][1], 2)), ">= 0.90", False),
         r("RND-013", "median perf sigma ratio: science / after dev", f"{st['sci 100%']['sig_perf']:.2f} / {st['after dev']['sig_perf']:.2f}", "<= 0.80 / <= 0.45",
           st["sci 100%"]["sig_perf"] <= 0.8 and st["after dev"]["sig_perf"] <= 0.45),
         r("RND-013", "hard-dead with p_works < 0.10 after 2 failed tests", f"{b2['dead_below_010_all'][1]:.2f}", ">= 0.90", b2["dead_below_010_all"][1] >= 0.9),
@@ -45,17 +85,8 @@ def checks(seed, b1, b2, b2_spec, b2_nog, b3, b3raw, b2_raw, b2_nog_raw):
           abs(b3["mean_u0"] - 1.03) < .03 and abs(b3["mean_imm"] - 1.35) < .05 and 1.25 <= b3["mean_all"] <= 1.4),
         r("RND-033", "CV (cost) / mean schedule", f"{b3['cv_all']:.3f} / {b3['sched_mean']:.3f}", "0.80±0.10 / 1.10..1.30", abs(b3["cv_all"] - .8) < .1 and 1.1 <= b3["sched_mean"] <= 1.3),
         r("RND-038", "exceed P80 / P50", f"{b3['exceed_p80']:.3f} / {b3['exceed_p50']:.3f}", "0.20±.04 / 0.50±.05", abs(b3["exceed_p80"] - .2) < .04 and abs(b3["exceed_p50"] - .5) < .05),
-        r("§4.5.4 [R]", "share of projects with final CPI > 10% off CPI at 20%", f"{b3['cpi_unstable']:.2f}", "report; tune if most", True),
+        r("§4.5.4 [R] S-7", "share with final CPI > 10% off CPI at 20%: tuned 0.5/0.3/0.2 vs spec 0.6/0.25/0.15", f"{b3['cpi_unstable']:.2f} vs {cpi_spec(b3raw):.2f}", "report; tune if most (> 0.5)", b3["cpi_unstable"] <= 0.5),
     ]
-
-
-def mid_gap(o):
-    """Percentage-point gap between mean p_works and the observed working share for p in [0.2, 0.9) after development."""
-    nh = ~o["_content"].tech_hist
-    p = o["after dev"]["p_works"][:, nh].ravel()
-    w = np.broadcast_to(o["_truth_works"], o["prior"]["p_works"].shape)[:, nh].ravel()
-    m = (p >= 0.2) & (p < 0.9)
-    return 100 * abs(p[m].mean() - w[m].mean()) if m.sum() >= 30 else 0.0
 
 
 def plots(b1, b2, b3):
@@ -110,7 +141,7 @@ def write(rows, keep):
          "## Pass / fail by seed", "", "| Seed | Req | Metric | Value | Criterion | Pass |", "|---|---|---|---|---|---|"]
     for seed, req, name, val, crit, ok in rows:
         v = f"{val:.3f}" if isinstance(val, (float, np.floating)) else val
-        L.append(f"| {seed} | {req} | {name} | {v} | {crit} | {'PASS' if ok else 'FAIL'} |")
+        L.append(f"| {seed} | {req} | {name} | {v} | {crit} | {'N/A' if str(val).startswith('n/a') else ('PASS' if ok else 'FAIL')} |")
     L += ["", "## Figures", "", "![dead ends](out/b1_dead_ends.png)", "", "![convergence](out/b2_convergence.png)", "",
           "![reliability](out/b2_reliability.png)", "", "![growth](out/b3_growth.png)", ""]
     L += open("FINDINGS.md").read().splitlines()

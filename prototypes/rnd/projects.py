@@ -30,10 +30,13 @@ def start_belief(trl, ln_kappa, rng):
     return tuple(np.where((trl >= 6)[..., None], x2, x1) for x1, x2 in zip(b1, b2))
 
 
-def estimate(b_cost, u, qs=(0.5, 0.8), seed=0):
+def estimate(b_cost, u, qs=(0.5, 0.8), seed=0, stream="sobol"):
     """P-quantile budget multipliers (cost, schedule) relative to the engineering point estimate (§4.5.7).
     Same 256 standard normals for every call, so the result is a pure function of (belief, u)."""
-    z = ndtri(qmc.Sobol(3, scramble=True, seed=seed).random(P["n_estimate"]))   # fixed low-discrepancy stream
+    if stream == "sobol":
+        z = ndtri(qmc.Sobol(3, scramble=True, seed=seed).random(P["n_estimate"]))   # fixed low-discrepancy stream
+    else:                                                                              # spec v0.2 form, kept for the S-1 comparison
+        z = np.random.default_rng(seed).standard_normal((P["n_estimate"], 3))
     g, s = growth(np.asarray(u)[..., None], z)                                   # (..., n)
     w, mu, sd = b_cost
     ln_k = mu[..., 0:1] + sd[..., 0:1] * z[:, 2]                                 # cost belief is single-component

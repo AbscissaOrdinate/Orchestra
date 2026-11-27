@@ -200,3 +200,12 @@ def b2_summary(o):
     res["dead_below_010"] = np.array([[np.nanmean(o["_p_after_k"][k][dead & (cls == c)] < 0.10) for c in range(4)] for k in range(5)])
     res["dead_below_010_all"] = np.array([(o["_p_after_k"][k][dead][np.isfinite(o["_p_after_k"][k][dead])] < 0.10).mean() for k in range(5)])
     return res
+
+
+def mid_gap(o, lo=0.2, hi=0.9, min_n=30):
+    """(gap in pp, n): |mean p_works - observed working share| for p in [lo, hi) after development; nan if n < min_n."""
+    nh = ~o["_content"].tech_hist
+    p = o["after dev"]["p_works"][:, nh].ravel()
+    w = np.broadcast_to(o["_truth_works"], o["prior"]["p_works"].shape)[:, nh].ravel()
+    m = (p >= lo) & (p < hi)
+    return (100 * abs(p[m].mean() - w[m].mean()) if m.sum() >= min_n else np.nan), int(m.sum())

@@ -7,7 +7,7 @@ import projects as PR
 import scenarios as S
 import truth as T
 from content_gen import make_content
-from params import P
+from params import P, immaturity
 
 
 @pytest.fixture(scope="session")
@@ -17,6 +17,7 @@ def b1():
 
 @pytest.fixture(scope="session")
 def b2():
+    """Assumes proposals S-2 (cross_gen="beta") and S-3 (gate_evidence=True); the spec-as-written variants are the xfail tests."""
     o = S.b2_beliefs(200, seed=12, cross_gen="beta", gate_evidence=True)
     return o, S.b2_summary(o)
 
@@ -32,6 +33,15 @@ def rnd_004_truth_follows_priors(b1):
     assert abs(b1["two_share"] - P["p_two_enablers"]) < 0.015
     assert np.abs(b1["perf_modes"] - P["perf_w"]).max() < 0.015
     assert abs(b1["ln_kappa_mean"]) < 0.01 and abs(b1["ln_kappa_sd"] - P["sigma_kappa"]) < 0.01
+
+
+@pytest.mark.xfail(strict=True, reason="S-5: spec criterion is the mean edge count within 3 SE of sum p; valid edges are fewer")
+def rnd_005_edge_count_as_specified():
+    c = make_content(1)
+    e = T.sample_edges(c, 5, np.arange(1000))
+    counts = np.bincount(e.world, minlength=1000)
+    sum_p = P["p_edge"] * c.n_lines * (c.n_lines - 1)
+    assert abs(counts.mean() - sum_p) < 3 * counts.std() / np.sqrt(1000)
 
 
 def rnd_005_boost_edges():
@@ -75,6 +85,16 @@ def rnd_008_repeatable_gain_bound():
     assert s.max() <= P["rep_g0"] / (1 - P["rep_d"])
 
 
+def rnd_010_priors_equal_sampling_distributions():
+    p = np.array([0.99, 0.92])
+    w, mu, sd = B.prior_viability(p)
+    assert np.allclose(w[:, :2], np.stack([p, 1 - p], -1), atol=1e-12) and (mu[:, :2] == [1, -1]).all() and (sd[:, :2] == P["sigma_c"]).all()
+    w, mu, sd = B.prior_perf()
+    assert np.allclose(w, P["perf_w"], atol=1e-12) and np.allclose(mu, np.log(P["perf_median"]), atol=1e-12) and (sd == P["perf_sigma"]).all()
+    w, mu, sd = B.prior_cost()
+    assert w[0] == 1 and mu[0] == 0 and abs(sd[0] - P["sigma_kappa"]) < 1e-12
+
+
 @pytest.mark.parametrize("p", (0.1, 0.4, 0.8))
 @pytest.mark.parametrize("lr", (1 / 20, 1 / 3, 3, 13.6, 50))
 def rnd_011_binary_evidence_is_exact_bayes(p, lr):
@@ -94,6 +114,13 @@ def rnd_012_p_works_reliability(b2):
     for st in ("prior", "after dev"):
         rel = r["reliability"][st]
         assert np.abs(rel[:, 0] - rel[:, 1]).max() < 0.05, st
+
+
+@pytest.mark.xfail(strict=True, reason="S-3: Blocked/FeasibilityFinding ignored as evidence leaves p_works 0.72 for techs that work")
+def rnd_012_gate_events_not_evidence_as_specified():
+    o = S.b2_beliefs(200, seed=12, cross_gen="beta", gate_evidence=False)
+    gap, n = S.mid_gap(o)
+    assert n >= 30 and gap < 5
 
 
 @pytest.mark.xfail(strict=True, reason="S-2: fixed LR 3 and 1/3 overstate cross-generation evidence")
@@ -133,3 +160,17 @@ def rnd_038_estimate_calibrated(b3):
     b = PR.start_belief(trl, 0.35 * rng.standard_normal(50), rng)
     a, c = PR.estimate(b, u), PR.estimate(b, u)
     assert all((x == y).all() for x, y in zip(a[0] + a[1], c[0] + c[1]))
+
+
+@pytest.mark.xfail(strict=True, reason="S-1: a plain 256-draw stream gives out-of-tolerance coverage for about a quarter of stream seeds")
+def rnd_038_estimate_plain_stream_as_specified(b3):
+    n = 10_000
+    rng = np.random.default_rng(5)
+    trl = np.where(rng.random(n) < 0.16, 6.0, rng.uniform(3, 5.5, n))
+    u = immaturity(trl)
+    lk = 0.35 * rng.standard_normal(n)
+    b = PR.start_belief(trl, lk, rng)
+    ratio = np.exp(lk) / B.mean(b, log=True) * PR.growth(u, rng.standard_normal((n, 2)))[0]
+    for seed in range(20):
+        (c50, c80), _ = PR.estimate(b, u, seed=seed, stream="plain")
+        assert abs((ratio > c50).mean() - 0.5) < 0.05 and abs((ratio > c80).mean() - 0.2) < 0.04
