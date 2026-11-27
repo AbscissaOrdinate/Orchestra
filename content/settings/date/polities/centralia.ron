@@ -9,6 +9,6 @@ Polity(
     provenance: DateLegacy,
     analog_role: "Hemispheric middle power spanning the isthmus, the Antilles and the northern Andes",
     kind: NationState,
-    capital: "region.mexico",
+    capital: "region.mexican_plateau",
     hf_candidate: false,
 )

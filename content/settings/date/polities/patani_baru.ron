@@ -9,6 +9,6 @@ Polity(
     provenance: Date,
     analog_role: "Hesperian protectorate facing a communist insurgency",
     kind: NationState,
-    capital: "region.malaya_north",
+    capital: "region.malay_north",
     hf_candidate: false,
 )

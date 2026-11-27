@@ -9,6 +9,6 @@ Polity(
     provenance: Date,
     analog_role: "Neutral republic on Donovia's northwestern border",
     kind: NationState,
-    capital: "region.finland",
+    capital: "region.lakeland",
     hf_candidate: false,
 )

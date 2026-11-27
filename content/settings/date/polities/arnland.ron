@@ -9,6 +9,6 @@ Polity(
     provenance: Date,
     analog_role: "Armed-neutral industrial democracy guarding its independence",
     kind: NationState,
-    capital: "region.sweden",
+    capital: "region.svealand",
     hf_candidate: false,
 )

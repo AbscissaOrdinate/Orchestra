@@ -9,6 +9,6 @@ Polity(
     provenance: Orchestra,
     analog_role: "Defeated industrial power rebuilding under Atlantican protection",
     kind: NationState,
-    capital: "region.japan_south",
+    capital: "region.honshu_south",
     hf_candidate: true,
 )

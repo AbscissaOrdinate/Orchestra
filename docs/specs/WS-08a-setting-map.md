@@ -80,6 +80,7 @@ A region is a sea zone if and only if its terrain is `Ocean`, `Littoral` or `Ice
 
 ```rust
 struct Setting  { id, name, version, map: String, disclaimer: String, default_high: Vec<PolityId> }
+// region_names.ron: [(RegionId, display name, Provenance)]
 struct Polity   { id, name, short_name, adjective, provenance: Provenance, analog_role: String,
                   kind: PolityKind /* NationState */, capital: RegionId, hf_candidate: bool = false }
 enum Provenance { Date, DateLegacy, Orchestra }
@@ -111,16 +112,18 @@ struct StartState {
 
 ### 3.5 Field ownership: who turns bands into numbers
 
-| Field | Meaning at 1955-01 | Mapped to numbers by | Consumer obligation |
+Each field has exactly one **primary** owner, who defines the band → number mapping. Other workstreams may *consume* the result but don't redefine it.
+
+| Field | Meaning at 1955-01 | Primary owner (consumers) | Consumer obligation |
 |---|---|---|---|
 | `government` | Institutional archetype | **WS-04**: archetype → government-type content ID (selectorate S/W, veto players) | Every variant maps to exactly one gov type |
 | `economy.size` | Share of world GDP | **WS-03** | Monotone band → GDP range; world total matches WS-03's 1955 calibration |
 | `economy.development` | GDP per capita | **WS-03** | Monotone band → per-capita range; with `size`, implies population |
-| `economy.system` | Market, mixed or planned | **WS-03 / WS-04** | Sets state-sector share and planning flags |
+| `economy.system` | Market, mixed or planned | **WS-03** (WS-04) | Sets state-sector share and planning flags |
 | `tech.level` | General technological standing | **WS-05** | Band → initial known techs and belief σ |
-| `tech.nuclear` | Weapons status | **WS-11** (stockpile and delivery), **WS-05** (program as a project) | `Program` = a running R&D project; `Tested` = a small stockpile |
+| `tech.nuclear` | Weapons status | **WS-11** (WS-05 runs `Program` as an R&D project) | `Program` = a running R&D project; `Tested` = a small stockpile |
 | `forces.size`, `navy`, `air` | Relative force scale | **WS-11** | Band → count of era-preset templates (§6.1 echelons) |
-| `forces.posture` | Default deployment stance | **WS-11 / WS-06** | Maps to WS-11 posture orders and the AI prior |
+| `forces.posture` | Default deployment stance | **WS-11** (WS-06 uses it as an AI prior) | Maps to WS-11 posture orders |
 | `stance` | Bloc alignment lean | **WS-06** | AI alignment prior; alliance data is authoritative |
 | `stability` | Regime stability | **WS-04** | Band → initial stability and faction tension |
 
@@ -169,20 +172,20 @@ Verification column: **C** = prototype checker test (named `wld_NNN_*` in `proto
 | **Start state** |||||
 | WLD-020 | Each polity has exactly one `StartState`, and there are no entries for unknown polities. | A fixture deleting Ziwa's entry reports "no entry for polity.ziwa"; duplicates and unknown polities are reported. | WS-02 §6 | C |
 | WLD-021 | `StartState` has exactly the §3.4 fields and holds enums only: no numeric values. | A fixture adding `morale` fails in start.ron naming the field; a fixture with `stability: 0.5` fails to parse. | D5, ARC-050 | C |
-| WLD-022 | Each start-state field has exactly one owning workstream that maps it to numbers (§3.5). | R: the §3.5 table covers every field in §3.4, and each consuming spec (WS-03, 04, 05, 06, 11) cites the WLD field it maps. | D5 | R |
+| WLD-022 | Each start-state field has exactly one primary owning workstream that maps it to numbers (§3.5). | R: the §3.5 table lists every §3.4 field with exactly one primary owner. Later, each owning spec (WS-03, 04, 05, 06, 11) cites the field it maps; that half is checked when those specs are graded. | D5 | R |
 | WLD-023 | Start state matches subject status: constituent republics are `SingleParty` with `Minimal` forces; colonies, protectorates, trust territories and condominium subjects are `ColonialAdministration`. | A fixture setting Ziwa to `SingleParty` reports "inconsistent with Colony". | §3.6 WS-04 | C |
 | WLD-024 | Nuclear status at 1955-01: only Atlantica, Donovia and Hesperia are `Tested` or above; only Arnland and Lorande are at `Program`. | Set assertions on the default content. | canon §3 | C |
 | WLD-025 | Bands, `Nuclear` and `Stance` are totally ordered, so consumers can map them monotonically. | A unit test checks VeryLow < Low < Medium < High < VeryHigh; M4 consumers test that their mapping is monotone. | D5 | C, M4 |
 | **Canon & provenance** |||||
-| WLD-030 | Every timeline item (canon §3) and event hook (§6) carries exactly one of [DATE], [DATE-legacy] or [ORIG]. | A parser test over canon.md finds ≥ 30 items, each with exactly one tag. | ADR-0003 provenance | C |
+| WLD-030 | Every timeline item (canon §3) and event hook (§6) carries exactly one of [DATE], [DATE-legacy] or [ORIG]. Per ADR-0003 all 1945–1955 back-history is [ORIG], and an item that projects a DATE fact cites it (F-n in canon §1). A hook is [DATE] only if DATE dates it. | A parser test over canon.md finds ≥ 30 items, each with exactly one tag, and no [DATE] tag in §3. | ADR-0003 provenance | C |
 | WLD-031 | Canon has an entry for every polity in the setting, keyed by its ID. | Every `polity.<id>` appears in canon.md in backticks. | ADR-0003 | C |
 | WLD-032 | Canon explains every alliance and every subject relation. | Every `alliance.<id>` appears; each subject → overlord pair appears on one line of canon §4. | canon §3–4 | C |
-| WLD-033 | Canon §6 lists ≥ 15 event hooks with a time window, an effect and a provenance tag. It includes the DATE-dated Gabal independence (1977) and Sunda Baru federation (1985) as [DATE] hooks, and neither event is in the start state. | Parser test on canon §6; WLD-014 shows Gabal is still a subject at start. | D2 | C |
+| WLD-033 | Canon §6 lists ≥ 15 event hooks, each with a non-empty window, hook text, effect and provenance tag. It includes the DATE-dated Gabal independence (1977) and Sunda Baru federation (1985) as [DATE] hooks, and neither event is in the start state. | Parser test on canon §6; WLD-014 shows Gabal is still a subject at start. | D2 | C |
 | WLD-034 | Every polity and alliance entry carries a `provenance` value from the vocabulary. | A fixture with `provenance: Fictional` fails to parse. | ADR-0003 | C |
 | **Disclaimer & naming** |||||
-| WLD-035 | Every file under `content/settings/date/` begins (within its first 6 lines) with a comment header that names the provenance legend and the full non-endorsement disclaimer. The scenario file and canon.md also carry it. | A fixture with the header stripped from claims.ron reports "missing non-endorsement disclaimer header". | ADR-0003 | C |
+| WLD-035 | Every file of a setting begins (within its first 6 lines) with a comment header that contains the setting's own `disclaimer` text verbatim and a provenance-legend line (`Provenance tags:`). The scenario file carries the disclaimer, and so does canon.md. For `date` the disclaimer is the ADR-0003 text (WLD-036); other settings supply their own. | A fixture with the header stripped from claims.ron reports "missing disclaimer/provenance header"; a fixture without the disclaimer in date_1955.ron reports "missing disclaimer header"; a test checks canon.md contains the disclaimer; the `testworld` fixture (WLD-049) passes with its own disclaimer. | ADR-0003 | C |
 | WLD-036 | `setting.disclaimer` equals the ADR-0003 text exactly; the README carries the same text; the WS-09 credits screen displays `setting.disclaimer`. | Test: string equality with the README and ADR-0003. WS-09: a credits-screen test checks for the string. | ADR-0003 | C, WS-09 |
-| WLD-037 | IDs follow `region.<snake>`, `polity.<snake>` and `alliance.<snake>`. Default region names are physical geography and contain no polity short name. | A fixture with `alliance.UnionBloc` is rejected; a test over the default content finds no region name containing a polity short name. | P-6, canon §7 | C |
+| WLD-037 | IDs follow `region.<snake>`, `polity.<snake>` and `alliance.<snake>`. Default region names and IDs are physical geography: they contain no polity short name and no real-state name from the WLD-006 deny list, except standard feature names in the carve-out (Congo, Guinea, Madagascar, Ceylon, Iceland, Australia, China, Japan, Mexico). | A fixture with `alliance.UnionBloc` is rejected. Tests over the default content find no region name containing a polity short name, and no region name or ID word sequence matching a deny-list entry outside the carve-out. | P-6, canon §7 | C |
 | WLD-038 | DATE polity names are spelled as DATE spells them; original names are provisional and changeable by data. | Covered by the WLD-002 name list; renaming is covered by WLD-048. | ADR-0003 | C |
 | **Earth map** |||||
 | WLD-040 | The map has 100 ± 12 land regions and 18–26 sea zones. | Count assertion (draft: 110 land, 22 sea). | ConOps §3, D3 | C |
@@ -213,17 +216,17 @@ The draft files listed in §3.1 are complete for the MVP start state:
 | `settings/date/polities/*.ron` | 47 (29 `Date`, 5 `DateLegacy`, 13 `Orchestra`) |
 | `settings/date/ownership.ron` | 109 land regions owned; Antarctica `Unowned` |
 | `settings/date/subjects.ron` | 14 rows (13 subjects; Gabal has 2 overlords) |
-| `settings/date/claims.ron` | 14 |
+| `settings/date/claims.ron` | 19 |
 | `settings/date/alliances.ron` | 11 |
 | `settings/date/start.ron` | 47 |
 | `settings/date/status.ron` | 14 |
-| `settings/date/region_names.ron` | 1 (Pineland) |
+| `settings/date/region_names.ron` | 1 (Pineland, `DateLegacy`) |
 
 **Disclaimer placement (ADR-0003):** README (already present); `setting.ron` `disclaimer` field, which WS-09 shows on the credits screen; the header of every setting and scenario file; and the header of canon.md and of this spec. Map files contain only real geography and carry no DATE material.
 
 ## 7. Verification
 
-- `cargo test` in `prototypes/ws08a-content-check/` runs 41 tests: every WLD requirement marked C, plus `arc_051_all_errors_in_one_pass`.
+- `cargo test` in `prototypes/ws08a-content-check/` runs 51 tests, covering every WLD requirement marked C plus ARC-051 (exact error count, and no cascade after a parse failure).
 - `cargo run -- ../../content date_1955` prints `ok: scenario date_1955 — 132 regions, 366 edges, 47 polities`.
 - `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` pass.
 - In M4 the schema types and tests move into `sim-core` under the same test names, and the prototype is deleted.
@@ -232,7 +235,7 @@ The draft files listed in §3.1 are complete for the MVP start state:
 
 | ID | Question | Proposed resolution |
 |---|---|---|
-| OQ-W1 | The ARC-090 bench uses 46 polities and 100 regions; the draft has 47 polities and 132 regions (110 land, 22 sea). | Update the ARC-090 synthetic scenario to 47 polities and 132 regions. Macro polities and the static graph cost little per tick [D]. This needs a WS-02 edit approved in the Project. |
+| OQ-W1 | The ARC-090 bench uses 46 polities and 100 regions; the draft has 47 polities and 132 regions (110 land, 22 sea). With the player and 4 high-fidelity AI, 42 polities are macro, above ConOps §3's "~20–40". | Accept 42 macro polities, since macro polities cost little per tick [D], and update the ARC-090 synthetic scenario to 47 polities and 132 regions (a WS-02 edit and a ConOps note, approved in the Project). Alternative: fold 2–4 DATE micro-states (Puller Islands, Fanu Rai, Gabal, Patani Baru) into their overlords. |
 | OQ-W2 | `RegionEdge` gains an optional `chokepoint` field beyond the WS-02 §6 `{ kind, cost }` shape. | Treat it as a compatible extension (default empty) and note it in WS-02 §6 at the next revision. |
 | OQ-W3 | Facts tagged [R] (European footprints, Bothnia's analog, Gabal on Palawan) were not checked against ODIN, which was unreachable from this session. | Verify when ODIN is reachable and adjust canon §5; data changes only. |
 | OQ-W4 | Legacy OE names (Atlantica, Krasnovia, Centralia, Attica, Ellisia, Pineland) come from training environments whose release status is less clearly documented than DATE's Distribution A [R]. | Only names are used. Keep them unless review says otherwise; the swap is a data edit (WLD-048). |

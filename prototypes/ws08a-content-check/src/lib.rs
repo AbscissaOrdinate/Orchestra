@@ -11,8 +11,8 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Phrase every setting file header must contain (WLD-035).
-pub const DISCLAIMER_PHRASE: &str = "is not affiliated with, sponsored by, or endorsed by";
+/// Marker every setting file header must contain alongside the setting's own disclaimer (WLD-035).
+pub const PROVENANCE_LEGEND: &str = "Provenance tags:";
 
 // ───────────────────────────── scenario ─────────────────────────────
 
@@ -282,7 +282,9 @@ pub struct Content {
     pub subjects: Vec<(String, String, SubjectKind)>,
     pub alliances: Vec<Alliance>,
     pub start: Vec<StartState>,
-    pub region_names: Vec<(String, String)>,
+    pub region_names: Vec<(String, String, Provenance)>,
+    /// IDs of polity files that failed to parse; references to them don't cascade into more errors (ARC-051).
+    pub unparsed_polities: Vec<String>,
 }
 
 /// Load and validate a scenario. Returns every error found (ARC-051).
@@ -302,9 +304,14 @@ pub fn load(root: &Path, scenario_id: &str) -> Result<Content, Vec<String>> {
     let edges: Vec<Edge> = parse(&map_dir.join("edges.ron"), &mut errs).unwrap_or_default();
     let setting: Option<Setting> = parse(&set_dir.join("setting.ron"), &mut errs);
     let mut polities = Vec::new();
+    let mut unparsed_polities = Vec::new();
     for path in ron_files(&set_dir.join("polities"), &mut errs) {
-        if let Some(p) = parse::<Polity>(&path, &mut errs) {
-            let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+        let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+        let Some(p) = parse::<Polity>(&path, &mut errs) else {
+            unparsed_polities.push(format!("polity.{stem}"));
+            continue;
+        };
+        {
             if p.id != format!("polity.{stem}") {
                 errs.push(format!(
                     "{}: id {} does not match file name",
@@ -335,8 +342,11 @@ pub fn load(root: &Path, scenario_id: &str) -> Result<Content, Vec<String>> {
         alliances: parse(&set_dir.join("alliances.ron"), &mut errs).unwrap_or_default(),
         start: parse(&set_dir.join("start.ron"), &mut errs).unwrap_or_default(),
         region_names: parse(&set_dir.join("region_names.ron"), &mut errs).unwrap_or_default(),
+        unparsed_polities,
     };
-    check_text(&map_dir, &set_dir, &mut errs);
+    let scenario_path = root.join(format!("scenarios/{scenario_id}.ron"));
+    let disclaimer = content.setting.disclaimer.clone();
+    check_text(&map_dir, &set_dir, &scenario_path, &disclaimer, &mut errs);
     validate(&content, &mut errs);
     if errs.is_empty() {
         Ok(content)
@@ -345,8 +355,15 @@ pub fn load(root: &Path, scenario_id: &str) -> Result<Content, Vec<String>> {
     }
 }
 
-/// Raw-text checks: map files never mention polities (WLD-046); setting files carry the header (WLD-035).
-fn check_text(map_dir: &Path, set_dir: &Path, errs: &mut Vec<String>) {
+/// Raw-text checks: map files never mention polities (WLD-046). Setting files carry the setting's own
+/// disclaimer and the provenance legend in their header; the scenario file carries the disclaimer (WLD-035).
+fn check_text(
+    map_dir: &Path,
+    set_dir: &Path,
+    scenario: &Path,
+    disclaimer: &str,
+    errs: &mut Vec<String>,
+) {
     for path in files_recursive(map_dir) {
         let text = fs::read_to_string(&path).unwrap_or_default();
         if text.contains("polity.") {
@@ -359,12 +376,17 @@ fn check_text(map_dir: &Path, set_dir: &Path, errs: &mut Vec<String>) {
     for path in files_recursive(set_dir) {
         let text = fs::read_to_string(&path).unwrap_or_default();
         let head: String = text.lines().take(6).collect::<Vec<_>>().join("\n");
-        if !head.contains(DISCLAIMER_PHRASE) {
+        if disclaimer.is_empty() || !head.contains(disclaimer) || !head.contains(PROVENANCE_LEGEND)
+        {
             errs.push(format!(
-                "{}: missing non-endorsement disclaimer header",
+                "{}: missing disclaimer/provenance header",
                 path.display()
             ));
         }
+    }
+    let text = fs::read_to_string(scenario).unwrap_or_default();
+    if disclaimer.is_empty() || !text.contains(disclaimer) {
+        errs.push(format!("{}: missing disclaimer header", scenario.display()));
     }
 }
 
@@ -383,7 +405,7 @@ pub fn validate(c: &Content, errs: &mut Vec<String>) {
             s.id, c.scenario.setting
         ));
     }
-    if !s.disclaimer.contains(DISCLAIMER_PHRASE) {
+    if s.disclaimer.trim().is_empty() {
         errs.push("setting.ron: disclaimer text missing".into());
     }
 
@@ -460,12 +482,13 @@ pub fn validate(c: &Content, errs: &mut Vec<String>) {
     // polities
     let mut polity: BTreeMap<&str, &Polity> = BTreeMap::new();
     for p in &c.polities {
-        check_id(&p.id, "polity.", "polities/", errs);
+        check_id(&p.id, "polity.", &polity_file(&p.id), errs);
         if polity.insert(&p.id, p).is_some() {
-            errs.push(format!("polities/: duplicate id {}", p.id));
+            errs.push(format!("{}: duplicate id {}", polity_file(&p.id), p.id));
         }
     }
-    let known_polity = |id: &str| polity.contains_key(id);
+    let unparsed: BTreeSet<&str> = c.unparsed_polities.iter().map(String::as_str).collect();
+    let known_polity = |id: &str| polity.contains_key(id) || unparsed.contains(id);
     for id in &s.default_high {
         if !polity.get(id.as_str()).is_some_and(|p| p.hf_candidate) {
             errs.push(format!(
@@ -505,8 +528,10 @@ pub fn validate(c: &Content, errs: &mut Vec<String>) {
     for p in &c.polities {
         if owner.get(p.capital.as_str()) != Some(&p.id.as_str()) {
             errs.push(format!(
-                "polities/: {} capital {} is not owned by it",
-                p.id, p.capital
+                "{}: {} capital {} is not owned by it",
+                polity_file(&p.id),
+                p.id,
+                p.capital
             ));
         }
         if !owner.values().any(|o| *o == p.id) {
@@ -621,7 +646,7 @@ pub fn validate(c: &Content, errs: &mut Vec<String>) {
     }
 
     // display aliases (WLD-048)
-    for (r, name) in &c.region_names {
+    for (r, name, _) in &c.region_names {
         if !region.contains_key(r.as_str()) || name.trim().is_empty() {
             errs.push(format!("region_names.ron: bad entry {r}"));
         }
@@ -653,6 +678,10 @@ pub fn contains_word(haystack: &str, needle: &str) -> bool {
     };
     let (h, n) = (words(haystack), words(needle));
     !n.is_empty() && h.windows(n.len()).any(|w| w == n.as_slice())
+}
+
+fn polity_file(id: &str) -> String {
+    format!("polities/{}.ron", id.strip_prefix("polity.").unwrap_or(id))
 }
 
 fn check_id(id: &str, prefix: &str, file: &str, errs: &mut Vec<String>) {

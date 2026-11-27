@@ -248,6 +248,7 @@ fn wld_014_default_subjects() {
         2,
         "Gabal is a two-power condominium until its DATE-dated 1977 independence"
     );
+    assert!(gabal.iter().all(|(_, _, k)| *k == SubjectKind::Condominium));
 }
 
 #[test]
@@ -381,6 +382,10 @@ fn wld_030_canon_items_tagged() {
         items += 1;
     }
     assert!(items >= 30, "{items} tagged items");
+    assert!(
+        !section(&canon, "## 3.").contains("[DATE]"),
+        "ADR-0003: 1945–55 back-history is [ORIG] only"
+    );
 }
 
 #[test]
@@ -432,6 +437,29 @@ fn wld_033_event_hooks() {
         .find(|l| l.contains("Sunda Baru"))
         .expect("Sunda Baru hook");
     assert!(sunda.contains("1985") && sunda.contains("[DATE]"));
+    for row in &hooks {
+        let cells: Vec<&str> = row.split('|').map(str::trim).collect();
+        // | ID | Window | Hook | Effect | Prov |
+        assert!(
+            cells.len() >= 6 && cells[2..=4].iter().all(|c| !c.is_empty()),
+            "incomplete hook row: {row}"
+        );
+    }
+    // Neither DATE-dated event is in the start state.
+    let c = real();
+    let sunda_p = c
+        .polities
+        .iter()
+        .find(|p| p.id == "polity.sunda_baru")
+        .unwrap();
+    assert_eq!(sunda_p.short_name, "Sunda");
+    let owner = |r: &str| {
+        c.ownership
+            .iter()
+            .find(|(x, _)| x == r)
+            .map(|(_, p)| p.as_str())
+    };
+    assert_eq!(owner("region.malay_south"), Some("polity.hesperia"));
 }
 
 #[test]
@@ -459,10 +487,19 @@ fn wld_035_setting_files_carry_header() {
         .collect::<Vec<_>>()
         .join("\n");
     fs::write(&path, body).unwrap();
-    assert_err(
-        &dir,
-        "claims.ron: missing non-endorsement disclaimer header",
+    assert_err(&dir, "claims.ron: missing disclaimer/provenance header");
+}
+
+#[test]
+fn wld_035_scenario_and_canon_carry_disclaimer() {
+    let c = real();
+    assert!(
+        canon().contains(&c.setting.disclaimer),
+        "canon.md lacks the disclaimer"
     );
+    let dir = fixture("wld035s");
+    edit(&dir, "scenarios/date_1955.ron", &c.setting.disclaimer, "");
+    assert_err(&dir, "date_1955.ron: missing disclaimer header");
 }
 
 #[test]
@@ -584,11 +621,11 @@ fn wld_045_required_chokepoints() {
         &["iberia", "maghreb"],
         &["arabia_west", "horn"],
         &["arabia_gulf", "iranian_plateau"],
-        &["malaya_south", "sumatra"],
-        &["jutland", "sweden"],
+        &["malay_south", "sumatra"],
+        &["jutland", "svealand"],
         &["luzon_north", "formosa"],
-        &["korea", "japan_south"],
-        &["central_america"],
+        &["korean_peninsula", "honshu_south"],
+        &["central_isthmus"],
     ];
     for want in required {
         let want: BTreeSet<&str> = want.iter().copied().collect();
@@ -634,14 +671,14 @@ fn wld_048_add_polity_with_data_only() {
             .replace("Republic of Otso", "Karelian Republic")
             .replace("\"Otso\"", "\"Karelia\"")
             .replace("Otsoan", "Karelian")
-            .replace("region.finland", "region.russia_northwest"),
+            .replace("region.lakeland", "region.karelia_kola"),
     )
     .unwrap();
     edit(
         &dir,
         "settings/date/ownership.ron",
-        "(\"region.russia_northwest\", \"polity.donovia\")",
-        "(\"region.russia_northwest\", \"polity.karelia\")",
+        "(\"region.karelia_kola\", \"polity.donovia\")",
+        "(\"region.karelia_kola\", \"polity.karelia\")",
     );
     append_start_copy(&set, "polity.otso", "polity.karelia");
     let c = load(&dir, SCENARIO).unwrap_or_else(|e| panic!("{e:?}"));
@@ -661,7 +698,7 @@ fn wld_048_rename_polity_and_region_alias() {
         &dir,
         "settings/date/region_names.ron",
         "]\n",
-        "    (\"region.crimea\", \"Tavrida\"),\n]\n",
+        "    (\"region.crimea\", \"Tavrida\", Orchestra),\n]\n",
     );
     let c = load(&dir, SCENARIO).unwrap_or_else(|e| panic!("{e:?}"));
     assert!(
@@ -679,7 +716,7 @@ fn wld_048_rename_polity_and_region_alias() {
 
 #[test]
 fn wld_048_replace_polity() {
-    // Remove Pontara; Ausonia takes its regions, its alliance seat and its claims.
+    // Remove Pontara: Ausonia takes its regions; its Northern Compact seat is dropped.
     let dir = fixture("wld048x");
     let set = dir.join("settings/date");
     fs::remove_file(set.join("polities/pontara.ron")).unwrap();
@@ -706,7 +743,8 @@ fn wld_049_swap_setting_on_same_map() {
     let dir = fixture("wld049");
     let set = dir.join("settings/testworld");
     fs::create_dir_all(set.join("polities")).unwrap();
-    let hdr = format!("// testworld fixture\n// Orchestra {DISCLAIMER_PHRASE} anyone.\n");
+    let hdr = "// testworld fixture. Provenance tags: Orchestra.\n// Test World disclaimer.\n"
+        .to_string();
     let land: Vec<String> = real()
         .regions
         .iter()
@@ -761,12 +799,12 @@ fn wld_049_swap_setting_on_same_map() {
     fs::write(&own_path, kept.join("\n")).unwrap();
     fs::write(
         set.join("setting.ron"),
-        format!("{hdr}Setting(id: \"testworld\", name: \"Test World\", version: \"0\", map: \"earth\", disclaimer: \"Orchestra {DISCLAIMER_PHRASE} anyone.\", default_high: [])\n"),
+        format!("{hdr}Setting(id: \"testworld\", name: \"Test World\", version: \"0\", map: \"earth\", disclaimer: \"Test World disclaimer.\", default_high: [])\n"),
     )
     .unwrap();
     fs::write(
         dir.join("scenarios/testworld.ron"),
-        "Scenario(id: \"testworld\", map: \"earth\", setting: \"testworld\", start: (1955, 1), end: (2060, 12))\n",
+        "// Test World disclaimer.\nScenario(id: \"testworld\", map: \"earth\", setting: \"testworld\", start: (1955, 1), end: (2060, 12))\n",
     )
     .unwrap();
     let c = load(&dir, "testworld").unwrap_or_else(|e| panic!("{e:?}"));
@@ -792,13 +830,153 @@ fn arc_051_all_errors_in_one_pass() {
     edit(
         &dir,
         "settings/date/polities/otso.ron",
-        "region.finland",
+        "region.lakeland",
         "region.atlantis",
     );
     let errs = errors(&dir);
     assert!(has(&errs, "unknown region or polity"));
     assert!(has(&errs, "duplicate id alliance.northern_compact"));
-    assert!(has(&errs, "polity.otso capital region.atlantis"));
+    assert!(has(
+        &errs,
+        "polities/otso.ron: polity.otso capital region.atlantis"
+    ));
+    assert_eq!(errs.len(), 3, "exactly the 3 seeded errors: {errs:#?}");
+}
+
+#[test]
+fn arc_051_parse_failure_does_not_cascade() {
+    let dir = fixture("arc051p");
+    edit(&dir, "settings/date/polities/otso.ron", "name:", "nmae:");
+    let errs = errors(&dir);
+    assert_eq!(errs.len(), 1, "only the parse error: {errs:#?}");
+    assert!(has(&errs, "otso.ron"));
+}
+
+// ───────────── negative cases (grader follow-up) ─────────────
+
+#[test]
+fn wld_003_missing_field_rejected() {
+    let dir = fixture("wld003m");
+    edit(
+        &dir,
+        "settings/date/polities/otso.ron",
+        "    adjective: \"Otsoan\",\n",
+        "",
+    );
+    assert_err(&dir, "otso.ron");
+}
+
+#[test]
+fn wld_004_default_high_rules() {
+    let dir = fixture("wld004");
+    edit(
+        &dir,
+        "settings/date/setting.ron",
+        "\"polity.olvana\"]",
+        "\"polity.olvana\", \"polity.otso\", \"polity.hesperia\"]",
+    );
+    let errs = errors(&dir);
+    assert!(has(
+        &errs,
+        "default_high polity.otso is not an hf_candidate"
+    ));
+    assert!(has(&errs, "default_high exceeds 5"));
+}
+
+#[test]
+fn wld_010_unowned_land_needs_status() {
+    let dir = fixture("wld010u");
+    edit(
+        &dir,
+        "settings/date/ownership.ron",
+        "    (\"region.hellas\", \"polity.ausonia\"),\n",
+        "",
+    );
+    assert_err(&dir, "land region region.hellas has no owner");
+}
+
+#[test]
+fn wld_020_duplicate_and_unknown_start_entries() {
+    let dir = fixture("wld020d");
+    let set = dir.join("settings/date");
+    append_start_copy(&set, "polity.otso", "polity.otso");
+    append_start_copy(&set, "polity.ziwa", "polity.nowhere");
+    let errs = errors(&dir);
+    assert!(has(&errs, "duplicate entry for polity.otso"));
+    assert!(has(&errs, "unknown polity polity.nowhere"));
+}
+
+#[test]
+fn wld_025_nuclear_and_stance_order() {
+    use Nuclear::*;
+    use Stance::*;
+    assert!(NoProgram < Program && Program < Tested && Tested < Arsenal);
+    assert!(StrongWest < West && West < Neutral && Neutral < East && East < StrongEast);
+}
+
+#[test]
+fn wld_041_unknown_terrain_rejected() {
+    let dir = fixture("wld041t");
+    edit(
+        &dir,
+        "maps/earth/regions.ron",
+        "terrain: Tundra",
+        "terrain: Swamp",
+    );
+    assert_err(&dir, "regions.ron");
+}
+
+#[test]
+fn wld_045_chokepoint_must_be_land() {
+    let dir = fixture("wld045");
+    edit(
+        &dir,
+        "maps/earth/edges.ron",
+        "chokepoint: [\"region.anatolia_west\"]",
+        "chokepoint: [\"region.black_sea\"]",
+    );
+    assert_err(&dir, "chokepoint region.black_sea is not a land region");
+}
+
+#[test]
+fn wld_037_region_names_and_ids_are_geographic() {
+    // Physical features that share a name with a state are allowed (spec WLD-037 carve-out).
+    let carve_out = [
+        "Congo",
+        "Guinea",
+        "Madagascar",
+        "Ceylon",
+        "Iceland",
+        "Australia",
+        "China",
+        "Japan",
+        "Mexico",
+    ];
+    let c = real();
+    let deny = fs::read_to_string(manifest().join("tests/real_state_names.txt")).unwrap();
+    for name in deny
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+    {
+        if carve_out.contains(&name) {
+            continue;
+        }
+        for r in &c.regions {
+            let id_words = r.id.trim_start_matches("region.").replace('_', " ");
+            assert!(
+                !contains_word(&r.name, name),
+                "{}: name '{}' contains '{name}'",
+                r.id,
+                r.name
+            );
+            assert!(
+                !contains_word(&id_words, name),
+                "{}: id contains '{name}'",
+                r.id
+            );
+        }
+    }
 }
 
 // ───────────── helpers ─────────────

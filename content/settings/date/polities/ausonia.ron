@@ -9,6 +9,6 @@ Polity(
     provenance: Orchestra,
     analog_role: "Mediterranean Compact member (composite of the Italian and Hellenic peninsulas)",
     kind: NationState,
-    capital: "region.italy",
+    capital: "region.apennine_peninsula",
     hf_candidate: false,
 )

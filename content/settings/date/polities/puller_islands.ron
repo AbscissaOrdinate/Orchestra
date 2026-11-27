@@ -3,7 +3,7 @@
 // Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
 Polity(
     id: "polity.puller_islands",
-    name: "Puller Islands Protectorate",
+    name: "Puller Islands Colony",
     short_name: "Puller Islands",
     adjective: "Puller",
     provenance: Date,

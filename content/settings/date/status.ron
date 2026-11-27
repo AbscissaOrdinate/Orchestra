@@ -1,4 +1,4 @@
-// content/settings/date/status.ron — status of directly held regions at 1955-01 (WLD-013)
+// content/settings/date/status.ron — status of directly held regions at 1955-01 (WLD-011)
 // Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
 // Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
 [
@@ -6,14 +6,14 @@
     ("region.nile_upper", Colonial),
     ("region.zambezi", Colonial),
     ("region.ceylon", Colonial),
-    ("region.malaya_south", Colonial),
+    ("region.malay_south", Colonial),
     ("region.borneo_north", Colonial),
     ("region.maghreb", Colonial),
     ("region.sahara_sahel", Colonial),
-    ("region.congo_angola", Colonial),
+    ("region.congo_basin", Colonial),
     ("region.madagascar", Colonial),
     ("region.new_guinea_west", Colonial),
     ("region.ryukyu", Occupied),
-    ("region.micronesia", Trust),
+    ("region.marianas", Trust),
     ("region.antarctica", Unowned),
 ]

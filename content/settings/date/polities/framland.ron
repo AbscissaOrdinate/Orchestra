@@ -9,6 +9,6 @@ Polity(
     provenance: Date,
     analog_role: "Compact member on the northern flank",
     kind: NationState,
-    capital: "region.norway",
+    capital: "region.scandes",
     hf_candidate: false,
 )

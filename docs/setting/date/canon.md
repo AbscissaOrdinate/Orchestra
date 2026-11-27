@@ -13,7 +13,22 @@ Every timeline item and event hook carries exactly one tag (WLD-030):
 |---|---|---|
 | **[DATE]** | `Date` | Adapted from a current DATE operational environment (country names, roles, DATE-stated facts and dates). |
 | **[DATE-legacy]** | `DateLegacy` | A name taken from an older U.S. Army training environment that is not one of the 29 DATE OEs: Robin Sage's Atlantica and Pineland, the Fort Irwin OEs (Krasnovia, Mojavia), Quantico's Centralia, and the Joint Modernization Command's Attica and Ellisia. Only the names are used; roles and lore are Orchestra's own. |
-| **[ORIG]** | `Orchestra` | Written for Orchestra. This covers all 1945–1955 history, unless the item is tagged otherwise. |
+| **[ORIG]** | `Orchestra` | Written for Orchestra. Per ADR-0003 this covers **all** 1945–1955 back-history, including items that project a DATE fact onto a date or a place; those cite the fact (F-n) below. |
+
+An event hook (§6) is tagged [DATE] only if DATE itself gives its date (F-2, F-3). A hook whose outcome is DATE's present but whose window Orchestra chose is tagged [ORIG] and cites the DATE fact it moves toward.
+
+**DATE facts relied on.** These are adapted DATE material, kept apart from the Orchestra projections that use them:
+
+| ID | DATE fact | Source |
+|---|---|---|
+| F-1 | Donovia was its region's dominant political, economic, military and social power until about two decades before DATE's present | [V] DATE Donovia country overview |
+| F-2 | Gabal emerged from joint rule by two Western European countries in 1977 | [V] DATE Indo-Pacific overview |
+| F-3 | The Sunda Baru Federation was formed in 1985 from Indonesia and several Malaysian provinces, became an expansionist regional power by 2005, and calls Patani Baru illegitimate | [V] DATE Sunda Baru overview |
+| F-4 | South Torbia occupies most of southern Luzon. Each Torbia claims the other, and the Song family has ruled North Torbia since its founding | [V] DATE South Torbia overview; DATE OPORD JIPOE |
+| F-5 | Belesia is a young democracy whose independence from colonial rule was turbulent | [V] DATE Indo-Pacific overview |
+| F-6 | Himaldesh is a nonaligned, nuclear-armed democracy; Bagansait is led by a military junta | [V] DATE overviews |
+| F-7 | Olvana is a communist would-be regional hegemon with the region's largest military, and has disputed territory with South Torbia | [V] DATE Olvana overview; DATE OPORD |
+| F-8 | Present-day roles of the other DATE polities (Atropia, Gorgas, Limaria, Pirtuni, Ariana, Nyumba, Kujenga, Amari, Ziwa, Fanu Rai, Volcani Tura) as listed in §4.1 | [V] Volcani Tura (DATE); the rest [R], from secondary summaries |
 
 The DATE source is the Australian Army's DATE site (date.army.gov.au) and its published country studies and operation orders. The TRADOC ODIN knowledge base could not be reached when this was written (OQ-C1).
 
@@ -31,14 +46,14 @@ Hesperia and Lorande still hold large empires, but both are exhausted and facing
 ## 3. Timeline 1945–1955
 
 - **1945** [ORIG] The World War ends with the defeat of Hinode, the pre-war Westmark state and Ausonia's wartime regime by a coalition led by Atlantica, Donovia and Hesperia, with the Lorandese resistance.
-- **1945** [DATE] Donovia emerges as its region's dominant political, economic, military and social power. DATE's country overview describes it as having held this position until its later decline.
+- **1945** [ORIG] Donovia emerges as its region's dominant political, economic, military and social power, the starting point of F-1.
 - **1945** [ORIG] The defeated northern-European state is divided into occupation zones. The western zones become the Federal Republic of Westmark in 1949, and the Donovian zone becomes the Bothnian People's Republic.
 - **1945** [ORIG] Kyeran is freed from Hinodese colonial rule. After a short trusteeship it becomes the Republic of Kyeran in 1948.
 - **1945** [ORIG] Communist governments across Central Europe and the northern Balkans are merged into the single Krasnovian People's Republic under Donovian tutelage (a composite; see §5).
 - **1945** [ORIG] Atlantica occupies Hinode until the 1952 peace treaty and keeps administering the Ryukyu Islands. It also takes the former Hinodese mandate islands of Micronesia as a trust.
 - **1946** [ORIG] A Donovian-backed autonomous government in Ariana's Urmia Basin collapses. This is the origin of Atropia's dormant irredentist claim on the basin.
 - **1946** [ORIG] Atlantica ends colonial rule over Luzon. Olvanan-backed guerrillas hold northern Luzon, so two rival governments emerge: the Democratic People's Republic of Torbia in the north and the Republic of Torbia in the south. The Visayas and Mindanao stay under Atlantican tutelage as the Commonwealth of Belesia.
-- **1946** [DATE] The Song family takes power in North Torbia and has ruled it ever since.
+- **1946** [ORIG] The Song family takes power in North Torbia (F-4).
 - **1947** [ORIG] Hesperia partitions its subcontinental empire into Himaldesh and two-winged Daryastan. The 1947–49 Kashmir war leaves Kashmir held by Himaldesh and claimed by Daryastan.
 - **1947** [ORIG] The Hemispheric Defense Pact (`alliance.hemispheric_pact`) binds Atlantica, Centralia and Guaranda.
 - **1948** [ORIG] Bagansait gains independence from Hesperia, and ethnic insurgencies begin almost at once.
@@ -50,7 +65,7 @@ Hesperia and Lorande still hold large empires, but both are exhausted and facing
 - **1950** [ORIG] Donovia and Olvana sign the Treaty of Friendship and Alliance (`alliance.donovia_olvana_treaty`). Olvana occupies the Tibetan plateau in 1950–51.
 - **1950** [ORIG] Donovia's bilateral treaties with Krasnovia and Bothnia are grouped as the Union Bloc (`alliance.union_bloc`), which is not yet a formal multilateral pact.
 - **1950** [ORIG] The Torbian War begins when North Torbia invades the south. An Atlantican-led coalition intervenes, and Olvanan "volunteers" enter the war late in 1950.
-- **1950** [DATE] Each Torbia claims the whole of Torbia. Neither recognizes the other.
+- **1950** [ORIG] Each Torbia claims the whole of Torbia, and neither recognizes the other (F-4).
 - **1951** [ORIG] Atlantica signs the Atlantica-Torbia Mutual Defense Treaty (`alliance.torbian_defense_treaty`). The Atlantica–Hinode Security Treaty (`alliance.atlantica_hinode_treaty`) is signed alongside the peace treaty and takes effect in 1952.
 - **1951** [ORIG] Ariana nationalizes its oil. In 1953 a royalist restoration backed by Atlantica and Hesperia ends the crisis, and the Shah-analog monarch has ruled by decree since.
 - **1952** [ORIG] Army officers overthrow the Ellisian monarchy and proclaim the Ellisian Republic, a pan-national union of the Nile, the Levant and Mesopotamia (a composite).
@@ -60,7 +75,7 @@ Hesperia and Lorande still hold large empires, but both are exhausted and facing
 - **1954** [ORIG] Sungzon defeats Lorande. A peace conference ends Lorandese rule on the Annamite Coast, and Lorande's former protectorates on the middle Mekong pass to Khorathidin.
 - **1954** [ORIG] Donovia transfers Crimea from its core to the Pirtunian Union Republic.
 - **1954** [ORIG] The Pacific Compact (`alliance.pacific_compact`) is signed. In December, Atlantica signs a defense treaty with the Republic of Olvana (`alliance.atlantica_formosa_treaty`).
-- **1955** [DATE] Gabal is still under the joint rule of two Western European powers, here Hesperia and Lorande, as it is in DATE until 1977.
+- **1955** [ORIG] Gabal is under the joint rule of Hesperia and Lorande, Orchestra's choice of the two Western European powers in F-2.
 
 ## 4. Polities, subjects and alliances at the start
 
@@ -93,7 +108,7 @@ The high-fidelity candidates are marked ★; Atlantica, Donovia, Himaldesh and O
 | `polity.sunda_baru` ★ | Sunda Republic | Nonaligned archipelagic republic | Sunda Baru Federation (1985), an expansionist regional power | [DATE] |
 | `polity.patani_baru` | Patani Protectorate | Hesperian protectorate facing a communist insurgency | Weak decentralized federation that Sunda Baru calls illegitimate | [DATE] |
 | `polity.volcani_tura` | Territory of Volcani Tura | Meridian trust territory | Resource-rich, weak Melanesian state | [DATE] |
-| `polity.puller_islands` | Puller Islands Protectorate | Hesperian colony | Small post-conflict island state | [DATE] |
+| `polity.puller_islands` | Puller Islands Colony | Hesperian colony | Small post-conflict island state | [DATE] |
 | `polity.fanu_rai` | Fanu Rai | Lusoran colony | Young democracy with offshore oil and gas | [DATE] |
 | `polity.amari` | Amari Colony | Hesperian settler colony in revolt | Stable pro-Western democracy | [DATE] |
 | `polity.kujenga` | Kujenga Trust Territory | Hesperian trust territory | Dominant-party state drifting toward authoritarianism | [DATE] |
@@ -125,7 +140,7 @@ The high-fidelity candidates are marked ★; Atlantica, Donovia, Himaldesh and O
 - `polity.limaria` → `polity.donovia`: constituent republic. [ORIG]
 - `polity.pirtuni` → `polity.donovia`: constituent republic. [ORIG]
 - `polity.belesia` → `polity.atlantica`: commonwealth, self-governing and on a path to federal independence (HK-10). [ORIG]
-- `polity.gabal` → `polity.hesperia` and `polity.lorande`: condominium until 1977 (HK-11). [DATE]
+- `polity.gabal` → `polity.hesperia` and `polity.lorande`: condominium until 1977 (HK-11; F-2). [ORIG]
 - `polity.patani_baru` → `polity.hesperia`: protectorate. [ORIG]
 - `polity.puller_islands` → `polity.hesperia`: colony. [ORIG]
 - `polity.amari` → `polity.hesperia`: colony under emergency rule. [ORIG]
@@ -134,7 +149,7 @@ The high-fidelity candidates are marked ★; Atlantica, Donovia, Himaldesh and O
 - `polity.fanu_rai` → `polity.lusora`: colony. [ORIG]
 - `polity.volcani_tura` → `polity.meridia`: trust territory. [ORIG]
 
-Directly held colonial regions, which have no polity of their own in the MVP, are listed in `status.ron`. Hesperia holds the Guinea Coast, the Upper Nile, the Zambezi, Ceylon, Southern Malaya and North Borneo. Lorande holds the Maghreb, the Sahara and Sahel, the Congo Basin and Angola, Madagascar and Western New Guinea. Atlantica occupies the Ryukyus and holds Micronesia as a trust. Antarctica is unowned.
+Directly held colonial regions, which have no polity of their own in the MVP, are listed in `status.ron`. Hesperia holds the Guinea Coast, the Upper Nile, the Zambezi Basin, Ceylon, the Southern Malay Peninsula and North Borneo. Lorande holds the Maghreb, the Sahara and Sahel, the Congo Basin and Bie Plateau, Madagascar and Western New Guinea. Atlantica occupies the Ryukyus and holds the Marianas and Carolines as a trust. Antarctica is unowned.
 
 ### 4.3 Alliances in force
 
@@ -142,7 +157,7 @@ Directly held colonial regions, which have no polity of their own in the MVP, ar
 
 ### 4.4 Territorial claims
 
-Contested claims: Kashmir (Daryastan), the Eastern Lesser Caucasus (Limaria), Formosa (Olvana), Southern Luzon (North Torbia), Northern Luzon (South Torbia) and Western New Guinea (Sunda). Irredentist claims: the North China Plain (Republic of Olvana), Southern Malaya and North Borneo (Sunda), the Elbe Plain (Westmark), the Rhine Basin (Bothnia), the Urmia Basin (Atropia), the Upper Nile (Ellisia) and the Ryukyus (Hinode).
+Contested claims: Kashmir (Daryastan), the Eastern Lesser Caucasus (Limaria), Formosa (Olvana), Southern Luzon (North Torbia), Northern Luzon (South Torbia) and Western New Guinea (Sunda). Irredentist claims: all six mainland regions (Republic of Olvana), the Southern Malay Peninsula and North Borneo (Sunda), the Elbe Plain (Westmark), the Rhine Basin (Bothnia), the Urmia Basin (Atropia), the Upper Nile (Ellisia) and the Ryukyus (Hinode).
 
 ## 5. DATE footprint adaptations
 
@@ -161,7 +176,7 @@ DATE's geography is mapped onto real Earth with these deliberate choices [D]:
 
 Hooks are content for a future event system. In the MVP they are documentation only. The windows are soft.
 
-| ID | Window | Hook | Effect if it fires | Prov |
+| ID | Window | Hook | Effect if it fires | Prov (basis) |
 |---|---|---|---|---|
 | HK-01 | 1955-05 | Westmark joins the Northern Compact and begins rearming | Membership change; Westmark forces grow | [ORIG] |
 | HK-02 | 1955-05 | The Union Bloc becomes a formal multilateral pact | Alliance kind Bloc → Defense | [ORIG] |
@@ -172,22 +187,22 @@ Hooks are content for a future event system. In the MVP they are documentation o
 | HK-07 | 1959–1965 | Olvanan–Donovian split | Treaty of Friendship lapses | [ORIG] |
 | HK-08 | 1960–1970 | Olvana tests a fission device | Nuclear status changes | [ORIG] |
 | HK-09 | 1962–1969 | Lorande transfers Western New Guinea to Sunda | Ownership change; claim cleared | [ORIG] |
-| HK-10 | 1958–1975 | Belesia becomes the Federated States of Belesia, independent amid post-colonial turbulence | Subject relation ends; rename | [DATE] |
-| HK-11 | 1977 | Gabal becomes independent from the condominium | Subject relations end; rename to Republic of Gabal | [DATE] |
-| HK-12 | 1965–1990 | Ariana's monarchy falls to a revolutionary state | Government archetype and stance change | [DATE] |
-| HK-13 | 1985 | Sunda Baru Federation: Sunda unites with the Malayan provinces | Rename; Southern Malaya and North Borneo change owner | [DATE] |
-| HK-14 | 1985–2005 | Sunda Baru becomes an expansionist regional power and rejects Patani Baru's legitimacy | Claims harden; military growth | [DATE] |
-| HK-15 | 1985–1995 | The Donovian Union dissolves and its four constituent republics become independent | Subject relations end; Donovia declines | [DATE] |
-| HK-16 | after HK-15 | Atropia–Limaria war over the Eastern Lesser Caucasus | Contested claim becomes a war | [DATE] |
-| HK-17 | after HK-15 | Separatist regions in Gorgas, backed by Donovia | Internal instability; Donovian pressure | [DATE] |
-| HK-18 | 2000–2030 | Donovia resurges and pressures Pirtuni and Gorgas | Stance and force posture shift | [DATE] |
-| HK-19 | 1958–1965 | A military junta takes power in Bagansait | Government archetype changes | [DATE] |
-| HK-20 | 1985–2000 | Nyumba collapses into a fractured state with an Islamist government | Stability collapse; government change | [DATE] |
-| HK-21 | 1960–1970 | Kujenga becomes independent as a dominant-party state | Subject relation ends; government set | [DATE] |
-| HK-22 | 1960–1975 | Himaldesh tests a fission device | Nuclear status changes | [DATE] |
-| HK-23 | 1970–2000 | South Torbia rises to rank among the wealthiest economies | Economic development grows | [DATE] |
-| HK-24 | 2000–2030 | Olvana pursues regional hegemony and disputes territory with South Torbia | New claims; naval growth | [DATE] |
-| HK-25 | 1974–2005 | Fanu Rai becomes independent and develops its offshore oil and gas | Subject relation ends | [DATE] |
+| HK-10 | 1958–1975 | Belesia becomes the Federated States of Belesia, independent amid post-colonial turbulence | Subject relation ends; rename | [ORIG] (F-5) |
+| HK-11 | 1977 | Gabal becomes independent from the condominium | Subject relations end; rename to Republic of Gabal | [DATE] (F-2) |
+| HK-12 | 1965–1990 | Ariana's monarchy falls to a revolutionary state | Government archetype and stance change | [ORIG] (F-8) |
+| HK-13 | 1985 | Sunda Baru Federation: Sunda unites with the Malayan provinces | Rename; the Southern Malay Peninsula and North Borneo change owner | [DATE] (F-3) |
+| HK-14 | 1985–2005 | Sunda Baru becomes an expansionist regional power and rejects Patani Baru's legitimacy | Claims harden; military growth | [ORIG] (F-3) |
+| HK-15 | 1985–1995 | The Donovian Union dissolves and its four constituent republics become independent | Subject relations end; Donovia declines | [ORIG] (F-1) |
+| HK-16 | after HK-15 | Atropia–Limaria war over the Eastern Lesser Caucasus | Contested claim becomes a war | [ORIG] (F-8) |
+| HK-17 | after HK-15 | Separatist regions in Gorgas, backed by Donovia | Internal instability; Donovian pressure | [ORIG] (F-8) |
+| HK-18 | 2000–2030 | Donovia resurges and pressures Pirtuni and Gorgas | Stance and force posture shift | [ORIG] (F-1) |
+| HK-19 | 1958–1965 | A military junta takes power in Bagansait | Government archetype changes | [ORIG] (F-6) |
+| HK-20 | 1985–2000 | Nyumba collapses into a fractured state with an Islamist government | Stability collapse; government change | [ORIG] (F-8) |
+| HK-21 | 1960–1970 | Kujenga becomes independent as a dominant-party state | Subject relation ends; government set | [ORIG] (F-8) |
+| HK-22 | 1960–1975 | Himaldesh tests a fission device | Nuclear status changes | [ORIG] (F-6) |
+| HK-23 | 1970–2000 | South Torbia rises to rank among the wealthiest economies | Economic development grows | [ORIG] (F-8) |
+| HK-24 | 2000–2030 | Olvana pursues regional hegemony and disputes territory with South Torbia | New claims; naval growth | [ORIG] (F-7) |
+| HK-25 | 1974–2005 | Fanu Rai becomes independent and develops its offshore oil and gas | Subject relation ends | [ORIG] (F-8) |
 | HK-26 | 1958–1962 | Lorande tests a fission device and seeks its own deterrent | Nuclear status; Compact friction | [ORIG] |
 | HK-27 | 1968–1975 | Daryastan's eastern wing secedes | Bengal changes owner (needs runtime polity creation, so post-MVP) | [ORIG] |
 
@@ -196,7 +211,7 @@ Hooks are content for a future event system. In the MVP they are documentation o
 - **IDs** are stable and never renamed: `polity.<snake>`, `region.<snake>`, `alliance.<snake>`. Display names are data and can change by edit or event.
 - **DATE names** are spelled exactly as DATE spells them (WLD-038). DATE dates and facts are tagged [DATE] and cited in this document or the spec.
 - **Original names** are invented. They must not contain the name of a real sovereign state (WLD-006 deny list) and should sound plausible for their region. All original names are provisional, and the user can rename any of them in data.
-- **Regions** use real physical-geography names (Kartli, Absheron, Lingnan) and never a polity name (WLD-037). A setting can give a display alias through `region_names.ron`, for example Pineland for the Southeastern Piedmont [DATE-legacy name].
+- **Regions** use real physical-geography names (Kartli, Absheron, Lingnan) and never a polity name or a political name (WLD-037). Features whose standard name coincides with a state (Congo Basin, Guinea Coast, Madagascar, Ceylon, Iceland, Australia, the North China Plain, the Sea of Japan, the Gulf of Mexico) are allowed. IDs follow the same rule. A setting can give a display alias through `region_names.ron`, for example Pineland for the Southeastern Piedmont [DATE-legacy name].
 - **Lore depth** is low by design (ConOps §4): one clause of 1955 state per polity, and roughly one line per timeline item or hook.
 - **Sensitivity.** The canon leaves out analogs of real genocides and of some real-world ethnic and religious conflicts beyond those DATE itself depicts. Real conflicts are inspiration, never a mapping.
 

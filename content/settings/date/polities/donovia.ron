@@ -9,6 +9,6 @@ Polity(
     provenance: Date,
     analog_role: "Continental superpower and bloc hegemon (Soviet-type union)",
     kind: NationState,
-    capital: "region.russia_central",
+    capital: "region.oka_volga",
     hf_candidate: true,
 )

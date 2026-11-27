@@ -9,6 +9,6 @@ Polity(
     provenance: DateLegacy,
     analog_role: "Maritime superpower and leader of the Northern Compact",
     kind: NationState,
-    capital: "region.us_northeast",
+    capital: "region.atlantic_seaboard",
     hf_candidate: true,
 )

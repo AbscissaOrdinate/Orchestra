@@ -9,6 +9,6 @@ Polity(
     provenance: Orchestra,
     analog_role: "Former Hinodese colony, Atlantica-aligned and wary of Hinode",
     kind: NationState,
-    capital: "region.korea",
+    capital: "region.korean_peninsula",
     hf_candidate: false,
 )

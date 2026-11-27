@@ -9,6 +9,6 @@ Polity(
     provenance: Orchestra,
     analog_role: "Large developing South American federation",
     kind: NationState,
-    capital: "region.brazil",
+    capital: "region.brazilian_highlands",
     hf_candidate: false,
 )
