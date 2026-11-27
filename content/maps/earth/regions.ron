@@ -1,7 +1,7 @@
 // content/maps/earth/regions.ron — Earth region graph nodes (WS-08a §3.2).
 // Real physical geography only. Setting-agnostic: no polity IDs or names (ARC-052, WLD-046).
-// Optional attributes (pop_weight, resource_tags, port_class, airfield_class) are reserved for
-// WS-03 / WS-11 and are left unset in this draft (WLD-047).
+// Optional attributes (pop_weight, port_class, airfield_class) are reserved for
+// WS-03 / WS-11 and are left unset in this draft (WLD-047). Resource tags live in resources.ron (WS-08b).
 [
     Region(id: "region.alaska", name: "Alaska", lat: 64.0, lon: -150.0, terrain: Tundra),
     Region(id: "region.canadian_shield", name: "Canadian Shield and Prairies", lat: 56.0, lon: -100.0, terrain: Forest),

@@ -1,7 +1,9 @@
 # WS-08a — Setting, Canon & Earth Map
-Status: Draft v0.2 · Parent: ConOps §3, §4, P-6, P-7, SYS-006, SYS-007; ADR-0003; WS-02 §3.6, §6, ARC-050–052 · Last updated: 2026-11-27
+Status: Draft v0.3 · Parent: ConOps §3, §4, P-6, P-7, SYS-006, SYS-007; ADR-0003; WS-02 §3.6, §6, ARC-050–052 · Related: WS-08b Draft v0.4 (§4.1 G-8, §4.4, §4.6) · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source given) · **[R]** recalled or secondary source, not checked against DATE primary material · **[D]** design choice.
+**v0.3 (WS-08b P-08a1/2, 2026-11-27):** the reserved `Region.resource_tags` field is removed; Earth resource tags live in WS-08b's layer `maps/earth/resources.ron` (WLD-047). WS-08a now owns `settings/<s>/deposit_start.ron`, the start development level of each deposit, validated by new WLD-017. Its values come from WS-08b's M2(d) run and are reviewed against the canon before commit.
+
 The companion canon document is `docs/setting/date/canon.md`. Draft content lives in `content/maps/earth/`, `content/settings/date/` and `content/scenarios/date_1955.ron`. Until M4 it is validated by the prototype `prototypes/ws08a-content-check/`.
 
 > Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
@@ -46,6 +48,8 @@ content/settings/date/subjects.ron      [(subject, overlord, SubjectKind)]
 content/settings/date/alliances.ron     [Alliance]
 content/settings/date/start.ron         [StartState]                   (keyed by `polity`)
 content/settings/date/region_names.ron  [(region, display name, Provenance)]  setting-level aliases
+content/settings/date/deposit_start.ron [(DepositId, dev)]   start development per deposit (WLD-017; optional, absent = all 0)
+content/maps/earth/resources.ron        [(region, [tag])]      resource layer, owned by WS-08b (§4.4); read here only to resolve DepositIds
 ```
 
 Load order and validation follow WS-02 §3.6. Setting files reference map region IDs and never define geography. Map files never mention polities (ARC-052).
@@ -58,7 +62,6 @@ enum Terrain { Plains, Forest, Jungle, Desert, Steppe, Hills, Mountain, Tundra, 
 struct Region { id, name, lat: f64, lon: f64, terrain: Terrain, island: bool = false,
                 // reserved, unset in MVP draft (WLD-047):
                 pop_weight: Option<f64>,        // WS-03: share of owner's population
-                resource_tags: Vec<String>,     // WS-03 vocabulary
                 port_class: Option<u8>,         // WS-11
                 airfield_class: Option<u8> }    // WS-11
 enum EdgeKind { Land, Strait, Coast, SeaLane }  // no Air (D7)
@@ -170,6 +173,7 @@ Verification column: **C** = prototype checker test (named `wld_NNN_*` in `proto
 | WLD-015 | Alliances have unique `alliance.<snake>` IDs and ≥ 2 distinct known members, and use the `AllianceKind` vocabulary. | A fixture with an unknown member reports "unknown member"; a duplicate ID is reported. | WS-06 interface | C |
 | WLD-016 | The default setting has the 11 alliances in canon §4.3, including the Northern Compact, the Union Bloc, the Pacific Compact and the Donovia–Olvana treaty. | ID set and count assertions. | canon §3 | C |
 | **Start state** |||||
+| WLD-017 | `deposit_start.ron` is optional; a deposit not listed starts at dev 0. Each entry names an Earth deposit derived from the map's resource layer by WS-08b's rule (`deposit.<region stem>.<tag>`, `#2`, `#3` on a repeated tag; WS-08b §4.1 G-8), has dev ∈ [0, 1], appears at most once, and is not a deposit whose tag carries the `unknown` qualifier (found after the start date). The file follows WLD-035; values are tagged `Orchestra`, with [R] where they follow real production at the start date. | Default content (no file yet) loads. A fixture with 2 valid rows loads. A fixture with an unknown deposit, dev 1.5, a duplicate and an `unknown`-tagged deposit reports exactly those 4 errors. A headerless file reports the WLD-035 error. A unit test checks the ID rule, including `#2`. | WS-08b OQ-S5, P-08a2 | C |
 | WLD-020 | Each polity has exactly one `StartState`, and there are no entries for unknown polities. | A fixture deleting Ziwa's entry reports "no entry for polity.ziwa"; duplicates and unknown polities are reported. | WS-02 §6 | C |
 | WLD-021 | `StartState` has exactly the §3.4 fields and holds enums only: no numeric values. | A fixture adding `morale` fails in start.ron naming the field; a fixture with `stability: 0.5` fails to parse. | D5, ARC-050 | C |
 | WLD-022 | Each start-state field has exactly one primary owning workstream that maps it to numbers (§3.5). | R: the §3.5 table lists every §3.4 field with exactly one primary owner. Later, each owning spec (WS-03, 04, 05, 06, 11) cites the field it maps; that half is checked when those specs are graded. | D5 | R |
@@ -195,7 +199,7 @@ Verification column: **C** = prototype checker test (named `wld_NNN_*` in `proto
 | WLD-044 | The graph is connected; every sea zone and every island has ≥ 1 Coast edge. | A fixture that removes Hawaii's edges reports "has no Coast edge" and "unreachable". | ARC-015 | C |
 | WLD-045 | Chokepoints name land regions. The default map has these chokepoints: the Turkish Straits, Suez, Gibraltar, Bab-el-Mandeb, Hormuz, Malacca, the Danish straits, the Luzon Strait, Tsushima and Panama. | A non-land chokepoint is an error; a set assertion covers the 10 listed. | WS-06, WS-07 | C |
 | WLD-046 | No map file contains a polity ID. | A fixture adding "polity.donovia" to regions.ron reports "map file references a polity ID". | ARC-052 | C |
-| WLD-047 | The reserved region attributes (`pop_weight`, `resource_tags`, `port_class`, `airfield_class`) are optional and accepted whether absent or present; their meaning belongs to WS-03 and WS-11. | The default content omits them and loads; a fixture setting all four loads. | §3.2 | C |
+| WLD-047 | The reserved region attributes (`pop_weight`, `port_class`, `airfield_class`) are optional and accepted whether absent or present; their meaning belongs to WS-03 and WS-11. Resource tags are not a region attribute: they live in `maps/<map>/resources.ron` (WS-08b §4.4). | The default content omits them and loads; a fixture setting all three loads; a fixture with `resource_tags` on a region fails to parse. | §3.2, WS-08b P-08a1 | C |
 | **Extensibility (SYS-007)** |||||
 | WLD-048 | Adding, renaming or replacing a polity, or adding a region display alias, needs data edits only, and the map stays untouched. | Three fixtures load with no code change: (a) a new polity file plus an ownership change plus a start entry gives N+1 polities; (b) a changed name plus a `region_names` alias loads, the ID is unchanged and the map bytes are identical; (c) deleting Pontara, reassigning its regions, alliance seat and start entry loads without it. | SYS-007, ARC-052 | C |
 | WLD-049 | A second setting on the same map, chosen only by a scenario file, loads alongside the default setting. | Fixture `testworld` (3 polities, written as data only) loads with 3 polities, and `date_1955` still loads from the same content tree. | SYS-007 | C |
@@ -221,6 +225,7 @@ The draft files listed in §3.1 are complete for the MVP start state:
 | `settings/date/start.ron` | 47 |
 | `settings/date/status.ron` | 14 |
 | `settings/date/region_names.ron` | 1 (Pineland, `DateLegacy`) |
+| `settings/date/deposit_start.ron` | Not yet committed: values come from WS-08b M2(d) and are reviewed against canon (e.g. Khuzestan after the 1951–53 crisis, Absheron mature) |
 
 **Derived map:** `docs/setting/date/map-1955.svg`, rendered from the content by `prototypes/ws08a-map-render/render_map.py` (Voronoi cells per landmass on Natural Earth 1:50m land, public domain). It is a picture of the data, not data: regenerate it after content changes.
 
@@ -228,7 +233,7 @@ The draft files listed in §3.1 are complete for the MVP start state:
 
 ## 7. Verification
 
-- `cargo test` in `prototypes/ws08a-content-check/` runs 52 tests, covering every WLD requirement marked C plus ARC-051 (exact error count; no cascade after a polity or setting.ron parse failure).
+- `cargo test` in `prototypes/ws08a-content-check/` runs 58 tests, covering every WLD requirement marked C plus ARC-051 (exact error count; no cascade after a polity or setting.ron parse failure).
 - `cargo run -- ../../content date_1955` prints `ok: scenario date_1955 — 132 regions, 366 edges, 47 polities`.
 - `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` pass.
 - In M4 the schema types and tests move into `sim-core` under the same test names, and the prototype is deleted.

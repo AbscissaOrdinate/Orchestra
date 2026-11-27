@@ -50,7 +50,7 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 20 | WS-03 v0.2: make the OQ-G7 edits (`wealth` in `KeyOutcome`; CBI owned by WS-04 gov type; rents never key income) | WS-03 → repo | ☑ (wealth, CBI ownership and rents note all done in WS-03 v0.2/v0.3) |
 | 22 | Build the M2(c) governance prototype per `prototypes/governance/PLAN.md` (S8 → S1 → S2/S3 → S9); write tuned values back to WS-04 §4 | Claude Code session | ☐ |
 | 23 | Review and approve WS-08b v0.4 (all four workstreams' feedback applied; §8.1 lists what remains) | Sean | ☐ |
-| 24 | After WS-08b merges: WS-02 applies P-02a–g (v1.2); WS-08a drops `Region.resource_tags`, rewords WLD-047, adds WLD-017 and owns `deposit_start.ron`; WS-03 publishes `extraction_share` (WS-04 OQ-G11) | WS-02, WS-08a, WS-03 | ☐ |
+| 24 | After WS-08b merges: WS-02 applies P-02a–g (v1.2); WS-08a drops `Region.resource_tags`, rewords WLD-047, adds WLD-017 and owns `deposit_start.ron`; WS-03 publishes `extraction_share` (WS-04 OQ-G11) | WS-02, WS-08a, WS-03 | ◐ (WS-08a part done: v0.3, PR ws08a/v0.3) |
 | 25 | Build M2(d), the rent-hook prototype (`prototypes/ws08b-sol/README.md` §2, ≈ 14 h), after M2(a) P1–P3; propose `deposit_start.ron` values for WS-08a review | `prototypes/economy/` | ☐ |
 
 ## Change log
@@ -79,3 +79,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-27 | WS-03 v0.4: WS-08b P-03a–k applied; P-03j = separate resource-equity line (payout, not r_E); P-03f = separate non-commodity world factor f_w, λ_w 0.3 (corr 0.3 with f_g); archetype D, S22/S23 reserved for M2(d); S11 moved to M2(d); ECO-023, ECO-150–154 |
 | 2026-11-27 | WS-08b v0.1–v0.3 (PR #14, merged then reverted so WS-03 v0.4 could land): seeded Sol (32 canonical bodies + ≤ 18 generated from real small-body populations), regime-node Δv graph with synodic windows, four-kind resource taxonomy, commodity price block, rent hook, prospecting, thin space ops; OQ-S1–S5 closed |
 | 2026-11-27 | WS-08b v0.4 (new PR, rebuilt on main): marks P-03a–k and P-04a–e applied; `f_w` wording (λ_w 0.3); exploration channel `none`; extraction value added for `extraction_share` (WLD-058, WS-04 OQ-G11); WS-02 v1.2 items (delivery lag, per-regime `orbital_assets`, ≈ 0.18 MB snapshot); deposit IDs from tag text (SYS-007); `deposit_start.ron` header rule; OQ-S6 foreign concessions (non-blocking, default none) |
+| 2026-11-27 | WS-08a v0.3 (WS-08b P-08a1/2): `Region.resource_tags` removed (WLD-047); new WLD-017 validates `settings/<s>/deposit_start.ron` against WS-08b deposit IDs; 58 passing tests. `deposit_start.ron` values wait on WS-08b M2(d) |
