@@ -1,5 +1,7 @@
 # WS-03 — Macroeconomy, Fiscal & Monetary Policy, Demographics
-Status: Draft v0.3 · Parent: ConOps §3, §5 (P-1, P-2, P-3, P-7, P-8), §6 economy rows, §8 R-1/R-2, SYS-002, SYS-004, SYS-006, SYS-008 · Depends on: WS-02 v1.1, WS-04 Draft v0.2, WS-08a Draft v0.1 · Last updated: 2026-11-27
+Status: Draft v0.4 · Parent: ConOps §3, §5 (P-1, P-2, P-3, P-7, P-8), §6 economy rows, §8 R-1/R-2, SYS-002, SYS-004, SYS-006, SYS-008 · Depends on: WS-02 v1.1, WS-04 Draft v0.2, WS-08a Draft v0.1 · Last updated: 2026-11-27
+
+**v0.4 changes (2026-11-27, WS-08b hooks):** applies WS-08b P-03a–k. Resource rents are an additive term in agriculture & extraction output. There is a firm-level royalty, SOE take and diverted rents, and commodity net positions enter NX, FX reserves and import prices. Macro-tier rents are added. **P-03j decided:** private resource equity `V_res` is a separate equity line in household wealth, not folded into q_E; it earns its own payout, not r_E, so nothing is counted twice. **P-03f decided, with a change:** the residual world shock becomes a separate non-commodity factor `f_w` (λ_w = 0.3), not a smaller loading on `f_g`, because a residual still tied to `f_g` keeps part of the double count. Archetype D, S22 and S23 are added; S11 moves to M2(d). New ECO-023, ECO-150 to ECO-154.
 
 **v0.3 changes (2026-11-27):** wealth is now a **dynamic stock tracked for five WID-style groups** (§3.5 wealth dynamics). Each group's change breaks down into saving, returns, asset-price gains, taxes, estates and mobility. The wealth marginal is rebuilt from the group means each year, replacing the hand-written α_w and p0 laws. New instruments: mortgage LTV cap, mortgage-interest deductibility, pension funded share, and a social housing spending line. Measured (offshore excluded) and pension-augmented wealth shares are reported. The panel is now 8,192 households with oversampled tails (measured in `panel_size.py`). New ECO-140 to ECO-147, calibrated to the 1978–2012 US path, UK 1955–1975, and a Netherlands-like vs. Belgium-like pair.
 
@@ -64,6 +66,7 @@ Explicit lags that follow from placement: the policy rate set in R4 reaches the 
 | WS-05 | Defense and space sector capacity, utilization and wage index; skilled-labor pool (`h × L` in those sectors); FX rates and reserves | — |
 | WS-11 | Recruitment pool by sex and 5-year band (ages 15–49); O&S and personnel appropriation; funded fraction of WS-11's upkeep demand | persons / real |
 | WS-06 | `Aggregates` (gdp, population, gov_debt, treasury); public credit rating; real exchange rate; trade dependence by partner | reference currency (RC) |
+| WS-08b | `f_g` (commodity factor, R2 draw), GDP, price level, FX `e_i`, royalty rate, `state_own` of agriculture & extraction, corruption, `r_real + eq_premium` (annuity rate for V_res); all read one tick old | — |
 | All | `Aggregates` additions: **`gov_debt`, `treasury`** (closes WS-02 OQ-A4) in RC at current market FX | RC |
 
 ### 2.3 Inputs consumed
@@ -76,6 +79,7 @@ Explicit lags that follow from placement: the policy rate set in R4 reaches the 
 | WS-06 | Trade access matrix `a_ij ∈ [0,1]` (spheres, sanctions, embargoes), bailout lender availability and terms, sphere anchor polity | §3.7, §3.10 |
 | WS-11 | Upkeep demand (personnel count, pay, O&S cost), manpower drawn by sex and band, war casualties by sex and band | §3.6, §3.9 |
 | WS-07/11/08 events | Capital destruction by sector (war damage, disasters) | §3.3 (R2) |
+| WS-08b (R2, same tick) | `ResourceIncome` per polity: rent ρ_i (real LCU, per-kind breakdown), royalty, SOE take, private, diverted; private resource equity `V_res` (Tracked, per-deposit breakdown); commodity net positions `n_k` (units and value at p_k); capex schedule (state and private shares) | §3.1, §3.5, §3.6, §3.10, §3.13 |
 
 ### 2.4 WS-04 contract (decision 5)
 
@@ -154,6 +158,7 @@ A_s  : labor-augmenting tech; ln A_s grows by
 - `G_pub` = public capital per worker (infrastructure line). Elasticity φ = 0.08 [R].
 - The `β_inf` term is the "inflation eats growth" channel: above a threshold `π_thr`, inflation reduces TFP growth [R: threshold estimates of roughly 1–3% for advanced and 11–12% for developing economies, Khan & Senhadji].
 - Capital: `K_s(t+1) = (1 − δ_s/12) K_s + I_s/12`.
+- **Resource rents (P-03a):** agriculture & extraction output is `Y_ext = Y*_CES,ext · (1 + gap) + ρ_i`. Only the above-normal return is added, because unit costs already pay the CES factors. The breakdown has one term per resource kind. WS-08b's capex schedule enters as investment: the private share is agriculture & extraction investment, and the state share is the `resource_development` line (§3.6). A WS-04 `capital_loss` shock also lowers deposit `dev` in WS-08b in the same tick.
 - Investment: `I = i_rate · Y`, with `i_rate = i0 + β_r (MPK_net − r_real) + Σ_k invest_mod_k + regime_s − χ · deficit_share`. In planned mode the directive rate applies, scaled by compliance (§3.12).
 - Annual sector reallocation: labor and new investment move toward equal net returns with partial adjustment λ_L = 0.10/yr [D]. Consumption shares follow Engel curves (food share income elasticity ≈ 0.5 [R]).
 - Defense and space output = min(capacity Y*_s, demand from WS-05 procurement plus export orders). Spare capacity shows as utilization < 1. WS-05 reads capacity and utilization.
@@ -187,14 +192,15 @@ All draws use WS-02 streams `{tag: "eco", entity: polity, purpose: P_*}`; the gl
 | Sector TFP `z_s` | AR(1) in logs, Normal innovations | ρ_z = 0.98/month; annual σ ≈ 1.5% [R] | Lognormal levels; persistence makes booms and slumps last |
 | Demand `ε_d` | Normal | annual σ ≈ 1.5% of GDP [R] | Symmetric business-cycle noise |
 | Cost-push `ε_π` | Student-t, ν = 4, scaled | annual σ ≈ 1 pp [D] | Fat tails: oil-shock-like jumps without scripting |
-| Global commodity factor `f_g` | AR(1), Student-t ν = 4 | load λ = 0.5 on ε_π and ε_d [D] | Correlated world shocks (1973-style) |
+| Global commodity factor `f_g` | AR(1), Student-t ν = 4 | **No direct loading** (v0.4). It reaches economies only through WS-08b commodity prices: rents, NX, reserves and import prices (P-03e) | Avoids double counting (WS-08b OQ-S2) |
+| World non-commodity factor `f_w` (v0.4) | AR(1), Normal | load λ_w = 0.3 on ε_π and ε_d [D]; corr(f_g, f_w innovations) = ρ_gw = 0.3 [D] (global demand moves commodity prices too); both tuned in M2(d) | World demand and financial cycle |
 | Risk premium `ε_rp` | Normal × (1 + S_nl/500 bp) | σ = 15 bp/month at low debt [D] | Markets are jumpier near the debt limit |
 | Fertility, mortality levels | Normal on logit TFR / Brass α | σ = 0.02/yr [D] | Small, bounded noise |
 | Regime | Markov {Expansion, Recession, Crisis} | see below | Persistent states with legible names |
 
 Not stochastic: tax and budget formulas, accounting identities, cohort aging.
 
-Regimes: monthly transition matrix in content (default: E→R 1.2%, R→E 8%, R→C 3%, C→R 12% [D], tuned so recessions hit about 1 year in 6 [R]). Exit from Expansion rises with a stress index `S = w1·max(0, spread − 300 bp) + w2·max(0, π − 10%) + w3·max(0, −real growth)` via `p_ER = p0 · exp(k_S · S)`, capped at 10% [D]. Regimes shift `μ_d`, `m_G` and the TFP mean. Correlation: `ε = λ f_g + √(1−λ²) ε_idio`.
+Regimes: monthly transition matrix in content (default: E→R 1.2%, R→E 8%, R→C 3%, C→R 12% [D], tuned so recessions hit about 1 year in 6 [R]). Exit from Expansion rises with a stress index `S = w1·max(0, spread − 300 bp) + w2·max(0, π − 10%) + w3·max(0, −real growth)` via `p_ER = p0 · exp(k_S · S)`, capped at 10% [D]. Regimes shift `μ_d`, `m_G` and the TFP mean. Correlation: `ε = λ_w f_w + √(1−λ_w²) ε_idio`; `f_g = ρ_gw f_w + √(1−ρ_gw²) ν` in innovations. M2(d) tunes λ_w and ρ_gw against **total** comovement (median pairwise correlation of annual real GDP growth among advanced archetypes, target 0.3–0.5 [R]), because trade links and commodity prices now carry part of it.
 
 ### 3.4 Prices, money and monetary policy
 
@@ -206,6 +212,7 @@ i_target       = CBI · i_rule + (1 − CBI) · i_gov_pref
 i(t+1)         = ρ_i i + (1 − ρ_i) i_target,  floored at i_zlb
 ```
 
+- Import price (P-03e): `Δ(import price) = (1 − c_m) · Δ(non-commodity import prices, tariffs, FX) + c_m · Σ_k w_k Δln p_k`, where c_m is the commodity share of imports and w_k the kind weights from net imports.
 - κ = 0.15 [R]; ρ_i = 0.93/month [R]; r* = 2%, π* = 2% are content parameters per era (1955 settings may target price stability, not 2%).
 - **Cagan block (hyperinflation):** real money balances `m = m0 · exp(−a·π^e)`, a = 4 (annual) [R]. Seigniorage revenue = μ·m, where μ is money growth. Monetary financing above the maximum seigniorage `m0/(a·e)` cannot be funded at stable inflation, so π^e and π run away. Hyperinflation is a band at monthly π ≥ 50% [V: Cagan's definition, [Banque de France](https://banque-france.fr/en/publications-and-statistics/publications/fiscal-roots-hyperinflation-historical-perspective)]. It is emergent; no hard switch.
 - Price controls (§3.12) suppress measured π and accumulate a monetary overhang.
@@ -215,7 +222,7 @@ i(t+1)         = ρ_i i + (1 − ρ_i) i_target,  floored at i_zlb
 **State [D]:** three parametric marginals, each with a lognormal body below p_t = 0.90 and a Pareto tail above, matched continuously at p_t:
 - labor income `L`: `(σ_L, α_L)`; mean from the wage bill
 - household net wealth `W`: `(σ_w, p0)` body plus a piecewise Pareto top (`α_U9`, `α_T09`, `α_T01` above p90, p99 and p99.9), rebuilt each year from the five group means of the wealth dynamics below (generalized Pareto interpolation, [R] Blanchet–Fournier–Piketty). `p0` is the share of households with zero net wealth. The 3-parameter fits in the table below are the special case of one tail exponent and are used for the 1955 start; mean = `W_hh` / households
-- aggregate household wealth `W_hh = q_A · P · Σ_s (1 − state_own_s) K_s + dom_hold · D_d + κ_h · Y_nominal`. `q_A` is an asset-price index with partial adjustment 0.2/yr toward `MPK_net / (r_real + eq_premium)`, bounded [0.5, 2.5] [D]. `dom_hold` is the domestic share of government bonds (0.8 [D]). `κ_h` stands for housing and land, calibrated so `W_hh/Y` is 2–3 in the 1955 advanced archetype. Rich countries' private wealth/national income ratios rose from about 200–300% in 1970 to 400–600% in 2010 [V: [Piketty & Zucman 2014](https://researchonline.lse.ac.uk/id/eprint/66106)], and with s/g dynamics the model should reproduce that drift when growth slows.
+- aggregate household wealth `W_hh = q_A · P · Σ_s (1 − state_own_s) K_s + dom_hold · D_d + κ_h · Y_nominal + P · V_res` (the last term is resource equity, v0.4, P-03j). `q_A` is an asset-price index with partial adjustment 0.2/yr toward `MPK_net / (r_real + eq_premium)`, bounded [0.5, 2.5] [D]. `dom_hold` is the domestic share of government bonds (0.8 [D]). `κ_h` stands for housing and land, calibrated so `W_hh/Y` is 2–3 in the 1955 advanced archetype. Rich countries' private wealth/national income ratios rose from about 200–300% in 1970 to 400–600% in 2010 [V: [Piketty & Zucman 2014](https://researchonline.lse.ac.uk/id/eprint/66106)], and with s/g dynamics the model should reproduce that drift when growth slows.
 
 Laws of motion (annual, partial adjustment rate λ_d = 0.1/yr [D]):
 - `σ_L → σ_L*(skill-biased tech from WS-05, sector mix, Σ labor_militancy, minimum-wage regulation)`
@@ -262,6 +269,7 @@ Mob_g  = (pop_{g+1} μ_{g+1} W_{g+1} − pop_g μ_g W_g) / pop_g    downward dil
 - **Financial repression** appears with no special rule: `r_B` is the bond yield minus inflation, so 1945–75-style inflation with capped yields erodes bond-heavy groups.
 - **Pensions:** `pens_gen` = replacement rate × coverage. A funded share `f_p` builds a pension-fund stock (held in equity and bonds and counted in `W_hh`'s capital) that is **excluded from measured household wealth** and allocated to groups pro rata to labor income for the *augmented* concept. Generous pensions lower B50/M40 saving (precautionary and retirement saving crowded out).
 - **Mobility μ_g** (default 0.02/0.03/0.05/0.06 per yr for M40/U9/T09/T01 [D]) is what makes the distribution stationary. In compartment form it is the random-growth logic: the top share settles where `r_net,g + s_g·Yd_g/W_g − g` balances `μ_g`. Policy moves `r_net` and `s_g` at once, so transitions take decades rather than centuries. Standard random-growth models generate transitions an order of magnitude too slow ([V] [Gabaix, Lasry, Lions & Moll](https://img.nber.org/papers/21363)); group-specific (type-dependent) returns and saving are their proposed fix. ECO-147 tests the speed.
+- **Resource equity (v0.4, P-03j decided: separate line).** `V_res` (from WS-08b) is an equity line held through each group's equity share: group g holds `V_res · e_g A_g / Σ_h e_h A_h`. Two rules keep it from being counted twice: (1) in `Ret_g` the resource line earns its **payout** (the WS-08b private rent flow, ×12, pro rata), **not** r_E; (2) `Gain_g` gets the group's share of `ΔV_res` (revaluation as prices, reserves and depletion change), not `Δln q_E`. In the panel, each household's equity carries the same resource fraction, and its income on that fraction is the payout. `V_res` is added to agriculture & extraction's private-capital share used for the panel's sector assignment, so windfalls create more agriculture & extraction Capital-role households: resource oligarchs, who are WS-04 Industrialists via P-04c. `φ_off` applies. *Why not fold the rent into q_E:* q_E prices all sectors, so a windfall would raise manufacturing and service equity too, the opposite of Dutch disease. A depleting deposit's value would also follow a perpetual-return formula instead of its remaining life, and the breakdown would hide where the gain came from.
 - **Offshore:** `φ_off` of T09+T01 wealth (§ household panel step 6) rises with estate and wealth tax rates × (1 − enforcement) and with flight propensity. *Measured* shares exclude it; *true* shares include it. England's declared top-1% share fell from over 75% in 1900 to under 20% by 1970 [V: [Cummins, VoxEU](https://cepr.org/index%2Ephp/voxeu/columns/using-history-understand-hidden-wealth-uk)], but hidden elite wealth reverses about a third of the observed top-10% decline (same source). The model reproduces both.
 - **Invariants:** group means stay strictly ordered (B50 < M40 < … < T01); B50 may be ≤ 0 (net debt). The panel's wealth marginal is rebuilt from the five means so that they match exactly.
 - **Breakdown (P-3):** each group's Δ share = saving + returns + price gains − taxes − estates + mobility + rescale, with an exact sum. This is the distributional-national-accounts style decomposition, so "why did the top 1% get richer?" has an answer on screen.
@@ -291,6 +299,7 @@ Survey (HFCS/SCF) and capitalized-income (Saez–Zucman) or DFA series measure t
 | VAT/sales | Consumption by bin (MPC × disposable) | Through the shadow economy |
 | Wealth | Net wealth above threshold | Avoidance elasticity 0.5 [D] plus flight (`flight_propensity`) |
 | Estate | Mortality-weighted wealth of old cohorts | Avoidance 0.3 [D] |
+| Resource royalty (v0.4, P-03b/k) | Rent base ρ_i | Firm-level, **outside the household panel** (like the SOE take): `royalty = ρ·τ·(1 − c_div·K)` per WS-08b; the WS-04 discretion band (GOV-066) applies like any tax. Behavioral response comes through WS-08b's development decisions, not an ETI |
 | Tariffs | Imports by partner | Import elasticity (1.5 [R]); domestic price pass-through; protection raises the industry sector's demand share |
 | Subsidies (negative tax) | Sector output, or bin transfers | — |
 
@@ -305,6 +314,7 @@ Survey (HFCS/SCF) and capitalized-income (Saez–Zucman) or DFA series measure t
 Spending lines (content, extensible): defense personnel, defense O&S, defense procurement, defense R&D, space program, civil R&D (by WS-05 field), education, health, pensions, welfare transfers, unemployment benefits, social housing (v0.3; lowers homeownership toward renting, raises B50 real consumption), infrastructure (public capital), administration & enforcement, internal security, subsidies, interest.
 
 - **Mandatory (formula-driven):** pensions = retirees(age ≥ retirement age, a WS-04 policy) × replacement rate × average wage × coverage; health scales with the old-age share; unemployment benefits = u × LF × benefit rate (automatic stabilizer); interest = i_eff × debt. Demographic aging builds pressure here without any script.
+- **Resource lines (v0.4, P-03c/d):** revenue lines `resource_royalty` and `soe_resource_take`; spending lines `resource_development` (state capex) and `exploration` (surveys). Diverted rents (WS-08b) are **added to the corruption-rents amount** exported to WS-04 (labeled separately, P-04b) and never to key income. In planned and mixed economies most rent arrives as SOE take, so revenue becomes procyclical with `f_g`.
 - **Execution:** appropriations are spent at 1/12 per month. Corruption leakage `leak = c_leak · corruption` (default c_leak = 0.4 [D]) removes part of each discretionary line's real effect. The leaked amount goes to `EconOutcomes` rents (WS-04 allocates it to the coalition as private goods).
 - **Enforcement spending** raises tax compliance and statistical capacity, and lowers leakage (diminishing returns).
 - **WS-11 coupling:** defense personnel and O&S lines pay min(appropriation, WS-11 demand). WS-11 sees the funded fraction and decays readiness accordingly.
@@ -383,7 +393,7 @@ TFR              = TFR_min + (TFR_max − TFR_min)·L(−(ln y_pc − ln y_mid)/
 
 ### 3.10 Trade and FX stubs (minimal)
 
-- **Trade:** partner weights `w_ij` (content, historical ties) drift toward access-weighted demand. Exports `X_i = o_i · Y_i · Σ_j w_ij · a_ij · (1 − τ_tariff_j) · demand_j`. Imports follow the openness target and the domestic gap. NX shocks feed §3.2. Access cuts (embargo, sphere change) lower demand, slow TFP diffusion (`q_abs` uses access-weighted openness) and raise import prices. That is the "pressure from trade relations". With ~45 polities this is 2,000 pairs per month, a trivial cost.
+- **Trade:** partner weights `w_ij` (content, historical ties) drift toward access-weighted demand. Exports `X_i = o_i · Y_i · Σ_j w_ij · a_ij · (1 − τ_tariff_j) · demand_j`. Imports follow the openness target and the domestic gap. Commodity net positions (v0.4, P-03e): `NX_comm = Σ_k n_k p_k e_i / P_i` is added to NX, so it reaches the §3.2 gap through `NX_dev`, and to FX reserves. It is reported as its own breakdown term in both. NX shocks feed §3.2. Access cuts (embargo, sphere change) lower demand, slow TFP diffusion (`q_abs` uses access-weighted openness) and raise import prices. That is the "pressure from trade relations". With ~45 polities this is 2,000 pairs per month, a trivial cost.
 - **FX (minimal stub, what arms purchases need):** `e_ij = (P_i/P_j)·exp(ψ_fx·(spread_i − spread_j))` relative to a reference currency (RC = a world unit at 1955 PPP [D]). There is no FX market and no pegs (OQ-E2). Each polity holds FX reserves `R_fx`, fed by exports, arms exports and borrowing, and drained by imports, foreign procurement (WS-05), license fees and FX debt service. When reserves fall below 3 months of imports, the spread rises and foreign purchases are rationed pro rata (continuous) [D].
 
 ### 3.11 Structural beliefs and the budget projection (P-1, P-2)
@@ -412,9 +422,10 @@ A planned economy is the market model with policy settings. The economy does not
 Macro polities carry `MacroEcon { y_real, pop, debt_d, debt_f, treasury, i_eff, credibility, tfp_gap, def_share }`:
 
 ```
-ln y'   = ln y + (g_pop + g_front + θ q_abs ln(y_front/y_pc) + z)/12 − β_inf max(0, π_arch − π_thr)/12
+ln y_nr' = ln y_nr + (g_pop + g_front + θ q_abs ln(y_front/y_pc) + z)/12 − β_inf max(0, π_arch − π_thr)/12     non-resource output
+y        = y_nr + ρ_i                                                       (v0.4, P-03g)
 pop'    = pop · (1 + (b(y_pc) − m(y_pc) + mig)/12)          b, m from the same TFR and e0 curves applied to a template age structure
-d'      : same yield function (§3.7), with a fiscal reaction function pb = pb0 + ρ_B (d − d_ref) [R: Bohn-type, ρ_B = 0.03]
+d'      : same yield function (§3.7), with a fiscal reaction function pb = pb0 + ρ_B (d − d_ref) + (royalty + SOE take)/y [R: Bohn-type, ρ_B = 0.03]
 def_share : archetype × WS-06 posture → defense spending to WS-11
 ```
 
@@ -470,7 +481,8 @@ Tolerances: "rel" = relative. All tests run with fixed seeds. "Shocks off" means
 | **Shocks & regimes** ||||
 | ECO-020 | Regimes follow the content Markov matrix, with stress raising the exit from Expansion. | 10⁵ months at S = 0: empirical transition frequencies within ±10% rel of the matrix; at S = 1, p_ER = p0·exp(k_S) within sampling error (3σ). | §3.3 |
 | ECO-021 | Shock distributions match spec. | 10⁵ draws each: Normal shocks' mean within 0.02σ and σ within 2%; Student-t (ν = 4) fraction of |x| > 3·scale within ±10% rel of the theoretical t₄ tail probability; AR(1) ρ estimate within ±0.01. | §3.3 |
-| ECO-022 | Polity shocks share the global factor with loading λ. | 20 polities × 10⁴ months: mean pairwise correlation of ε_π within λ² ± 0.03. | §3.3 |
+| ECO-022 | Polity shocks share the non-commodity world factor with loading λ_w (v0.4). | 20 polities × 10⁴ months: mean pairwise correlation of ε_π within λ_w² ± 0.03; the correlation of f_g and f_w innovations within ρ_gw ± 0.03. | §3.3 |
+| ECO-023 | `f_g` reaches economies only through WS-08b channels. | With WS-08b disabled (no deposits, n_k = 0), every WS-03 output is bit-identical when f_g is replaced by any other series. | §3.3, WS-08b OQ-S2 |
 | **Demand, prices, monetary** ||||
 | ECO-030 | The IS gap responds to discretionary spending with multiplier m_G. | Shocks off, Expansion, r_real = r*, gap 0, base fixed: +1% of GDP discretionary spending sustained for 12 months → gap(12) = m_G · 0.01 · (1 − ρ_g^12) within 1e-9 rel. | §3.2 |
 | ECO-031 | Expectations anchoring depends on CBI and monetary credibility. | One-off +5 pp cost shock, shocks otherwise off: CBI = 1, C_m = 1 → |π − π*| < 0.5 pp within 24 months; CBI = 0 → > 0.5 pp after 36 months. | §3.4 |
@@ -525,6 +537,12 @@ Tolerances: "rel" = relative. All tests run with fixed seeds. "Shocks off" means
 | ECO-145 | The same tax-transfer system yields NL-like and BE-like wealth outcomes from pensions and housing alone. | Two polities with identical schedules, differing only in funded pension share, social housing and mortgage regime, after 40 years: both income Ginis ∈ [0.25, 0.31]; NL-like measured top 10% ∈ [0.55, 0.65] and top 1% ∈ [0.19, 0.29]; BE-like top 10% ∈ [0.39, 0.49] and top 1% ∈ [0.08, 0.16]; NL-like augmented Gini at least 0.15 below its measured Gini. | §3.5 |
 | ECO-146 | Measured and true wealth diverge under high estate taxes. | UK-like path 1955–1975: true top-10% share minus measured ∈ [0.2, 0.45] × the measured decline. | §3.5 |
 | ECO-147 | Transitions take decades, not centuries. | Top rate 70% → 28% at year 0, everything else fixed: half of the eventual change in T01 share is reached in 15–35 years. | §3.5, R-1 |
+| **Resource hooks (v0.4, WS-08b)** ||||
+| ECO-150 | Rents enter agriculture & extraction output additively, with a per-kind breakdown. | Unit: Y_ext = Y*_CES,ext(1 + gap) + ρ_i within 1e-12; ρ_i = 0 → output identical to v0.3; breakdown terms per kind sum to ρ_i (ARC-041). | P-03a |
+| ECO-151 | The rent split is booked once and only once. | Royalty + SOE take reach their revenue lines; diverted rents appear in the corruption-rents output and in no `KeyOutcome` income; private rent appears in capital income; Σ of the four = ρ_i within 1e-9 rel. Royalty is not in any per-household tax base. | P-03b–d, k |
+| ECO-152 | Resource equity enters wealth without double counting. | W_hh rises by exactly P·ΔV_res when only V_res changes (within 1e-9 rel); the resource line's return in Ret_g equals the private payout, with no r_E term on V_res; Σ_g of resource gains = ΔV_res; with σ = 1 (state-owned), household wealth is unchanged by rents. q_E is unchanged by a V_res shock (shocks off). | P-03j |
+| ECO-153 | Commodity net positions reach NX, reserves and import prices. | NX and FX-reserve breakdowns each contain a commodity term = n·p·e/P within 1e-9 rel; c_m = 0 → import-price term identical to v0.3. | P-03e |
+| ECO-154 | Macro polities carry rents. | Unit: y = y_nr + ρ_i; pb includes (royalty + SOE)/y; tier round trip conserves gdp including rents (ARC-081). | P-03g |
 | **Interfaces** ||||
 | ECO-090 | WS-04 inputs (cbi, corruption, stat_bias, behavior) are consumed; `EconOutcomes` are published for every key. | Stub WS-04 setting cbi 0 → 1 changes the policy-rate breakdown's CBI term; every `EconKey` with pop_share > 0 appears in `EconOutcomes` sorted by key; Transfer and Public keys have `sector = None`; Σ_k pop_k·wealth_k equals W_hh within 1e-9 relative; mean wealth per income bin (all roles pooled) is non-decreasing in bin. (v0.1 required monotonicity within each (sector, role); that is dropped because Transfer keys are legitimately wealthier than their low incomes imply, which is the life-cycle pattern in the data.) | P-8, WS-04 OQ-G7 |
 | ECO-091 | Behavior is projected onto keys by membership. | Unit: mod_k = Σ_f membership·behavior within 1e-12; a faction with invest_sentiment −1 on capital keys lowers i_rate by the content coefficient × its membership. | P-8 |
@@ -596,6 +614,8 @@ Unit and integration tests are named `eco_NNN_*`. M2(a) runs the batch criteria 
 | W_hh / Y | [1.5, 7.0]; the advanced archetype's 1970→2010 median rises if g falls | [V] Piketty–Zucman 200–300% → 400–600% |
 | Shadow share | [5%, 65%]; cross-archetype mean in [20%, 40%] | [V] Medina–Schneider |
 | Labor share | [0.45, 0.80] | [R] |
+| Archetype D (resource exporter, v0.4) | Run-median rents/GDP in [10%, 45%]; detrended growth σ in [2%, 7%]; debt/GDP 95th percentile ≤ 120%; every other §6.1 row as for C | [R] WDI rent shares; WLD-089 |
+| World rents | World rents/GDP in [1%, 8%] every year | [R] World Bank band, per WS-08b §7.2 |
 | Monte Carlo convergence | Standard error of each reported median < 5% of its value | [D] |
 
 ### 6.2 Failure-mode reachability (positive tests; N = 500)
@@ -609,6 +629,8 @@ Unit and integration tests are named `eco_NNN_*`. M2(a) runs the batch criteria 
 | Price-control release | ECO-034 criteria in ≥ 90% of runs with shocks on |
 | Embargo | ECO-070 criteria |
 | Demographic transition | ECO-083 criteria in ≥ 90% with shocks on |
+| S22 Price collapse (D, f_g −2σ from 1986 for 3 years) | Budget deficit widens ≥ 3 pp of GDP within 2 years in ≥ 70% of runs; no debt spiral (spread > 500 bp) within 5 years in ≥ 80% (slow build) |
+| S23 Discovery windfall (unknown giant found 1969, developed by 1975) | Owner GDP +2 to +8% by 1980 vs. no-discovery run; the commodity price dips while capacity exceeds demand |
 | War mobilization: defense 25% of GDP for 5 years, 8% of labor force drawn | Civil output falls 10–30%; π rises ≥ 3 pp unless taxed; recovery to pre-war trend ± 5% within 10 years in ≥ 60% |
 
 ## 7. Open questions
