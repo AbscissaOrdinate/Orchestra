@@ -1,0 +1,14 @@
+// content/settings/date/polities/centralia.ron — polity Centralia (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.centralia",
+    name: "Centralian Federation",
+    short_name: "Centralia",
+    adjective: "Centralian",
+    provenance: DateLegacy,
+    analog_role: "Hemispheric middle power spanning the isthmus, the Antilles and the northern Andes",
+    kind: NationState,
+    capital: "region.mexico",
+    hf_candidate: false,
+)

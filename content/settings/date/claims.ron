@@ -1,0 +1,19 @@
+// content/settings/date/claims.ron — territorial claims at 1955-01 (WLD-012)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+[
+    ("region.kashmir", "polity.daryastan", Contested),
+    ("region.lesser_caucasus_east", "polity.limaria", Contested),
+    ("region.formosa", "polity.olvana", Contested),
+    ("region.north_china", "polity.olvana_republic", Irredentist),
+    ("region.luzon_south", "polity.north_torbia", Contested),
+    ("region.luzon_north", "polity.south_torbia", Contested),
+    ("region.new_guinea_west", "polity.sunda_baru", Contested),
+    ("region.malaya_south", "polity.sunda_baru", Irredentist),
+    ("region.borneo_north", "polity.sunda_baru", Irredentist),
+    ("region.elbe", "polity.westmark", Irredentist),
+    ("region.rhine", "polity.bothnia", Irredentist),
+    ("region.iran_northwest", "polity.atropia", Irredentist),
+    ("region.nile_upper", "polity.ellisia", Irredentist),
+    ("region.ryukyu", "polity.hinode", Irredentist),
+]

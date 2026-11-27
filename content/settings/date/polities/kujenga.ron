@@ -1,0 +1,14 @@
+// content/settings/date/polities/kujenga.ron — polity Kujenga (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.kujenga",
+    name: "Kujenga Trust Territory",
+    short_name: "Kujenga",
+    adjective: "Kujengan",
+    provenance: Date,
+    analog_role: "Hesperian trust territory (DATE present: dominant-party state)",
+    kind: NationState,
+    capital: "region.tanganyika",
+    hf_candidate: false,
+)

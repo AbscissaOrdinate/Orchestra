@@ -1,0 +1,14 @@
+// content/settings/date/polities/ariana.ron — polity Ariana (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.ariana",
+    name: "Kingdom of Ariana",
+    short_name: "Ariana",
+    adjective: "Arianian",
+    provenance: Date,
+    analog_role: "Oil-rich regional power; Western-backed monarchy in 1955 (DATE present: revolutionary state)",
+    kind: NationState,
+    capital: "region.iranian_plateau",
+    hf_candidate: true,
+)

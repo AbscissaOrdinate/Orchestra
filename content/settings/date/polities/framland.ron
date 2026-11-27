@@ -1,0 +1,14 @@
+// content/settings/date/polities/framland.ron — polity Framland (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.framland",
+    name: "Kingdom of Framland",
+    short_name: "Framland",
+    adjective: "Framlandic",
+    provenance: Date,
+    analog_role: "Compact member on the northern flank",
+    kind: NationState,
+    capital: "region.norway",
+    hf_candidate: false,
+)

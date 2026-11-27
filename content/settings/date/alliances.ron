@@ -1,0 +1,16 @@
+// content/settings/date/alliances.ron — alliances in force at 1955-01 (WLD-015)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+[
+    Alliance(id: "alliance.northern_compact", name: "Northern Compact", kind: Defense, provenance: Orchestra, members: ["polity.atlantica", "polity.hesperia", "polity.lorande", "polity.ausonia", "polity.framland", "polity.torrike", "polity.pontara"]),
+    Alliance(id: "alliance.union_bloc", name: "Union Bloc", kind: Bloc, provenance: Orchestra, members: ["polity.donovia", "polity.krasnovia", "polity.bothnia"]),
+    Alliance(id: "alliance.donovia_olvana_treaty", name: "Treaty of Friendship and Alliance", kind: Defense, provenance: Orchestra, members: ["polity.donovia", "polity.olvana"]),
+    Alliance(id: "alliance.torbian_olvanan_pact", name: "Torbian-Olvanan Mutual Aid Pact", kind: Defense, provenance: Orchestra, members: ["polity.north_torbia", "polity.olvana"]),
+    Alliance(id: "alliance.pacific_compact", name: "Pacific Compact", kind: Defense, provenance: Orchestra, members: ["polity.atlantica", "polity.hesperia", "polity.lorande", "polity.meridia", "polity.khorathidin", "polity.south_torbia", "polity.daryastan"]),
+    Alliance(id: "alliance.atlantica_hinode_treaty", name: "Atlantica-Hinode Security Treaty", kind: Defense, provenance: Orchestra, members: ["polity.atlantica", "polity.hinode"]),
+    Alliance(id: "alliance.atlantica_kyeran_treaty", name: "Atlantica-Kyeran Mutual Defense Treaty", kind: Defense, provenance: Orchestra, members: ["polity.atlantica", "polity.kyeran"]),
+    Alliance(id: "alliance.atlantica_formosa_treaty", name: "Atlantica-Republic of Olvana Defense Treaty", kind: Defense, provenance: Orchestra, members: ["polity.atlantica", "polity.olvana_republic"]),
+    Alliance(id: "alliance.hemispheric_pact", name: "Hemispheric Defense Pact", kind: Defense, provenance: Orchestra, members: ["polity.atlantica", "polity.centralia", "polity.guaranda"]),
+    Alliance(id: "alliance.hesperian_commonwealth", name: "Hesperian Commonwealth", kind: Association, provenance: Orchestra, members: ["polity.hesperia", "polity.meridia", "polity.himaldesh", "polity.daryastan", "polity.drakensia"]),
+    Alliance(id: "alliance.torbian_defense_treaty", name: "Atlantica-Torbia Mutual Defense Treaty", kind: Defense, provenance: Orchestra, members: ["polity.atlantica", "polity.south_torbia"]),
+]
