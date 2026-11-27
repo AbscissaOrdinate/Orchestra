@@ -1,0 +1,19 @@
+// content/settings/date/subjects.ron — subject relations at 1955-01: (subject, overlord, kind) (WLD-014)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+[
+    ("polity.atropia", "polity.donovia", ConstituentRepublic),
+    ("polity.gorgas", "polity.donovia", ConstituentRepublic),
+    ("polity.limaria", "polity.donovia", ConstituentRepublic),
+    ("polity.pirtuni", "polity.donovia", ConstituentRepublic),
+    ("polity.belesia", "polity.atlantica", Commonwealth),
+    ("polity.gabal", "polity.hesperia", Condominium),
+    ("polity.gabal", "polity.lorande", Condominium),
+    ("polity.patani_baru", "polity.hesperia", Protectorate),
+    ("polity.puller_islands", "polity.hesperia", Colony),
+    ("polity.amari", "polity.hesperia", Colony),
+    ("polity.kujenga", "polity.hesperia", TrustTerritory),
+    ("polity.ziwa", "polity.lorande", Colony),
+    ("polity.fanu_rai", "polity.lusora", Colony),
+    ("polity.volcani_tura", "polity.meridia", TrustTerritory),
+]

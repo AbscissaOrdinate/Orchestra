@@ -1,0 +1,14 @@
+// content/settings/date/polities/volcani_tura.ron — polity Volcani Tura (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.volcani_tura",
+    name: "Territory of Volcani Tura",
+    short_name: "Volcani Tura",
+    adjective: "Volcani Turan",
+    provenance: Date,
+    analog_role: "Resource-rich Meridian trust territory",
+    kind: NationState,
+    capital: "region.new_guinea_east",
+    hf_candidate: false,
+)

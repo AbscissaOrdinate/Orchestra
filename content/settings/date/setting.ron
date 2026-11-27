@@ -1,0 +1,11 @@
+// content/settings/date/setting.ron — setting manifest (WLD-001)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Setting(
+    id: "date",
+    name: "Expanded DATE World",
+    version: "0.1.0",
+    map: "earth",
+    disclaimer: "Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.",
+    default_high: ["polity.atlantica", "polity.donovia", "polity.himaldesh", "polity.olvana"],
+)

@@ -1,0 +1,14 @@
+// content/settings/date/polities/nyumba.ron — polity Nyumba (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.nyumba",
+    name: "Empire of Nyumba",
+    short_name: "Nyumba",
+    adjective: "Nyumban",
+    provenance: Date,
+    analog_role: "Independent highland empire of the Horn (DATE present: fractured Islamist-governed state)",
+    kind: NationState,
+    capital: "region.horn",
+    hf_candidate: false,
+)

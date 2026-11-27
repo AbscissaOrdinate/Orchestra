@@ -1,0 +1,14 @@
+// content/settings/date/polities/gabal.ron — polity Gabal (WLD-003)
+// Expanded DATE setting (WS-08a). Provenance tags: Date | DateLegacy | Orchestra (docs/setting/date/canon.md).
+// Orchestra uses material adapted from the U.S. Army Decisive Action Training Environment (DATE), a public-domain U.S. Government work. Orchestra is not affiliated with, sponsored by, or endorsed by the U.S. Army, the Department of Defense, or the U.S. Government.
+Polity(
+    id: "polity.gabal",
+    name: "Gabal Condominium",
+    short_name: "Gabal",
+    adjective: "Gabalese",
+    provenance: Date,
+    analog_role: "Island condominium jointly ruled by Hesperia and Lorande until a DATE-dated 1977 independence",
+    kind: NationState,
+    capital: "region.palawan",
+    hf_candidate: false,
+)
