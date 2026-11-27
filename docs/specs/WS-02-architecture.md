@@ -1,5 +1,5 @@
 # WS-02 — Architecture & Data Model
-Status: Approved v1.1 (2026-11-27; v1.0 2026-11-25) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-27
+Status: Approved v1.2 (2026-11-27; v1.1 2026-11-27, v1.0 2026-11-25) · Parent: ConOps §5, §7, SYS-002, SYS-003, SYS-004, SYS-006, SYS-007, SYS-008, SYS-009 · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source or measurement given) · **[R]** recalled, not checked · **[D]** design choice.
 Decisions are recorded in ADR-0004 to ADR-0009. This spec is the contract that WS-03 to WS-09 code against.
@@ -83,13 +83,15 @@ pub struct World {
     pub header: WorldHeader,              // seed, scenario id, content hash, tick
     truth: Truth,                         // private field; read via &Truth only (ARC-011)
     pub map: Graph<Region, RegionEdge>,   // static after load
-    pub sol: Graph<Body, Transfer>,       // static after worldgen
+    pub sol: Sol,                         // static after worldgen; WS-08b §3.2 (v1.2, P-02a)
     pub polities: Vec<Polity>,
     // one block vector per subsystem, indexed by PolityId; added by each WS:
     pub econ: Vec<EconBlock>,             // WS-03 (stub in M4)
     pub gov:  Vec<GovBlock>,              // WS-04 (stub in M4)
     pub rnd:  Vec<RndBlock>,              // WS-05 (stub in M4)
     pub force: Vec<ForceBlock>,           // WS-11 (stub in M4): units, groupings, manpower, munitions, bases
+    pub resources: ResourceState,         // world-level, WS-08 (v1.2, P-02b): prices, deposits, rents
+    pub space: SpaceState,                // world-level, WS-08 (v1.2, P-02b): positions, Δv, missions, facilities, debris, orbital assets
     pub engagements: Vec<EngagementRecord>, // WS-07, this tick only: losses and munitions expended per unit
     pub beliefs: Vec<BeliefBlock>,        // per polity; owned by the Observe stage
     pub events: Vec<Event>,               // this tick only
@@ -101,6 +103,9 @@ pub struct Polity {
     pub tier: Tier,                       // High | Macro
     pub agg: Aggregates,                  // always present, every tier (§3.8)
 }
+
+pub struct NodeId(pub u16);    // Sol graph node = (body, orbit regime); v1.2, P-02a
+pub struct Sol { pub bodies: Vec<Body>, pub graph: Graph<SolNode, Transfer> }  // node/edge types: WS-08b
 
 pub struct Graph<N, E> { pub nodes: Vec<N>, pub edges: Vec<(u16, u16, E)>, adj: Vec<Vec<u32>> }
 // edges sorted by (from, to) at load; adjacency derived, not serialized.
@@ -121,6 +126,8 @@ impl Belief {
     pub fn sigma(&self) -> f64;     // moment-matched, in natural units
     pub fn observe(&mut self, value: f64, noise_sigma: f64); // exact Bayesian update per component
                                                              // + likelihood reweighting
+        // `value` is in natural units (transformed to `scale` inside); `noise_sigma` is on the
+        // belief's scale, e.g. log-space σ for a Log belief (v1.2, P-02e)
 }
 pub struct Observation { pub polity: PolityId, pub subject: SubjectIdx, pub value: f64,
                          pub noise_sigma: f64, pub source: Cow<'static, str> }
@@ -137,13 +144,13 @@ Stages run in this fixed order every tick [D]:
 | D1 Orders | Take player orders for this tick from the input log/UI; validate | `orders` queue | all |
 | D2 AiDecide | AI polities emit orders (WS-06) | `orders` queue | `PolityView` only (ARC-012) |
 | R1 ApplyOrders | Route each validated order to the owning subsystem's `apply_order`; rejected orders become events | each block, for its own orders | all |
-| R2 Exogenous | Shocks, regime switches, scripted events | WS-03 shocks, WS-08 events | stage-start |
+| R2 Exogenous | Shocks, regime switches, scripted events; commodity prices, deposit production, rents, discoveries (WS-08b) | WS-03 shocks, WS-08 events, `resources` (WS-08) | stage-start |
 | R3 Production | Output, industry learning, R&D project progress | `econ` (production part), `rnd` | stage-start |
 | R4 Finance | Tax revenue, budget, bonds, monetary, demographics | `econ` (finance part) | R3 results |
 | R5 Politics | Factions, stability, reform | `gov` | R4 results |
-| R5b Forces | Readiness and upkeep, mobilization and manpower draw, unit deliveries and lifecycle, deployments (WS-11) | `force` | R5 results |
-| R6 External | Diplomacy, treaties, engagements, space ops (WS-06/07/08). Combat reads `force` and writes `engagements`; it never writes `force`. | their blocks, `engagements` | R5b results |
-| R6b Losses | Apply `engagements` to `force`: casualties, destroyed units, munitions drawdown, captured bases (WS-11) | `force` | R6 results |
+| R5b Forces | Readiness and upkeep, mobilization and manpower draw, unit deliveries and lifecycle, deployments (WS-11); space movement, launches, logistics, facility supply, orbital-asset refresh (WS-08) | `force` (WS-11), `space` (WS-08) | R5 results |
+| R6 External | Diplomacy, treaties, engagements (WS-06/07). Combat reads `force` and `space` and writes `engagements`; it never writes `force` or `space`. WS-08 has no R6 function. | their blocks, `engagements` | R5b results |
+| R6b Losses | Apply `engagements` to `force`: casualties, destroyed units, munitions drawdown, captured bases (WS-11); to `space`: Δv spent, facilities damaged, debris added, dead units' positions dropped (WS-08) | `force` (WS-11), `space` (WS-08) | R6 results |
 | R7 Tier | Refresh `Polity.agg` from detail; execute tier switches | `polities[].agg`, `tier`, detail `Option`s | R6b results |
 | I1 Observe | Apply all `Observation`s to `beliefs` | `beliefs` | all |
 | I2 Report | Finalize events, record time series | `events`, `Recorder` | all |
@@ -176,6 +183,8 @@ pub fn step(world: &mut World, orders: &[Order]) -> TickReport; // runs D1..I2, 
 ```
 
 **Force state (ConOps OQ-6).** WS-11 owns `force` and writes it in two stages: R5b (its own dynamics) and R6b (applying combat results). WS-07 only ever writes `engagements`. Losses therefore reach `force` and `agg.military_power` in the same tick, and the one-writer-per-block-per-stage rule holds. Known lag: manpower drawn in R5b reduces the labor force seen by WS-03 the following tick.
+
+**Space and resource state (v1.2, P-02b/c).** WS-08 owns `resources` (written in R2) and `space` (written in R5b and R6b), so combat in R6 sees this tick's positions. Known lags: R2 reads last tick's `f_g`, GDP and FX; WS-08 in R5b reads `force` at stage start, so a unit WS-11 delivers in R5b gets a position, and can launch or fight, from the next tick (WS-08b §3.3).
 
 Within a stage, subsystems run sequentially in the listed order. Sinks (`events`, `observations`) are appended in that order, so they're deterministic. A subsystem that needs a value computed later in the same stage must move to a later stage instead.
 
@@ -226,7 +235,9 @@ impl Lazy {
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VarKey { pub owner: Owner, pub block: Cow<'static, str>, pub field: Cow<'static, str> }
-pub enum Owner { World, Polity(PolityId), Region(RegionId), Body(BodyId), Unit(UnitId) }  // UnitId defined by WS-11
+pub enum Owner { World, Polity(PolityId), Region(RegionId), Body(BodyId), Unit(UnitId),
+                 Deposit(DepositId), Facility(FacilityId), Node(NodeId) }
+        // UnitId: WS-11; DepositId, FacilityId: WS-08b (v1.2, P-02d)
 
 pub trait Explain {                         // implemented by hand for each block type
     fn tracked(&self) -> Vec<(&'static str, &Tracked)>;
@@ -286,6 +297,7 @@ state_hash(world) = blake3(postcard(world))
 ```rust
 pub enum Tier { High, Macro }
 pub struct Aggregates { pub gdp: Tracked, pub population: Tracked, pub military_power: Tracked,
+                        pub orbital_assets: Tracked,   // v1.2, P-02g: Σ of WS-08 per-regime assets
                         /* WS-03..07 may add fields by spec revision */ }
 pub trait Tiered {                          // implemented by each subsystem block with detail
     fn aggregate(detail: &Self::Detail) -> Self::Macro;                       // High → Macro
@@ -298,6 +310,7 @@ pub trait Tiered {                          // implemented by each subsystem blo
 - Tier switches are requested by order (`OrderKind::SetTier`, normally emitted by WS-06 AI) and executed only in R7.
 - Demotion drops detail; `agg` already holds the aggregates. Promotion calls `disaggregate` with a content-defined template (e.g., age pyramid shape, quantile shares), rescales to hit the conserved values, then re-aggregates and checks them.
 - `military_power` is the rollup of tracked-unit aggregates from `force` (WS-11, ConOps P-10/SYS-009); WS-07 defines how combat uses it. Until then the stub is the sum of stub unit strengths.
+- `orbital_assets` (v1.2, P-02g) is the sum of `space.orbital_assets[polity]` over the four Earth-orbit regimes. WS-08 keeps the per-regime values in `space` for both tiers: stored for macro polities, recomputed from unit positions in R5b for high-fidelity polities (WS-08b §4.10). Per-regime conservation on a tier switch is WS-08b's to test; ARC-081 checks the sum.
 - Interface constraint for WS-11: promotion must conserve `military_power` within 1e-6 relative (ARC-081), but units are discrete. So each tracked unit needs a continuous strength fraction (0 < s ≤ 1), and `disaggregate` creates units from a content template and then scales the last unit's (or every unit's) strength to hit the target exactly.
 
 ### 3.9 CLI (`orchestra`)
@@ -331,9 +344,9 @@ Batch uses `std::thread::scope`; each run is single-threaded; results are gather
 | ARC-010 | Polities are a single generic type with `kind` and `tier` fields; no polity, tech, region or name is hard-coded. | Test: loading the test setting creates polities only from data; a CI `grep` for every setting/content ID in `crates/*/src/` returns no matches. | P-6, P-7 |
 | ARC-011 | World truth is immutable after world generation. | Test: `blake3(postcard(world.truth()))` is identical at tick 0 and after a 120-tick run with stub subsystems. A `compile_fail` doc test shows no `&mut Truth` is reachable from `World`. | P-1, SYS-005 |
 | ARC-012 | Decide-stage code sees a polity's own state, its beliefs and public information only. | `PolityView` has no accessor returning `&Truth` or another polity's detail block; `compile_fail` doc test. | P-1, P-2 |
-| ARC-013 | `Belief` supports 1–3 Gaussian components on a linear, log or logit scale, with moment-matched mean and σ. | Unit tests: (a) a single-component update matches the Kalman closed form within 1e-12; (b) a two-component belief observed near one mode shifts > 90% weight to that mode; (c) mean/σ of a mixture equal analytic moments within 1e-12; (d) 100 unbiased observations of a truth bring σ below 10% of its prior and the mean within 3σ of truth. | P-2, SYS-005 |
+| ARC-013 | `Belief` supports 1–3 Gaussian components on a linear, log or logit scale, with moment-matched mean and σ; observations are in natural units with σ on the belief's scale. | Unit tests: (a) a single-component update matches the Kalman closed form within 1e-12; (b) a two-component belief observed near one mode shifts > 90% weight to that mode; (c) mean/σ of a mixture equal analytic moments within 1e-12; (d) 100 unbiased observations of a truth bring σ below 10% of its prior and the mean within 3σ of truth; (e) on a Log belief, 100 observations of truth × exp(N(0, 0.3)) bring the log-space mean within 3σ of ln(truth). | P-2, SYS-005 |
 | ARC-014 | All belief updates go through `Observation`s applied in stage I1. | Test: a stub subsystem's observations change `beliefs` only after I1; no other code path writes `world.beliefs` (pub(crate) setter; reviewed by grader). | P-2 |
-| ARC-015 | Region and body graphs support neighbor queries and minimum-cost paths. | Test: on a 5-node fixture graph, `shortest_path` returns the known optimum delta-v path and cost; adjacency lists are sorted. | ConOps §3 |
+| ARC-015 | The region graph and the Sol node graph support neighbor queries and minimum-cost paths. | Test: on a 5-node fixture graph (Sol nodes: surface/orbit regimes of the test bodies), `shortest_path` returns the known optimum delta-v path and cost; adjacency lists are sorted. | ConOps §3 |
 | **Pipeline** |||
 | ARC-020 | Each tick runs stages D1, D2, R1–R5, R5b, R6, R6b, R7, I1, I2 in that order. | Test: stub subsystems append their stage name to an event list; the per-tick sequence equals the table in §3.3. | ConOps §2 |
 | ARC-021 | Within a stage, every subsystem reads the stage-start state; blocks commit at stage end; each block has exactly one writer per stage. | Test: two stub subsystems in one stage each read the other's block; results are identical when their call order is swapped. Ownership holds because subsystem functions take `&World` (compile-enforced). | P-4 |
@@ -369,11 +382,11 @@ Batch uses `std::thread::scope`; each run is single-threaded; results are gather
 | ARC-071 | `orchestra batch` emits the summary statistics of §3.9 as JSON, and the result doesn't depend on thread count. | Test: `--runs 8` with `--threads 1` and `--threads 4` produce byte-identical JSON; mean/sd for a stub metric with known distribution match analytic values within 3 standard errors. | SYS-003 |
 | ARC-072 | `export` writes valid JSON of the world or of selected variables with breakdowns. | Test: the output parses with `serde_json` and round-trips the selected values exactly. | SYS-003, P-5 |
 | **Tiers** |||
-| ARC-080 | Every polity exposes `Aggregates` regardless of tier. | Test: after each tick, every alive polity has finite `gdp`, `population` and `military_power` with breakdowns. | P-7, SYS-006 |
-| ARC-081 | A tier switch conserves aggregates. | Test: promote then demote a stub polity; each conserved quantity is within 1e-6 relative of its pre-switch value at both steps. | SYS-006 |
+| ARC-080 | Every polity exposes `Aggregates` regardless of tier. | Test: after each tick, every alive polity has finite `gdp`, `population`, `military_power` and `orbital_assets` with breakdowns. | P-7, SYS-006 |
+| ARC-081 | A tier switch conserves aggregates. | Test: promote then demote a stub polity with stub units in at least two orbit regimes; each conserved quantity (including `orbital_assets`) is within 1e-6 relative of its pre-switch value at both steps. | SYS-006 |
 | ARC-082 | Tier switches happen only in R7 and only by order. | Test: a `SetTier` order issued in D1 changes `tier` only after R7 of the same tick; no other stage changes `tier`. | SYS-006 |
 | **Performance** |||
-| ARC-090 | Pipeline overhead (stubs that touch every tracked variable) is ≤ 5 ms/tick at MVP scale. | `orchestra bench` on a synthetic scenario (1 player + 5 high + 41 macro polities, 132 regions, 50 bodies, 300 techs, ~300 stub tracked units per high-fidelity polity with ~8 `Lazy` variables each, ~1,600 polity-level `Tracked` vars), release build: median ≤ 5 ms on the reference machine (§5); CI threshold 10 ms. `bench` also reports the postcard size of one `World`, which must be ≤ 8 MB. | SYS-008 |
+| ARC-090 | Pipeline overhead (stubs that touch every tracked variable) is ≤ 5 ms/tick at MVP scale. | `orchestra bench` on a synthetic scenario (1 player + 5 high + 41 macro polities, 132 regions, the Sol node graph (≤ 70 nodes, ≤ 129 deposits), 300 techs, ~300 stub tracked units per high-fidelity polity with ~8 `Lazy` variables each, ~1,600 polity-level `Tracked` vars), release build: median ≤ 5 ms on the reference machine (§5); CI threshold 10 ms. `bench` also reports the postcard size of one `World`, which must be ≤ 8 MB. | SYS-008 |
 | ARC-091 | Per-subsystem budgets sum to the SYS-008 total. | Budget table (§5) is in this spec; each WS spec states its own budget; `bench` prints per-stage medians. | SYS-008 |
 | **Tauri stub** |||
 | ARC-100 | The Tauri app builds and calls sim-core. | Manual check on the dev machine: the window shows the version and a world hash that matches `orchestra run --ticks 0 --seed <same>`. | ADR-0002 |
@@ -397,7 +410,7 @@ Target: median ≤ 100 ms per tick, release build, with 1 player + 5 high-fideli
 | I1 Observe, I2 Report, R7 Tier | 5 |
 | Margin | 5 |
 
-Memory budget [D]: ≤ 8 MB per `World` snapshot (measured as postcard size). The rough mix is beliefs ≈ 3.6 MB, polity-level breakdowns ≈ 0.4 MB, and force units with composition ≈ 2 MB. Ring memory is `(ring + 1) × snapshot`: ≤ 104 MB at the default of 12 and ≤ 200 MB at the maximum of 24, both small next to 16 GB. If a WS pushes the snapshot past 8 MB, move its bulk state to `Lazy` or share unchanged data between snapshots before raising the budget.
+Memory budget [D]: ≤ 8 MB per `World` snapshot (measured as postcard size). The rough mix is beliefs ≈ 3.6 MB (including WS-08b's ≈ 0.72 MB of deposit subjects), polity-level breakdowns ≈ 0.4 MB, force units with composition ≈ 2 MB, and `resources` + `space` ≈ 0.18 MB (WS-08b §4.12): ≈ 6.2 MB in all [D]. Ring memory is `(ring + 1) × snapshot`: ≤ 104 MB at the default of 12 and ≤ 200 MB at the maximum of 24, both small next to 16 GB. If a WS pushes the snapshot past 8 MB, move its bulk state to `Lazy` or share unchanged data between snapshots before raising the budget.
 
 ## 6. Content/data
 
@@ -406,8 +419,9 @@ The schemas themselves belong to each WS. WS-02 fixes only these:
 - `content/scenarios/<id>.ron`: `Scenario { id, map: String, setting: String, start: (year, month), end: (year, month), overrides: [...] }`
 - `content/maps/earth/regions.ron`: `[Region { id, name, lat, lon, terrain, ... }]`, `edges.ron`: `[(from_id, to_id, RegionEdge { kind, cost, chokepoint })]` (`chokepoint` optional, default empty; added in v1.1 per WS-08a OQ-W2)
 - `content/settings/<setting>/polities/*.ron` (one per polity), `ownership.ron`: `[(region_id, polity_id)]`, `start.ron`: start values keyed by polity ID
-- `content/maps/sol/bodies.ron`, `transfers.ron`: template nodes and delta-v edges; WS-08 defines the seeded variant
-- `crates/sim-core/tests/content/`: a minimal test setting (3 polities, 6 regions, 4 bodies, 5 techs) used by every ARC test
+- `content/maps/sol/bodies.ron`, `transfers.ron`, `gen_rules.ron`: template bodies with their nodes, override/Lagrange edges, and hypothetical-body rules; WS-08b defines the seeded variant
+- `content/core/resources/{kinds, size_classes, body_deposits, surveys}.ron` and `content/maps/earth/resources.ron`: resource kinds and deposits (WS-08b §3.1); `content/settings/<setting>/deposit_start.ron` (WS-08a)
+- `crates/sim-core/tests/content/`: a minimal test setting (3 polities, 6 regions, 4 bodies, 5 techs) used by every ARC test. The 4 bodies are a star, a planet, a moon of that planet, and a small body (v1.2, P-02f; WS-08b WLD-063/066)
 
 ## 7. Verification
 
