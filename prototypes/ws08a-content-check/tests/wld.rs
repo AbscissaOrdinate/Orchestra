@@ -652,7 +652,7 @@ fn wld_047_reserved_region_attributes_optional() {
         &dir,
         "maps/earth/regions.ron",
         "terrain: Steppe),\n    Region(id: \"region.anatolia_west\"",
-        "terrain: Steppe, pop_weight: Some(0.4), resource_tags: [\"oil\"], port_class: Some(2), airfield_class: Some(1)),\n    Region(id: \"region.anatolia_west\"",
+        "terrain: Steppe, pop_weight: Some(0.4), port_class: Some(2), airfield_class: Some(1)),\n    Region(id: \"region.anatolia_west\"",
     );
     load(&dir, SCENARIO).expect("reserved attributes accepted when present");
 }
@@ -986,6 +986,112 @@ fn wld_037_region_names_and_ids_are_geographic() {
             );
         }
     }
+}
+
+// ───────────── WLD-017 deposit start, WLD-047 removed field (v0.3) ─────────────
+
+#[test]
+fn wld_047_resource_tags_field_removed() {
+    let dir = fixture("wld047r");
+    edit(
+        &dir,
+        "maps/earth/regions.ron",
+        "terrain: Tundra",
+        "terrain: Tundra, resource_tags: [\"oil\"]",
+    );
+    assert_err(&dir, "regions.ron");
+}
+
+#[test]
+fn wld_017_deposit_ids_follow_ws08b_g8() {
+    let res = vec![(
+        "region.x".to_string(),
+        vec![
+            "metals.major".to_string(),
+            "hydrocarbons.giant".to_string(),
+            "metals.major".to_string(),
+        ],
+    )];
+    let ids: BTreeSet<String> = earth_deposits(&res).into_keys().collect();
+    let want: BTreeSet<String> = [
+        "deposit.x.metals.major",
+        "deposit.x.hydrocarbons.giant",
+        "deposit.x.metals.major#2",
+    ]
+    .map(String::from)
+    .into();
+    assert_eq!(ids, want);
+}
+
+#[test]
+fn wld_017_deposit_start_absent_means_zero() {
+    let c = real();
+    assert!(
+        c.deposit_start.is_empty(),
+        "no deposit_start.ron yet: every deposit starts at dev 0"
+    );
+    assert!(
+        !earth_deposits(&c.resources).is_empty(),
+        "WS-08b resource layer loads"
+    );
+}
+
+#[test]
+fn wld_017_valid_deposit_start_loads() {
+    let dir = fixture("wld017ok");
+    write_deposit_start(
+        &dir,
+        "    (\"deposit.arabia_gulf.hydrocarbons.supergiant.easy\", 0.25),\n    (\"deposit.absheron.hydrocarbons.major\", 0.8),\n",
+    );
+    let c = load(&dir, SCENARIO).unwrap_or_else(|e| panic!("{e:?}"));
+    assert_eq!(c.deposit_start.len(), 2);
+}
+
+#[test]
+fn wld_017_deposit_start_rules() {
+    let dir = fixture("wld017bad");
+    write_deposit_start(
+        &dir,
+        "    (\"deposit.atlantis.metals.major\", 0.5),\n\
+         (\"deposit.khuzestan.hydrocarbons.giant.easy\", 1.5),\n\
+         (\"deposit.absheron.hydrocarbons.major\", 0.8),\n\
+         (\"deposit.absheron.hydrocarbons.major\", 0.7),\n\
+         (\"deposit.west_siberia.hydrocarbons.supergiant.unknown\", 0.1),\n",
+    );
+    let errs = errors(&dir);
+    assert!(has(&errs, "unknown deposit deposit.atlantis.metals.major"));
+    assert!(has(&errs, "dev 1.5 outside [0, 1]"));
+    assert!(has(
+        &errs,
+        "duplicate entry for deposit.absheron.hydrocarbons.major"
+    ));
+    assert!(has(
+        &errs,
+        "west_siberia.hydrocarbons.supergiant.unknown is tagged unknown"
+    ));
+    assert_eq!(errs.len(), 4, "{errs:#?}");
+}
+
+#[test]
+fn wld_017_deposit_start_needs_header() {
+    let dir = fixture("wld017hdr");
+    fs::write(dir.join("settings/date/deposit_start.ron"), "[]\n").unwrap();
+    assert_err(
+        &dir,
+        "deposit_start.ron: missing disclaimer/provenance header",
+    );
+}
+
+fn write_deposit_start(dir: &Path, rows: &str) {
+    let header = format!(
+        "// deposit_start.ron fixture. Provenance tags: Orchestra.\n// {}\n",
+        real().setting.disclaimer
+    );
+    fs::write(
+        dir.join("settings/date/deposit_start.ron"),
+        format!("{header}[\n{rows}]\n"),
+    )
+    .unwrap();
 }
 
 // ───────────── helpers ─────────────

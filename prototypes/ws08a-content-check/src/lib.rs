@@ -63,10 +63,9 @@ pub struct Region {
     #[serde(default)]
     pub island: bool,
     // Reserved attributes (WLD-047): semantics owned by WS-03 / WS-11, unset in the MVP draft.
+    // Resource tags are not here: they live in maps/<map>/resources.ron (WS-08b §4.4).
     #[serde(default)]
     pub pop_weight: Option<f64>,
-    #[serde(default)]
-    pub resource_tags: Vec<String>,
     #[serde(default)]
     pub port_class: Option<u8>,
     #[serde(default)]
@@ -283,6 +282,10 @@ pub struct Content {
     pub alliances: Vec<Alliance>,
     pub start: Vec<StartState>,
     pub region_names: Vec<(String, String, Provenance)>,
+    /// Map resource layer (WS-08b), `[(region, [tag])]`; empty if the map has none.
+    pub resources: Vec<(String, Vec<String>)>,
+    /// Setting start development per deposit (WLD-017); empty if the file is absent (all deposits start at 0).
+    pub deposit_start: Vec<(String, f64)>,
     /// IDs of polity files that failed to parse; references to them don't cascade into more errors (ARC-051).
     pub unparsed_polities: Vec<String>,
     /// False if setting.ron failed to parse; setting-dependent checks are then skipped (ARC-051).
@@ -345,6 +348,8 @@ pub fn load(root: &Path, scenario_id: &str) -> Result<Content, Vec<String>> {
         alliances: parse(&set_dir.join("alliances.ron"), &mut errs).unwrap_or_default(),
         start: parse(&set_dir.join("start.ron"), &mut errs).unwrap_or_default(),
         region_names: parse(&set_dir.join("region_names.ron"), &mut errs).unwrap_or_default(),
+        resources: parse_optional(&map_dir.join("resources.ron"), &mut errs),
+        deposit_start: parse_optional(&set_dir.join("deposit_start.ron"), &mut errs),
         unparsed_polities,
         setting_parsed,
     };
@@ -663,6 +668,46 @@ pub fn validate(c: &Content, errs: &mut Vec<String>) {
             errs.push(format!("region_names.ron: bad entry {r}"));
         }
     }
+
+    // deposit start levels (WLD-017)
+    let deposits = earth_deposits(&c.resources);
+    let mut seen_dep = BTreeSet::new();
+    for (id, dev) in &c.deposit_start {
+        match deposits.get(id.as_str()) {
+            None => errs.push(format!("deposit_start.ron: unknown deposit {id}")),
+            Some(tag) if tag.split('.').any(|q| q == "unknown") => errs.push(format!(
+                "deposit_start.ron: {id} is tagged unknown (found after the start) and cannot be developed"
+            )),
+            _ => {}
+        }
+        if !(0.0..=1.0).contains(dev) {
+            errs.push(format!("deposit_start.ron: {id}: dev {dev} outside [0, 1]"));
+        }
+        if !seen_dep.insert(id) {
+            errs.push(format!("deposit_start.ron: duplicate entry for {id}"));
+        }
+    }
+}
+
+/// Earth deposit IDs per WS-08b §4.1 G-8: `deposit.<region stem>.<tag>`, with `#2`, `#3`, … on a
+/// tag repeated within a region (file order). Maps ID → tag.
+pub fn earth_deposits(resources: &[(String, Vec<String>)]) -> BTreeMap<String, String> {
+    let mut out = BTreeMap::new();
+    for (region, tags) in resources {
+        let stem = region.strip_prefix("region.").unwrap_or(region);
+        let mut count: BTreeMap<&str, usize> = BTreeMap::new();
+        for tag in tags {
+            let n = count.entry(tag.as_str()).or_insert(0);
+            *n += 1;
+            let suffix = if *n > 1 {
+                format!("#{n}")
+            } else {
+                String::new()
+            };
+            out.insert(format!("deposit.{stem}.{tag}{suffix}"), tag.clone());
+        }
+    }
+    out
 }
 
 // ───────────────────────────── helpers ─────────────────────────────
@@ -731,6 +776,15 @@ fn parse<T: DeserializeOwned>(path: &Path, errs: &mut Vec<String>) -> Option<T> 
     ron::from_str(&text)
         .map_err(|e| errs.push(format!("{}: {e}", path.display())))
         .ok()
+}
+
+/// Parse a file that may be absent; absence is not an error.
+fn parse_optional<T: DeserializeOwned + Default>(path: &Path, errs: &mut Vec<String>) -> T {
+    if path.exists() {
+        parse(path, errs).unwrap_or_default()
+    } else {
+        T::default()
+    }
 }
 
 fn ron_files(dir: &Path, errs: &mut Vec<String>) -> Vec<PathBuf> {
