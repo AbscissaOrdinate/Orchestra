@@ -56,3 +56,4 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 2026-11-25 | OQ-4 closed: Project GitHub sync works for search (manual "Sync now"; files not openable by name); POAM item 6 done |
 | 2026-11-27 | WS-08a spec (Draft v0.1, WLD-001–049), canon v0.1, and draft Earth map (110 land + 22 sea regions, 366 edges) and DATE setting (47 polities) content; prototype content checker |
 | 2026-11-27 | WS-08a grader fixes: one primary owner per start field (WLD-022); no cascading errors (ARC-051); data-driven disclaimer headers; region IDs and names made physical (23 renamed); 1945–55 back-history all [ORIG], DATE facts F-1..F-8 kept separate; 52 passing tests |
+| 2026-11-26 | Salvo kernel research note `docs/research/salvo-model.md` (feeds WS-07, WS-11): framework F-1–F-8, gaps, munition lots option C, batteries as brigade templates; ConOps T-1/T-2 edits proposed, not made |
