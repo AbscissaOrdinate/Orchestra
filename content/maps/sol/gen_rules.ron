@@ -1,0 +1,62 @@
+// content/maps/sol/gen_rules.ron — seeded hypothetical bodies (WS-08b §4.1, WLD-053–055). Draft v0.2.
+// Orbital elements, subclass shares, size laws and composition follow the real small-body populations; the per-class
+// COUNTS are a gameplay sample of the notable tail that could still be undiscovered in 1955, not a census [D].
+// Draws use worldgen_stream(seed, "<class id>#<k>", purpose): adding a class never changes another class's bodies.
+// Count ~ Poisson(count_mean) truncated at max. Maxes sum to 18, so a world holds at most 32 + 18 = 50 bodies (ARC-090).
+// Every generated body starts undiscovered by every polity (WLD-057).
+// Sources (WS-08b §10): [STEFFL] arXiv:1301.3804; [DURDA] arXiv:astro-ph/9911249; [GRANVIK] Icarus 312 (2018) 181;
+// [SZABO] Szabó et al. 2007 via Li et al., A&A 2023; [WIKI-JT], [WIKI-HILDA] secondary; [GRAD] arXiv:2506.02721.
+GenRules(
+    classes: [
+        // Vulcanoids: stable zone inside ~0.21 AU [V: DURDA]; bodies inside ~0.07–0.08 AU evaporate [V: STEFFL];
+        // none larger than 5.7 km exist (3σ) [V: STEFFL]. Near-circular. Hot-formed, so rocky or metallic [D].
+        GenClass(id: "gen.vulcanoid", max: 1, count_mean: 0.5, parent: "body.sun", class: Asteroid,
+                 orbit: Belt(a_au: (0.08, 0.21), gaps_au: [], ecc_rayleigh: 0.02),
+                 inc_rayleigh_deg: 3.0, diameter_km: (1.0, 5.7), size_slope: 2.5,
+                 composition: Fixed([(Rocky, 0.6), (Metallic, 0.4)])),
+        // Near-Earth asteroids: NEO = q < 1.3 AU and a < 4.2 AU; group shares Amor/Apollo/Aten/Atira =
+        // 39.4/54.4/3.5/1.2 (Vatira 0.3 folded into Atira) [V: GRANVIK]. Group definitions per GRANVIK and CNEOS.
+        GenClass(id: "gen.nea", max: 6, count_mean: 4.5, parent: "body.sun", class: Asteroid,
+                 orbit: NeoGroups([(Amor, 0.394), (Apollo, 0.544), (Aten, 0.035), (Atira, 0.015)]),
+                 inc_rayleigh_deg: 8.0, diameter_km: (0.5, 5.0), size_slope: 2.3,                 // [R] slope
+                 composition: Fixed([(Stony, 0.55), (Carbonaceous, 0.35), (Metallic, 0.10)])),   // [R] debiased NEO mix
+        // Mars trojans: a handful known in our world; olivine-rich [R].
+        GenClass(id: "gen.trojan_mars", max: 1, count_mean: 0.3, parent: "body.sun", class: Asteroid,
+                 orbit: Trojan(of: "body.mars", l4_share: 0.5, libration_deg: 15.0),
+                 inc_rayleigh_deg: 15.0, diameter_km: (0.5, 2.0), size_slope: 2.5,
+                 composition: Fixed([(Stony, 1.0)])),
+        // Main belt below the 1955 completeness limit [R]; Kirkwood gaps 3:1, 5:2, 7:3, 2:1 [R].
+        // Composition follows the S-to-C gradient: S/E-types dominate the inner belt, C/D further out [V: GRAD].
+        GenClass(id: "gen.belt", max: 4, count_mean: 3.0, parent: "body.sun", class: Asteroid,
+                 orbit: Belt(a_au: (2.1, 3.3), gaps_au: [(2.50, 0.03), (2.82, 0.03), (2.95, 0.02), (3.27, 0.03)], ecc_rayleigh: 0.10),
+                 inc_rayleigh_deg: 7.0, diameter_km: (10.0, 60.0), size_slope: 2.0,
+                 composition: Gradient(a_au: (2.1, 3.3), stony: (0.7, 0.2), metallic: 0.1)),     // rest Carbonaceous
+        // Hildas: 3:2 resonance with Jupiter, a 3.7–4.2 AU, e < 0.3, i < 20° [R: WIKI-HILDA]; primitive (P/D) [R].
+        GenClass(id: "gen.hilda", max: 1, count_mean: 0.5, parent: "body.sun", class: Asteroid,
+                 orbit: Belt(a_au: (3.7, 4.2), gaps_au: [], ecc_rayleigh: 0.12, ecc_max: Some(0.3), inc_max_deg: Some(20.0)),
+                 inc_rayleigh_deg: 8.0, diameter_km: (10.0, 40.0), size_slope: 2.0,
+                 composition: Fixed([(Carbonaceous, 1.0)])),
+        // Jupiter trojans: only 14 known as late as 1961 [V: WIKI-JT], so even large ones can be undiscovered in 1955.
+        // L4:L5 = 1.6:1 [V: SZABO], so l4_share = 1.6/2.6. D/P-types, volatile-rich [R].
+        GenClass(id: "gen.trojan_jupiter", max: 2, count_mean: 1.2, parent: "body.sun", class: Asteroid,
+                 orbit: Trojan(of: "body.jupiter", l4_share: 0.615, libration_deg: 25.0),
+                 inc_rayleigh_deg: 12.0, diameter_km: (15.0, 80.0), size_slope: 2.0,
+                 composition: Fixed([(Carbonaceous, 1.0)])),
+        // Irregular moons of the giant planets: 0.10–0.40 of the parent's Hill radius, ≥ 10% apart in a from any other moon.
+        GenClass(id: "gen.irregular_jupiter", max: 1, count_mean: 0.7, parent: "body.jupiter", class: Moon,
+                 orbit: Moon(hill_fraction: (0.10, 0.40), roche_factor: 0.0, min_rel_spacing: 0.10),
+                 inc_rayleigh_deg: 30.0, diameter_km: (5.0, 50.0), size_slope: 2.0,
+                 composition: Fixed([(Carbonaceous, 0.8), (Icy, 0.2)])),
+        GenClass(id: "gen.irregular_saturn", max: 1, count_mean: 0.7, parent: "body.saturn", class: Moon,
+                 orbit: Moon(hill_fraction: (0.10, 0.40), roche_factor: 0.0, min_rel_spacing: 0.10),
+                 inc_rayleigh_deg: 30.0, diameter_km: (5.0, 50.0), size_slope: 2.0,
+                 composition: Fixed([(Carbonaceous, 0.6), (Icy, 0.4)])),
+        // Inner moonlet of Mars: outside 1.5 × the fluid Roche limit, inside 0.3 r_Hill, ≥ 10% from Phobos and Deimos.
+        GenClass(id: "gen.moonlet_mars", max: 1, count_mean: 0.3, parent: "body.mars", class: Moon,
+                 orbit: Moon(hill_fraction: (0.0, 0.30), roche_factor: 1.5, min_rel_spacing: 0.10),
+                 inc_rayleigh_deg: 2.0, diameter_km: (0.5, 3.0), size_slope: 2.5,
+                 composition: Fixed([(Carbonaceous, 1.0)])),
+        // Not generated in the MVP: centaurs and the Kuiper belt (no reachable mechanic before 2060; Pluto is canonical).
+    ],
+    densities_g_cm3: [(Stony, 2.7), (Carbonaceous, 1.7), (Metallic, 5.0), (Icy, 1.2), (Rocky, 3.0)],   // [R] typical bulk densities
+)
