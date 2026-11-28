@@ -4,7 +4,7 @@ import belief as B
 import projects as PR
 import truth as T
 from content_gen import make_content
-from params import P, immaturity
+from params import P, immaturity, rep_bound
 
 
 # ------------------------------------------------------------------ B1 truth calibration (RND-004..008)
@@ -48,7 +48,7 @@ def b1_truth(n_worlds=10_000, seed=1, content_seed=1, chunk=1000):
                 ln_kappa_mean=kap.mean(), ln_kappa_sd=kap.std(),
                 hard=np.concatenate(hard), soft=np.concatenate(soft), hard_reach=np.concatenate(hard_r),
                 soft_reach=np.concatenate(soft_r), exp_hard=exp_hard, exp_soft=exp_soft,
-                edges=np.concatenate(edges), rep_sum=np.concatenate(rep_sum), rep_bound=P["rep_g0"] / (1 - P["rep_d"]))
+                edges=np.concatenate(edges), rep_sum=np.concatenate(rep_sum), rep_bound=rep_bound())
 
 
 # ------------------------------------------------------------------ B2-lite belief calibration (RND-012/013)
@@ -56,7 +56,7 @@ def b1_truth(n_worlds=10_000, seed=1, content_seed=1, chunk=1000):
 STAGES = ("prior", "sci 25%", "sci 50%", "sci 75%", "sci 100%", "after dev")
 
 
-def b2_beliefs(n_worlds=200, seed=1, cross_gen="spec", content_seed=1, max_attempts=10, gate_evidence=False):
+def b2_beliefs(n_worlds=200, seed=1, cross_gen="counts", content_seed=1, max_attempts=10, gate_evidence=True):
     """Every non-historical tech gets one full science phase in four steps, then (unless Requires-gated) a
     development project with integration and acceptance tests. Beliefs are updated with exact observations from
     the sampled truth. Generations run in order within each line, so the §4.2.5 cross-generation rule can act.

@@ -1,9 +1,11 @@
 
-## Findings and proposed spec edits (for approval; S-1–S-8 are not in the spec yet)
+## Findings S-1–S-8 (applied in WS-05 v0.3, approved by Sean 2026-11-28; S-3 option (a))
+
+Rows marked INFO above compare the v0.2 rules. The table below is kept as the record of why each v0.3 change was made.
 
 Revised 2026-11-28 after the WS-10 review: S-1 adds the LHS comparison, S-2 adds per-line counts, S-4 is withdrawn and replaced (fixed clip 2.0), S-6 gets margin and a [D] framing, S-7 gets its tag. WS-10's S-3 option (b) (gating independent of `works`) was not tested; it changes the §0 taxonomy and RND-006 expectations.
 
-Every finding below has a computed row in the table above (seeds 101/202/303) except S-8, which is a documentation point. The `xfail(strict)` tests in `test_rnd.py` (RND-005 as specified, RND-008, RND-012 for S-2 and S-3 (the fixture uses the counts rule), RND-013, RND-038 plain stream) turn green when the matching edit lands. The `b2` fixture and the passing RND-012 tests assume S-2 and S-3: **RND-012 passes with S-2 and S-3 applied and fails as specified.**
+Every finding has a computed row in the table above (seeds 101/202/303) except S-8, a documentation point. Since v0.3 the tests check the v0.3 rules; no test is xfail.
 
 | ID | Spec location | Finding | Proposed edit |
 |---|---|---|---|
