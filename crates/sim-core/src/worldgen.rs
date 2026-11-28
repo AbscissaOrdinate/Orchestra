@@ -1,6 +1,6 @@
 //! World generation from loaded content (M4b subset). Every entity gets a dense index after
 //! sorting by string ID (§3.6), so file order and entry order never matter.
-use crate::belief::{Belief, BeliefBlock, SubjectRange};
+use crate::belief::{BeliefBlock, SubjectRange};
 use crate::content::{Content, ContentError};
 use crate::graph::Graph;
 use crate::ids::{BodyId, PolityId, Tick};
@@ -81,17 +81,16 @@ fn subject_ranges(content: &Content) -> Vec<SubjectRange> {
 }
 
 /// Every held subject starts unknown (`None`); a macro polity omits the WS-05 range.
-/// Under the test stubs, every WS-03 subject starts with a N(0, 1) prior so ARC-014 can observe it.
+/// The test stubs may supply start priors instead (`stubs::initial_prior`).
 fn initial_beliefs(ranges: &[SubjectRange], tier: Tier) -> BeliefBlock {
     let slices = ranges
         .iter()
         .map(|r| {
             let held = r.owner != "rnd" || rnd::holds_range(tier);
-            let prior = if cfg!(any(test, feature = "stubs")) && r.owner == "econ" {
-                Some(Belief::normal(crate::belief::Scale::Linear, 0.0, 1.0))
-            } else {
-                None
-            };
+            #[cfg(any(test, feature = "stubs"))]
+            let prior = crate::stubs::initial_prior(r);
+            #[cfg(not(any(test, feature = "stubs")))]
+            let prior: Option<crate::belief::Belief> = None;
             held.then(|| vec![prior; r.len as usize])
         })
         .collect();

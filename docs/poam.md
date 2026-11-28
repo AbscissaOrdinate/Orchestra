@@ -64,6 +64,8 @@ Dates are left TBD on purpose: at about 10 hours a week with AI-assisted coding,
 | 39 | M4c: build on the M4b explain subset (`Term`, `VarKey`, `Breakdown::{sum, stock, change}`, `Tracked`) rather than replacing it; reroute `arc_024_combat_loss_same_tick` through `explain_change`; turn the deterministic `stubs.rs` trace into the §7 random walk via `RngFactory`; replace the placeholder `Truth.tech` values with `worldgen_stream` draws (ARC-034); move unit strength to `Lazy` | M4c session | ☐ |
 | 40 | M4d: extend the M4b content types (they read only what ARC-010/016 need) with `deny_unknown_fields`, full validation and the content hash; the test setting under `crates/sim-core/tests/content/` is already in the WS-08a/08b/WS-05 file shapes (add `kinds.ron`/`size_classes.ron` if validation needs them); derived Sol edges (WS-08b §4.2) join the `transfers.ron` edges | M4d session | ☐ |
 | 41 | WS-03 (M5): confirm the structural-subject count; the M4b stub uses 6 × polities [D] (`subsystems::econ::subject_count`) | WS-03 owner | ☐ |
+| 42 | M4e: `World.stub` and `OrderKind::StubSet` exist only under the `stubs` feature (test builds), so the serialized `World` layout depends on the feature. Build the ARC-062 save fixture without it, or gate the fixture test accordingly. M4c: scope the ARC-030 `SeedableRng` grep to `crates/sim-core/src/` (the M4b tests seed `ChaCha8Rng` directly) | M4c/M4e sessions | ☐ |
+| 43 | WS-02 text alignment (proposed, not made): §3.2 shows `pub beliefs`, but ARC-014 needs it private with a `pub(crate)` writer (as built); §3.3 should say D2 AI orders are validated like D1 player orders (as built, ARC-022) | WS-02 owner | ☐ |
 
 ## Change log
 

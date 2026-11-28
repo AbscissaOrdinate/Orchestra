@@ -236,11 +236,13 @@ pub struct Event {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum EventKind {
-    /// A player order failed D1 validation. `index` is its position in this tick's order list
-    /// (the input log has the order itself, so no raw values reach state).
+    /// An order failed validation. `index` is its position in this tick's player order list
+    /// (D1) or, if `ai`, in the AI order list (D2, recomputed on replay). The order itself is not
+    /// copied, so no raw input values reach state.
     OrderRejected {
         polity: PolityId,
         index: u32,
+        ai: bool,
         reason: Cow<'static, str>,
     },
     /// WS-11 removed a unit in R6b; `engagement` indexes this tick's `World.engagements`.

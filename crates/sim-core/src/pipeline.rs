@@ -118,6 +118,11 @@ impl<'a> PolityView<'a> {
     pub fn force(&self) -> &'a ForceBlock {
         &self.world.force[self.id.index()]
     }
+    /// Test stub knobs (the stub AI reads its scripted orders here).
+    #[cfg(any(test, feature = "stubs"))]
+    pub(crate) fn knobs(&self) -> &'a crate::stubs::Knobs {
+        &self.world.stub.knobs
+    }
 }
 
 /// Runs D1..I2 on `world` with this tick's player `orders`, then increments the tick.
@@ -135,11 +140,15 @@ pub fn step(world: &mut World, orders: &[Order]) -> TickReport {
         #[cfg(any(test, feature = "stubs"))]
         let traced = crate::stubs::trace(world, &mut ctx, stage);
         match stage {
-            Stage::D1Orders => queue = validate(world, &mut ctx, orders),
+            Stage::D1Orders => queue = validate(world, &mut ctx, orders, false),
             Stage::D2AiDecide => {
-                for p in world.polities.iter().filter(|p| p.alive) {
-                    queue.extend(ai::decide(PolityView::new(world, p.id)));
-                }
+                let ai_orders: Vec<Order> = world
+                    .polities
+                    .iter()
+                    .filter(|p| p.alive)
+                    .flat_map(|p| ai::decide(PolityView::new(world, p.id)))
+                    .collect();
+                queue.extend(validate(world, &mut ctx, &ai_orders, true));
             }
             Stage::R1ApplyOrders => {
                 for order in &queue {
@@ -169,7 +178,7 @@ pub fn step(world: &mut World, orders: &[Order]) -> TickReport {
         }
         #[cfg(any(test, feature = "stubs"))]
         traced.commit(world);
-        #[cfg(debug_assertions)]
+        #[cfg(any(debug_assertions, test, feature = "stubs"))]
         crate::finite::check_world(world, stage);
     }
     world.header.tick = Tick(tick.0 + 1);
@@ -191,7 +200,7 @@ fn stage_r3(world: &mut World, ctx: &mut TickCtx) {
     }
 }
 
-/// D1: an order is valid if its polity exists and is alive, it is for this tick, and its owning
+/// D1 (player orders) and D2 (AI orders): an order is valid if its polity exists and is alive, it is for this tick, and its owning
 /// subsystem accepts its values. Invalid orders become `OrderRejected` events, never panics.
 // Without the stubs, `OrderKind` has no variants yet, so `Order` is uninhabited and this body is
 // unreachable. Drop the allow when the first real variant lands (WS-03+, or `SetTier` in M4f).
@@ -199,7 +208,7 @@ fn stage_r3(world: &mut World, ctx: &mut TickCtx) {
     not(any(test, feature = "stubs")),
     allow(unreachable_code, unused_variables)
 )]
-fn validate(world: &World, ctx: &mut TickCtx, orders: &[Order]) -> Vec<Order> {
+fn validate(world: &World, ctx: &mut TickCtx, orders: &[Order], ai: bool) -> Vec<Order> {
     let mut valid = Vec::new();
     for (index, order) in orders.iter().enumerate() {
         let reason = match world.polities.get(order.polity.index()) {
@@ -217,6 +226,7 @@ fn validate(world: &World, ctx: &mut TickCtx, orders: &[Order]) -> Vec<Order> {
                 kind: EventKind::OrderRejected {
                     polity: order.polity,
                     index: index as u32,
+                    ai,
                     reason,
                 },
             }),

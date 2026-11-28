@@ -75,8 +75,14 @@ pub mod rnd {
 /// WS-06 (stub). D2: AI sees only its `PolityView` (ARC-012).
 pub mod ai {
     use super::*;
-    pub fn decide(_view: PolityView) -> Vec<Order> {
-        Vec::new()
+    pub fn decide(view: PolityView) -> Vec<Order> {
+        #[cfg(any(test, feature = "stubs"))]
+        return crate::stubs::ai_orders(view);
+        #[cfg(not(any(test, feature = "stubs")))]
+        {
+            let _ = view;
+            Vec::new()
+        }
     }
 }
 

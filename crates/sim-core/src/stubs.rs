@@ -2,11 +2,11 @@
 //! Each stage, the trace stub writes one `Tracked` per polity and logs the stage as an event.
 //! Deterministic in M4b; M4c turns the step into a random walk via `RngFactory`.
 //! The knobs drive the ARC-014/020–024 tests.
-use crate::belief::Observation;
+use crate::belief::{Belief, Observation, Scale, SubjectRange};
 use crate::explain::{Breakdown, Term, Tracked};
 use crate::ids::{PolityId, Tick, UnitId};
-use crate::pipeline::{Stage, TickCtx};
-use crate::state::{EngagementRecord, Event, EventKind, World};
+use crate::pipeline::{PolityView, Stage, TickCtx};
+use crate::state::{EngagementRecord, Event, EventKind, Order, OrderKind, World};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
@@ -21,6 +21,8 @@ pub struct StubBlock {
     pub set: Vec<f64>,
     /// ARC-014: the observed subject's belief mean as each stage started.
     pub seen: Vec<(Stage, Option<f64>)>,
+    /// Test inputs, not simulation state: not serialized, so not hashed or finiteness-checked.
+    #[serde(skip)]
     pub knobs: Knobs,
 }
 
@@ -34,6 +36,8 @@ pub struct Knobs {
     pub kill: Option<(Tick, PolityId, UnitId)>,
     /// Pushed in R3 every tick; its subject's belief is logged in `seen` (ARC-014).
     pub observe: Option<Observation>,
+    /// The stub AI of this polity emits `StubSet { value }` every tick (ARC-022).
+    pub ai_order: Option<(PolityId, f64)>,
 }
 
 impl StubBlock {
@@ -97,6 +101,24 @@ pub(crate) fn trace(world: &World, ctx: &mut TickCtx, stage: Stage) -> Traced {
         (stage, belief.map(|b| b.mean()))
     });
     Traced { x, seen }
+}
+
+/// Start prior for every subject of a range: N(0, 1) on the WS-03 range so ARC-014 can observe
+/// a known subject; every other subject starts unknown.
+pub(crate) fn initial_prior(range: &SubjectRange) -> Option<Belief> {
+    (range.owner == "econ").then(|| Belief::normal(Scale::Linear, 0.0, 1.0))
+}
+
+/// Stub AI (D2): emits the `ai_order` knob's order for its polity.
+pub(crate) fn ai_orders(view: PolityView) -> Vec<Order> {
+    match view.knobs().ai_order {
+        Some((polity, value)) if polity == view.polity().id => vec![Order {
+            polity,
+            tick: view.tick(),
+            kind: OrderKind::StubSet { value },
+        }],
+        _ => Vec::new(),
+    }
 }
 
 /// ARC-021: `a' = b + 1`, `b' = 2a`, each reading the other's stage-start value.

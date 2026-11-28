@@ -6,7 +6,12 @@ use serde::ser::{self, Serialize};
 use std::fmt;
 
 /// Panics naming the stage, block and field path of the first non-finite `f64`.
+/// Runs in debug builds and in any build with the test stubs.
 pub(crate) fn check_world(world: &World, stage: Stage) {
+    check(stage, "header", &world.header);
+    check(stage, "truth", world.truth());
+    check(stage, "map", &world.map);
+    check(stage, "sol", &world.sol);
     check(stage, "polities", &world.polities);
     check(stage, "econ", &world.econ);
     check(stage, "gov", &world.gov);

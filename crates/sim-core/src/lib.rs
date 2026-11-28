@@ -7,7 +7,7 @@ mod arc_004_probe;
 pub mod belief;
 pub mod content;
 pub mod explain;
-#[cfg(debug_assertions)]
+#[cfg(any(debug_assertions, test, feature = "stubs"))]
 mod finite;
 pub mod graph;
 pub mod ids;

@@ -537,7 +537,6 @@ fn arc_021_swap_order_same_result() {
     run(&mut swapped, 10);
     assert_eq!(forward.stub.a, swapped.stub.a);
     assert_eq!(forward.stub.b, swapped.stub.b);
-    knobs(&mut swapped).swap_pair = false;
     assert_eq!(hash(&forward), hash(&swapped));
 }
 
@@ -554,6 +553,7 @@ fn assert_rejected(mut world: World, order: Order, reason: &str) {
             EventKind::OrderRejected {
                 polity,
                 index,
+                ai: false,
                 reason,
             } => Some((*polity, *index, reason.to_string())),
             _ => None,
@@ -577,6 +577,49 @@ fn arc_022_dead_polity_rejected() {
         kind: OrderKind::StubSet { value: 0.5 },
     };
     assert_rejected(world, order, "polity is dead");
+}
+
+/// ARC-022: an order for a polity index that doesn't exist is rejected.
+#[test]
+fn arc_022_unknown_polity_rejected() {
+    let order = Order {
+        polity: PolityId(99),
+        tick: Tick(0),
+        kind: OrderKind::StubSet { value: 0.5 },
+    };
+    assert_rejected(test_world(), order, "unknown polity");
+}
+
+/// ARC-022: AI orders (D2) are validated like player orders: an invalid one becomes a rejection
+/// event, never reaches R1, and doesn't panic; a valid one applies.
+#[test]
+fn arc_022_ai_order_validated() {
+    for value in [f64::NAN, 2.0] {
+        let mut world = test_world();
+        let mut control = world.clone();
+        knobs(&mut world).ai_order = Some((PolityId(1), value));
+        step(&mut world, &[]);
+        step(&mut control, &[]);
+        let rejected: Vec<_> = world
+            .events
+            .iter()
+            .filter_map(|e| match &e.kind {
+                EventKind::OrderRejected {
+                    polity,
+                    index,
+                    ai: true,
+                    ..
+                } => Some((*polity, *index)),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(rejected, [(PolityId(1), 0)]);
+        assert_eq!(world.stub.set, control.stub.set);
+    }
+    let mut world = test_world();
+    knobs(&mut world).ai_order = Some((PolityId(1), 0.75));
+    step(&mut world, &[]);
+    assert_eq!(world.stub.set, [0.0, 0.75, 0.0]);
 }
 
 /// ARC-022: an order for a past tick is rejected.
@@ -621,8 +664,8 @@ fn arc_022_out_of_range_rejected() {
 
 // ── ARC-023 ─────────────────────────────────────────────────────────────────
 
-/// ARC-023: a stub that writes NaN panics, naming the stage and the block.
-#[cfg(debug_assertions)]
+/// ARC-023: a stub that writes NaN panics, naming the stage and the block. The check runs in
+/// debug builds and in every build with the test stubs, so this also runs under `--release`.
 #[test]
 fn arc_023_nan_panics_naming_stage_and_block() {
     for stage in [Stage::D1Orders, Stage::R4Finance, Stage::I2Report] {
