@@ -12,7 +12,7 @@ Prototype plan and results: `prototypes/rnd/PLAN.md`, `prototypes/rnd/RESULTS.md
 - **`SciBoost`** for science infrastructure such as colliders: it buys information, not engineering (§4.3).
 - **Tranche-1 content, +39 nodes (339 total):** niche craft, speculative computing and materials, long shots, a skyhook, a collider. Tranche 2 (≈ 75 nodes) is listed for after M2(b) (§6.3).
 - **Believability rules in content validation:** capability tags on every prerequisite, gate candidate and Boost edge; a `precedent` per line; date, Longshot and niche-dominance checks; a gate report for audits (§6.4).
-- New RND-009, 027, 028, 029, 060, 061, 062; RND-004, 006, 050 amended; OQ-R6 opened. Edits P-02c, P-07a, P-08c, P-11b proposed (§8). §4.2.8 is consistent with v0.3's S-2 counts rule and S-3 gate evidence.
+- New RND-009, 027, 028, 029, 060, 061, 062; RND-004, 006, 050 amended; OQ-R6 opened and closed (soft/hard band 2–3). Edits P-02c, P-07a, P-08c, P-11b proposed (§8). §4.2.8 is consistent with v0.3's S-2 counts rule and S-3 gate evidence.
 
 **v0.3 changes (M2(b) part 1 findings S-1–S-8, approved by Sean 2026-11-28; WS-10 review of PR #32):**
 - **Gate events are viability evidence** (S-3): a `Blocked` or `FeasibilityFinding` can only occur for a tech that works, so it proves viability (§0, §4.4, RND-023).
@@ -316,7 +316,7 @@ Notation: monthly ticks; real amounts are deflated by WS-03's R&D cost index for
 - **Cost** κ (Log): Normal(0, σ_κ) in logs, σ_κ = 0.35 [D]. κ multiplies the tech's development effort and the unit cost of components that use it.
 - **Boost edges** (help, never gate). (a) Authored (`enablers.ron`: from, to, p, b), one draw each (key `edge:<from>><to>`). (b) Procedural: for every ordered pair of lines in different fields, an edge exists with p_rand = 0.002 [D] (≈ 10 valid edges per world for the default content: a pair yields an edge only if the source has a generation dated no later than the target's chosen generation), keyed by the pair, so adding a line only adds pairs. The target generation is drawn uniformly; the source is the source line's generation with the latest D ≤ target D; b ~ U[0.15, 0.40] [D].
 
-**Expected dead ends** with the §6.3 tranche-1 class mix (≈ 45 historical, 131 Established, 87 Promising, 54 Speculative, 20 Fringe, 2 Longshot; 9 of the Speculative techs are basis members at p_b 0.8 and 0.6): hard ≈ 31, soft ≈ 65 per world, ratio ≈ 2.1 [D: arithmetic; v0.2's 300-node mix gave 21 and 52]. The ratio sits near RND-006's floor of 2 (OQ-R6). Not every hard dead end is encountered, because a dead generation truncates its line. M2(b) B1 reports both counts and their spread.
+**Expected dead ends** with the §6.3 tranche-1 class mix (≈ 45 historical, 131 Established, 87 Promising, 54 Speculative, 20 Fringe, 2 Longshot; 9 of the Speculative techs are basis members at p_b 0.8 and 0.6): hard ≈ 31, soft ≈ 65 per world, ratio ≈ 2.1 [D: arithmetic; v0.2's 300-node mix gave 21 and 52]. The target band for soft/hard is 2–3 (OQ-R6, closed): a dead end should more often be "not yet" than "never". Not every hard dead end is encountered, because a dead generation truncates its line. M2(b) B1 reports both counts and their spread.
 
 **4.1.3 Soft gates** (`GateTruth`, key `gate:<tech>`):
 - Enablers: 1 (p 0.7) or 2 (p 0.3) [D] (Longshot: 2 or 3, p 0.5 each) lines drawn from the tech's `gate_candidates`. In each, the enabling generation is the one whose D is closest to D_t + Δ, Δ ~ U[−5, +25] years [D], so enablers often arrive *after* the tech's nominal date: the tech is possible before it is practical.
@@ -834,7 +834,7 @@ A player judges a tech tree by whether each requirement has a reason they can na
 
 ## 9. Open questions
 
-OQ-R1–R5 closed 2026-11-27 (Sean: accept the defaults, with the additions noted). OQ-R6 opened in v0.3.
+OQ-R1–R5 closed 2026-11-27 (Sean: accept the defaults, with the additions noted). OQ-R6 opened and closed in v0.4.
 
 | ID | Question | Resolution |
 |---|---|---|
@@ -843,7 +843,7 @@ OQ-R1–R5 closed 2026-11-27 (Sean: accept the defaults, with the additions note
 | OQ-R3 | The ACAT triple (mean 1.36, CV 0.80, p85 3.1) is internally inconsistent under a lognormal. | **Closed: GAO governs.** The GAO split sets the means; the CV is fitted to ACAT's 0.80; the ACAT mean and p85 are reported, not targeted (§4.5.3). |
 | OQ-R4 | Contractors: catalogs only, or more? | **Closed: more.** Contractors get a capital memo account, five contract types with real-world trade-offs (§4.8.5), and stochastic private ventures driven by capital and home industrial-base strength (§4.8.6). |
 | OQ-R5 | Player as seller: automatic by export policy? | **Closed: automatic**, with notifications. Sellers can also make offers, including grant aid (§4.8.2); AI responses to offers are WS-06's (P-06a). |
-| OQ-R6 | Tranche 1 puts the expected soft/hard ratio at ≈ 2.1, just above RND-006's floor of 2. Raise s_c for Speculative and Fringe, or lower the floor? | **Open.** Recommendation: let M2(b) B1 measure it first; if the ratio is below 2 in the mean, raise Speculative s_c 0.56 → 0.65 rather than lowering the floor. |
+| OQ-R6 | Tranche 1 puts the expected soft/hard ratio at ≈ 2.1, near RND-006's floor of 2. Raise soft gating, or lower the floor? | **Closed 2026-11-28 (Sean): keep the floor; band 2–3.** It is more plausible that a tech eventually works than that it never can (Clarke's first law). M2(b) B1 measures the ratio; if it falls outside [2, 3], tune by moving outcomes from hard to soft (raise Speculative s_c 0.56 → 0.65, then the Speculative and Fringe Beta α) before touching the class mix. |
 
 ## 10. Sources
 
