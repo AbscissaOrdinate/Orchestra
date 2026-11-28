@@ -22,7 +22,7 @@ P = dict(
     p_edge=0.002,
     edge_b=(0.15, 0.40),
     # §4.1.4 repeatables
-    rep_g0=0.03, rep_d=0.95, rep_cv=0.3, rep_levels=30, rep_step_dev=1.35,
+    rep_g0=0.03, rep_d=0.95, rep_cv=0.3, rep_levels=30, rep_step_dev=1.35, rep_clip=2.0,
     # §4.2 beliefs
     sigma_c=1e-3,                        # viability component width
     info=dict(viability=1.2, perf=30.0, cost=15.0),   # per full science phase (§4.3)
@@ -47,3 +47,8 @@ P = dict(
 def immaturity(trl_min, u_max=P["u_max"]):
     """u = clamp((6 - TRL_min) / 3, 0, u_max)  (§4.5.3)."""
     return np.clip((6.0 - np.asarray(trl_min, float)) / 3.0, 0.0, u_max)
+
+
+def rep_bound(g0=P["rep_g0"], d=P["rep_d"], levels=P["rep_levels"], clip=P["rep_clip"]):
+    """Sum of repeatable gains is at most clip * g0 (1 - d^L) / (1 - d)  (§4.1.4, v0.3)."""
+    return clip * g0 * (1 - d ** levels) / (1 - d)

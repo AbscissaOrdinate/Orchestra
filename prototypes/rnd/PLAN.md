@@ -1,6 +1,6 @@
 # M2(b) — R&D latent-truth / belief prototype plan
 
-Workstream WS-05 · Spec: `docs/specs/WS-05-rnd.md` (v0.2, approved) · Language: Python 3 + NumPy (+ matplotlib for plots) · Same conventions as M2(a) and M2(c): one function per stage, a leading `worlds` axis, PCG64 generators per (scenario, world, purpose), all parameters in one file.
+Workstream WS-05 · Spec: `docs/specs/WS-05-rnd.md` (v0.3) · Language: Python 3 + NumPy (+ matplotlib for plots) · Same conventions as M2(a) and M2(c): one function per stage, a leading `worlds` axis, PCG64 generators per (scenario, world, purpose), all parameters in one file.
 
 ## 1. Goal
 
@@ -22,7 +22,7 @@ Then freeze every `[D]` constant into `params.ron` values for M4 (P-9). The prot
 ```
 prototypes/rnd/
   PLAN.md            this file
-  calib_growth.py    EXISTS: fits G/S to the GAO/ACAT anchors; RND-011 equivalence check
+  make_estimate_points.py  writes content/core/rnd/estimate_points.ron (§4.5.7); calib_growth.py retired in v0.3 (S-8)
   params.py          every [D] constant from spec §4, one dict; scenarios override keys
   content_gen.py     synthetic default content: 75 lines + 20 singletons over 12 domains with the §6.3 node counts,
                      class mix (45 historical, 128 Established, 76 Promising, 36 Speculative, 15 Fringe), dates 1930–2055,

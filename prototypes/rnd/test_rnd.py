@@ -1,5 +1,4 @@
-"""M2(b) acceptance tests, named after the WS-05 requirement they check (spec §5). Findings that currently
-contradict the spec are xfail(strict) with the proposal ID from RESULTS.md, so a fix turns them green."""
+"""M2(b) acceptance tests, named after the WS-05 requirement they check (spec v0.3 §5)."""
 import numpy as np
 import pytest
 import belief as B
@@ -7,7 +6,7 @@ import projects as PR
 import scenarios as S
 import truth as T
 from content_gen import make_content
-from params import P, immaturity
+from params import P, immaturity, rep_bound
 
 
 @pytest.fixture(scope="session")
@@ -17,8 +16,8 @@ def b1():
 
 @pytest.fixture(scope="session")
 def b2():
-    """Assumes proposals S-2 (cross_gen="beta") and S-3 (gate_evidence=True); the spec-as-written variants are the xfail tests."""
-    o = S.b2_beliefs(200, seed=12, cross_gen="beta", gate_evidence=True)
+    """Spec v0.3: per-line Beta counts (§4.2.5) and gate events as viability evidence (§0)."""
+    o = S.b2_beliefs(200, seed=12, cross_gen="counts", gate_evidence=True)
     return o, S.b2_summary(o)
 
 
@@ -33,15 +32,6 @@ def rnd_004_truth_follows_priors(b1):
     assert abs(b1["two_share"] - P["p_two_enablers"]) < 0.015
     assert np.abs(b1["perf_modes"] - P["perf_w"]).max() < 0.015
     assert abs(b1["ln_kappa_mean"]) < 0.01 and abs(b1["ln_kappa_sd"] - P["sigma_kappa"]) < 0.01
-
-
-@pytest.mark.xfail(strict=True, reason="S-5: spec criterion is the mean edge count within 3 SE of sum p; valid edges are fewer")
-def rnd_005_edge_count_as_specified():
-    c = make_content(1)
-    e = T.sample_edges(c, 5, np.arange(1000))
-    counts = np.bincount(e.world, minlength=1000)
-    sum_p = P["p_edge"] * c.n_lines * (c.n_lines - 1)
-    assert abs(counts.mean() - sum_p) < 3 * counts.std() / np.sqrt(1000)
 
 
 def rnd_005_boost_edges():
@@ -79,10 +69,10 @@ def rnd_007_gates_from_candidates_only():
     assert ((c.cands < 0) | (cand_rank < c.rank[:, None])).all()      # candidates only from lower rank: no cycles
 
 
-@pytest.mark.xfail(strict=True, reason="S-4: lognormal multipliers can exceed g0/(1-d); clip them (RESULTS.md)")
 def rnd_008_repeatable_gain_bound():
-    s = T.sample_repeatable(5, np.arange(20_000)).sum(-1)
-    assert s.max() <= P["rep_g0"] / (1 - P["rep_d"])
+    g = T.sample_repeatable(5, np.arange(100_000))
+    assert g.sum(-1).max() <= rep_bound()
+    assert abs((g / (P["rep_g0"] * P["rep_d"] ** np.arange(P["rep_levels"]))).mean() - 0.999) < 0.002   # clip leaves the mean ~1
 
 
 def rnd_010_priors_equal_sampling_distributions():
@@ -116,20 +106,28 @@ def rnd_012_p_works_reliability(b2):
         assert np.abs(rel[:, 0] - rel[:, 1]).max() < 0.05, st
 
 
-@pytest.mark.xfail(strict=True, reason="S-3: Blocked/FeasibilityFinding ignored as evidence leaves p_works 0.72 for techs that work")
-def rnd_012_gate_events_not_evidence_as_specified():
-    o = S.b2_beliefs(200, seed=12, cross_gen="beta", gate_evidence=False)
-    gap, n = S.mid_gap(o)
-    assert n >= 30 and gap < 5
+def rnd_016_counts_prior_and_late_update():
+    a, b = 23.0, 2.0                                              # Promising
+    p_full = (a + 1) / (a + b + 2)                                # g1 proven, g2 dead -> 24/27
+    assert abs(p_full - 24 / 27) < 1e-12
+    p_old = a / (a + b + 1)                                       # g3 known with only g2 counted: 23/26
+    odds = lambda p: p / (1 - p)
+    bv = B.observe_binary(B.prior_viability(np.array(p_old)), np.log(odds(p_full) / odds(p_old)))
+    assert abs(B.p_works(bv) - 24 / 27) < 1e-12 and abs(odds(p_full) / odds(p_old) - 24 / 23) < 1e-12
 
 
-@pytest.mark.xfail(strict=True, reason="S-2: fixed LR 3 and 1/3 overstate cross-generation evidence")
-def rnd_012_cross_generation_lr_as_specified():
-    o = S.b2_beliefs(200, seed=12, cross_gen="spec", gate_evidence=True)
-    rel = S.b2_summary(o)["reliability"]["prior"]
-    assert np.abs(rel[:, 0] - rel[:, 1]).max() < 0.05
+def rnd_023_gate_event_proves_viability():
+    for p in (0.08, 0.6, 0.92):
+        post = B.p_works(B.observe_binary(B.prior_viability(np.array(p)), np.log(1e4)))
+        assert abs(post - p * 1e4 / (p * 1e4 + 1 - p)) < 1e-9
+    assert B.p_works(B.observe_binary(B.prior_viability(np.array(0.6)), np.log(1e4))) > 0.9999
 
 
+def rnd_012_gate_evidence_closes_mid_bin_gap():
+    gap_on, n_on = S.mid_gap(S.b2_beliefs(200, seed=12))
+    gap_off, n_off = S.mid_gap(S.b2_beliefs(200, seed=12, gate_evidence=False))
+    assert gap_off > 20 and n_off >= 30                            # v0.2 behaviour: techs that work stuck at p ~ 0.72
+    assert n_on < 30 or gap_on < 5                                 # v0.3: the bin empties or is calibrated
 def rnd_013_convergence(b2):
     _, r = b2
     st = r["stage"]
@@ -140,9 +138,10 @@ def rnd_013_convergence(b2):
     assert all(a >= b - 1e-3 for a, b in zip(errs, errs[1:]))
 
 
-@pytest.mark.xfail(strict=True, reason="S-6: two failed tests expose only ~61% of hard dead ends")
-def rnd_013_dead_end_after_two_failed_tests(b2):
-    assert b2[1]["dead_below_010_all"][1] >= 0.90
+def rnd_013_dead_end_recognition_design_intent(b2):
+    r = b2[1]
+    assert r["dead_below_010_all"][3] >= 0.80                     # after 4 failed tests
+    assert r["dead_below_010"][1][3] >= 0.70                      # Fringe after 2
 
 
 def rnd_033_growth_calibrated(b3):
@@ -162,8 +161,9 @@ def rnd_038_estimate_calibrated(b3):
     assert all((x == y).all() for x, y in zip(a[0] + a[1], c[0] + c[1]))
 
 
-@pytest.mark.xfail(strict=True, reason="S-1: a plain 256-draw stream gives out-of-tolerance coverage for about a quarter of stream seeds")
-def rnd_038_estimate_plain_stream_as_specified(b3):
+@pytest.mark.parametrize("stream", ("committed", "sobol"))
+def rnd_038_estimate_s1_candidates_pass_20_seeds(stream):
+    """§4.5.7: the committed point set, and 20 alternative scrambles (robustness to regenerating it)."""
     n = 10_000
     rng = np.random.default_rng(5)
     trl = np.where(rng.random(n) < 0.16, 6.0, rng.uniform(3, 5.5, n))
@@ -172,5 +172,5 @@ def rnd_038_estimate_plain_stream_as_specified(b3):
     b = PR.start_belief(trl, lk, rng)
     ratio = np.exp(lk) / B.mean(b, log=True) * PR.growth(u, rng.standard_normal((n, 2)))[0]
     for seed in range(20):
-        (c50, c80), _ = PR.estimate(b, u, seed=seed, stream="plain")
+        (c50, c80), _ = PR.estimate(b, u, seed=seed, stream=stream)
         assert abs((ratio > c50).mean() - 0.5) < 0.05 and abs((ratio > c80).mean() - 0.2) < 0.04

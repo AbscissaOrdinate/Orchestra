@@ -4,7 +4,7 @@ import belief as B
 import projects as PR
 import truth as T
 from content_gen import make_content
-from params import P, immaturity
+from params import P, immaturity, rep_bound
 
 
 # ------------------------------------------------------------------ B1 truth calibration (RND-004..008)
@@ -48,7 +48,7 @@ def b1_truth(n_worlds=10_000, seed=1, content_seed=1, chunk=1000):
                 ln_kappa_mean=kap.mean(), ln_kappa_sd=kap.std(),
                 hard=np.concatenate(hard), soft=np.concatenate(soft), hard_reach=np.concatenate(hard_r),
                 soft_reach=np.concatenate(soft_r), exp_hard=exp_hard, exp_soft=exp_soft,
-                edges=np.concatenate(edges), rep_sum=np.concatenate(rep_sum), rep_bound=P["rep_g0"] / (1 - P["rep_d"]))
+                edges=np.concatenate(edges), rep_sum=np.concatenate(rep_sum), rep_bound=rep_bound())
 
 
 # ------------------------------------------------------------------ B2-lite belief calibration (RND-012/013)
@@ -56,11 +56,12 @@ def b1_truth(n_worlds=10_000, seed=1, content_seed=1, chunk=1000):
 STAGES = ("prior", "sci 25%", "sci 50%", "sci 75%", "sci 100%", "after dev")
 
 
-def b2_beliefs(n_worlds=200, seed=1, cross_gen="spec", content_seed=1, max_attempts=10, gate_evidence=False):
+def b2_beliefs(n_worlds=200, seed=1, cross_gen="counts", content_seed=1, max_attempts=10, gate_evidence=True):
     """Every non-historical tech gets one full science phase in four steps, then (unless Requires-gated) a
     development project with integration and acceptance tests. Beliefs are updated with exact observations from
     the sampled truth. Generations run in order within each line, so the §4.2.5 cross-generation rule can act.
-    cross_gen: 'none' | 'spec' (LR 3 and 1/3) | 'beta' (conjugate LRs from the class Beta).
+    cross_gen: 'none' | 'spec' (LR 3 and 1/3) | 'beta' (conjugate LRs from the class Beta) |
+               'counts' (prior for gen k = (a+s)/(a+b+s+f) over all earlier generations of the line).
     gate_evidence: a Blocked / FeasibilityFinding event proves the tech works (hard-dead techs are never gated)."""
     c = make_content(content_seed)
     rng = np.random.default_rng(seed)
@@ -81,8 +82,15 @@ def b2_beliefs(n_worlds=200, seed=1, cross_gen="spec", content_seed=1, max_attem
         cols = np.flatnonzero((c.tech_gen == g) & ~c.tech_hist)
         if len(cols) == 0:
             continue
-        bv = B.prior_viability(np.broadcast_to(pbar[cols], (W, len(cols))).copy())
-        if g > 1 and cross_gen != "none":
+        if cross_gen == "counts":
+            lt = c.line_tech[c.tech_line[cols], :g - 1]                     # earlier generations of each line
+            s_n = np.where(lt >= 0, proven[:, np.maximum(lt, 0)], False).sum(-1)
+            f_n = np.where(lt >= 0, declared_dead[:, np.maximum(lt, 0)], False).sum(-1)
+            a, b = ab[cols].T
+            bv = B.prior_viability((a + s_n) / (a + b + s_n + f_n))
+        else:
+            bv = B.prior_viability(np.broadcast_to(pbar[cols], (W, len(cols))).copy())
+        if g > 1 and cross_gen in ("spec", "beta"):
             prev = c.line_tech[c.tech_line[cols], g - 2]
             ok, dead = proven[:, prev], declared_dead[:, prev]
             a, b = ab[cols].T
