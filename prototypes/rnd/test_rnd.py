@@ -17,8 +17,8 @@ def b1():
 
 @pytest.fixture(scope="session")
 def b2():
-    """Assumes proposals S-2 (cross_gen="beta") and S-3 (gate_evidence=True); the spec-as-written variants are the xfail tests."""
-    o = S.b2_beliefs(200, seed=12, cross_gen="beta", gate_evidence=True)
+    """Assumes proposals S-2 (cross_gen="counts", per-line Beta counts) and S-3 (gate_evidence=True); the spec-as-written variants are the xfail tests."""
+    o = S.b2_beliefs(200, seed=12, cross_gen="counts", gate_evidence=True)
     return o, S.b2_summary(o)
 
 
@@ -118,7 +118,7 @@ def rnd_012_p_works_reliability(b2):
 
 @pytest.mark.xfail(strict=True, reason="S-3: Blocked/FeasibilityFinding ignored as evidence leaves p_works 0.72 for techs that work")
 def rnd_012_gate_events_not_evidence_as_specified():
-    o = S.b2_beliefs(200, seed=12, cross_gen="beta", gate_evidence=False)
+    o = S.b2_beliefs(200, seed=12, cross_gen="counts", gate_evidence=False)
     gap, n = S.mid_gap(o)
     assert n >= 30 and gap < 5
 
@@ -173,4 +173,19 @@ def rnd_038_estimate_plain_stream_as_specified(b3):
     ratio = np.exp(lk) / B.mean(b, log=True) * PR.growth(u, rng.standard_normal((n, 2)))[0]
     for seed in range(20):
         (c50, c80), _ = PR.estimate(b, u, seed=seed, stream="plain")
+        assert abs((ratio > c50).mean() - 0.5) < 0.05 and abs((ratio > c80).mean() - 0.2) < 0.04
+
+
+@pytest.mark.parametrize("stream", ("lhs", "sobol"))
+def rnd_038_estimate_s1_candidates_pass_20_seeds(stream):
+    """S-1 candidates for Rust: Latin hypercube on a fixed key, or a committed Sobol point set."""
+    n = 10_000
+    rng = np.random.default_rng(5)
+    trl = np.where(rng.random(n) < 0.16, 6.0, rng.uniform(3, 5.5, n))
+    u = immaturity(trl)
+    lk = 0.35 * rng.standard_normal(n)
+    b = PR.start_belief(trl, lk, rng)
+    ratio = np.exp(lk) / B.mean(b, log=True) * PR.growth(u, rng.standard_normal((n, 2)))[0]
+    for seed in range(20):
+        (c50, c80), _ = PR.estimate(b, u, seed=seed, stream=stream)
         assert abs((ratio > c50).mean() - 0.5) < 0.05 and abs((ratio > c80).mean() - 0.2) < 0.04
