@@ -1,0 +1,4 @@
+// Test Earth resource layer (WS-08b §3.1 shape): one tag = one Earth deposit.
+[
+    ("region.vale", ["metals.major"]),
+]

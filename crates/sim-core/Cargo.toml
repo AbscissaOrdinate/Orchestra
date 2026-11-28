@@ -24,3 +24,11 @@ unexpected_cfgs = { level = "warn", check-cfg = ["cfg(arc_004_probe)"] }
 # Remove this once every dependency is used.
 [lints.cargo]
 unused_dependencies = "allow"
+
+# Test-only stub subsystems (WS-02 §7). Integration tests turn it on through the
+# self dev-dependency below; normal builds never compile it.
+[features]
+stubs = []
+
+[dev-dependencies]
+sim-core = { path = ".", features = ["stubs"] }

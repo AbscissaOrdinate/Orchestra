@@ -1,0 +1,2 @@
+// Test setting manifest (WS-08a §3.3 shape).
+Setting(id: "test", name: "Test Setting", version: "0.1.0", map: "earth", disclaimer: "Test content.", default_high: ["polity.alder", "polity.birch"])

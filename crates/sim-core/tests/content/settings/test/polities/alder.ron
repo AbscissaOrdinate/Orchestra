@@ -1,0 +1,2 @@
+// Test polity (WS-08a §3.3 shape).
+Polity(id: "polity.alder", name: "Alder Republic", short_name: "Alder", adjective: "Alder", provenance: Orchestra, analog_role: "test", kind: NationState, capital: "region.vale", hf_candidate: true)

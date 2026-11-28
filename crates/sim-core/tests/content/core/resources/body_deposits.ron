@@ -1,0 +1,9 @@
+// Test off-Earth deposit candidates (WS-08b §3.1 shape): one rule = one off-Earth deposit.
+BodyDeposits(
+    by_body: [
+        ("body.rock", "res.metals", Rule(p_exists: 0.5, median: 20.0, sigma_ln: 1.0, cost_ratio: 3.0)),
+    ],
+    by_composition: [],
+    composition_scale: "diameter_km^3",
+    max_candidates: 1,
+)
