@@ -1,6 +1,6 @@
 # M2(b) — R&D latent-truth / belief prototype plan
 
-Workstream WS-05 · Spec: `docs/specs/WS-05-rnd.md` (Draft v0.2) · Language: Python 3 + NumPy (+ matplotlib for plots) · Same conventions as M2(a) and M2(c): one function per stage, a leading `worlds` axis, PCG64 generators per (scenario, world, purpose), all parameters in one file.
+Workstream WS-05 · Spec: `docs/specs/WS-05-rnd.md` (v0.3) · Language: Python 3 + NumPy (+ matplotlib for plots) · Same conventions as M2(a) and M2(c): one function per stage, a leading `worlds` axis, PCG64 generators per (scenario, world, purpose), all parameters in one file.
 
 ## 1. Goal
 
@@ -22,7 +22,7 @@ Then freeze every `[D]` constant into `params.ron` values for M4 (P-9). The prot
 ```
 prototypes/rnd/
   PLAN.md            this file
-  calib_growth.py    EXISTS: fits G/S to the GAO/ACAT anchors; RND-011 equivalence check
+  make_estimate_points.py  writes content/core/rnd/estimate_points.ron (§4.5.7); calib_growth.py retired in v0.3 (S-8)
   params.py          every [D] constant from spec §4, one dict; scenarios override keys
   content_gen.py     synthetic default content: 75 lines + 20 singletons over 12 domains with the §6.3 node counts,
                      class mix (45 historical, 128 Established, 76 Promising, 36 Speculative, 15 Fringe), dates 1930–2055,
@@ -40,6 +40,10 @@ prototypes/rnd/
   report.py          plots + pass/fail table against the acceptance thresholds → RESULTS.md
   out/               results (only summary tables and plots are committed)
 ```
+
+**Status (2026-11-27):** built and passing: `params.py`, `content_gen.py`, `truth.py`, `belief.py`, `projects.py` (growth, `estimate`, phase split), `scenarios.py` (B1, B2-lite, B3), `run_batch.py`, `report.py`, `test_rnd.py` (named after RND IDs), `RESULTS.md`. Not built: `science.py`, `production.py`, `market.py`, `contractors.py`, `stubs.py`, B2 full and B4–B9. B2-lite runs every non-historical tech through four science steps and a test loop in generation order (cross-generation rule active), without the time loop, publication, espionage or observing others. Findings S-1–S-8 are in `RESULTS.md`.
+
+**Deviation from this plan:** worldgen draws are a pure function of (seed, world, content ID, slot) using a splitmix64 hash (`truth.keyed_u`), not PCG64 per (scenario, world, purpose). That is the ARC-034 keyed-stream semantics, so RND-007's "adding content changes no other gate" is testable. Time-loop stages will use PCG64 per (scenario, world, purpose) as planned.
 
 Conventions (CLAUDE.md): helpers at the bottom of each script; vectorize over a leading **worlds** axis (state arrays `(worlds, polities, techs)`, `(worlds, polities, projects)`), so one tick is one set of array operations for every world. Belief mixtures are stored as arrays `(…, 3)` of (w, μ, σ). Randomness uses `np.random.Generator(PCG64)` keyed per (scenario, world, purpose), mirroring the WS-02 keyed streams; bit parity with ChaCha8 is not a goal.
 
