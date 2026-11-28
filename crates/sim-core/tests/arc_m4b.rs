@@ -614,7 +614,10 @@ fn arc_022_ai_order_validated() {
             })
             .collect();
         assert_eq!(rejected, [(PolityId(1), 0)]);
-        assert_eq!(world.stub.set, control.stub.set);
+        assert_eq!(
+            state_hash_without_events(&world),
+            state_hash_without_events(&control)
+        );
     }
     let mut world = test_world();
     knobs(&mut world).ai_order = Some((PolityId(1), 0.75));
