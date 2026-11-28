@@ -13,12 +13,11 @@ def main():
     rows, keep = [], {}
     for seed in SEEDS:
         b1 = S.b1_truth(10_000, seed)
-        b2 = S.b2_beliefs(200, seed, "counts", gate_evidence=True)
-        b2_beta = S.b2_beliefs(200, seed, "beta", gate_evidence=True)
+        b2 = S.b2_beliefs(200, seed, "beta", gate_evidence=True)
         b2_spec = S.b2_beliefs(200, seed, "spec", gate_evidence=True)
-        b2_nogate = S.b2_beliefs(200, seed, "counts", gate_evidence=False)
+        b2_nogate = S.b2_beliefs(200, seed, "beta", gate_evidence=False)
         b3 = S.b3_growth(10_000, seed)
-        rows += checks(seed, b1, S.b2_summary(b2), S.b2_summary(b2_spec), S.b2_summary(b2_nogate), S.b3_summary(b3), b3, b2, b2_nogate, S.b2_summary(b2_beta))
+        rows += checks(seed, b1, S.b2_summary(b2), S.b2_summary(b2_spec), S.b2_summary(b2_nogate), S.b3_summary(b3), b3, b2, b2_nogate)
         keep[seed] = (b1, b2, b3)
     plots(*keep[SEEDS[0]])
     write(rows, keep)
@@ -54,13 +53,13 @@ def s1_row():
     lk = .35 * rng.standard_normal(n); b = PR.start_belief(trl, lk, rng)
     ratio = np.exp(lk) / B.mean(b, log=True) * PR.growth(u, rng.standard_normal((n, 2)))[0]
     out = []
-    for stream in ("plain", "lhs", "sobol"):
+    for stream in ("plain", "sobol"):
         x = np.array([[(ratio > q).mean() for q in PR.estimate(b, u, seed=s, stream=stream)[0]] for s in range(20)])
         out.append("%s %.2f-%.2f / %.2f-%.2f" % (stream, x[:, 0].min(), x[:, 0].max(), x[:, 1].min(), x[:, 1].max()))
     return "; ".join(out)
 
 
-def checks(seed, b1, b2, b2_spec, b2_nog, b3, b3raw, b2_raw, b2_nog_raw, b2_beta):
+def checks(seed, b1, b2, b2_spec, b2_nog, b3, b3raw, b2_raw, b2_nog_raw):
     r = lambda req, name, val, crit, ok: (seed, req, name, val, crit, bool(ok))
     dev = lambda s, st: 100 * np.abs(s["reliability"][st][:, 0] - s["reliability"][st][:, 1]).max()
     cov = [v for st in b2["stage"].values() for v in (st["cov_perf"], st["cov_cost"])]
@@ -71,15 +70,14 @@ def checks(seed, b1, b2, b2_spec, b2_nog, b3, b3raw, b2_raw, b2_nog_raw, b2_beta
           abs(b1["hard"].mean() - b1["exp_hard"]) < 3 * b1["hard"].std() / 100 and abs(b1["soft"].mean() - b1["exp_soft"]) < 3 * b1["soft"].std() / 100 and b1["soft"].mean() >= 2 * b1["hard"].mean()),
         r("RND-008", "worlds x lines with sum g > g0/(1-d)", f"{(b1['rep_sum'] > b1['rep_bound']).mean():.1e}", "0", (b1["rep_sum"] <= b1["rep_bound"]).all()),
         r("RND-012", "interval coverage min..max over stages", f"{min(cov):.3f}..{max(cov):.3f}", "0.77..0.83", 0.77 <= min(cov) and max(cov) <= 0.83),
-        r("RND-012", "p_works reliability max dev, prior (pp), per-line counts (S-2)", dev(b2, "prior"), "< 5", dev(b2, "prior") < 5),
-        r("RND-012", "same, class-constant conjugate LR (S-2 v1)", dev(b2_beta, "prior"), "< 5", dev(b2_beta, "prior") < 5),
+        r("RND-012", "p_works reliability max dev, prior (pp), LR beta", dev(b2, "prior"), "< 5", dev(b2, "prior") < 5),
         r("RND-012", "p_works reliability max dev, prior (pp), LR 3 as specified", dev(b2_spec, "prior"), "< 5", dev(b2_spec, "prior") < 5),
         r("RND-012", "p_works in [0.2, 0.9) after dev: gap (pp) / n, Blocked is not evidence (spec)", "%.1f / %d" % S.mid_gap(b2_nog_raw), "< 5, n >= 30", S.mid_gap(b2_nog_raw)[0] < 5),
         r("RND-012", "same, Blocked is evidence (S-3)", "n/a: n = %d < 30, bin empty" % S.mid_gap(b2_raw)[1], "< 5, n >= 30", True),
         r("RND-011", "max |posterior - exact| over 15 cases", exact_err(), "< 1e-6", exact_err() < 1e-6),
         r("RND-005", "mean edges / sum p / sum p*P(valid)", edge_row(seed)[0], "3 SE of sum p (spec); 3 SE of valid (S-5)", False),
-        r("S-1", "estimate(): P50 / P80 exceedance range over 20 stream seeds, plain / LHS / Sobol", s1_row(), "0.50±.05 / 0.20±.04 (FAIL = plain, the spec form)", False),
-        r("S-6", "hard-dead below 0.10 after 2 / 4 / 5 failed tests; by class after 2 (counts rule)", "%.2f / %.2f / %.2f; %s" % (b2["dead_below_010_all"][1], b2["dead_below_010_all"][3], b2["dead_below_010_all"][4], np.round(b2["dead_below_010"][1], 2)), "proposed [D]: >= 0.80 after 4; Fringe >= 0.70 after 2", b2["dead_below_010_all"][3] >= 0.8 and b2["dead_below_010"][1][3] >= 0.7),
+        r("S-1", "estimate(): P50 / P80 exceedance range over 20 stream seeds, plain vs Sobol", s1_row(), "0.50±.05 / 0.20±.04", False),
+        r("S-6", "hard-dead below 0.10 after 2 / 4 / 5 failed tests; by class after 2", "%.2f / %.2f / %.2f; %s" % (b2["dead_below_010_all"][1], b2["dead_below_010_all"][3], b2["dead_below_010_all"][4], np.round(b2["dead_below_010"][1], 2)), ">= 0.90", False),
         r("RND-013", "median perf sigma ratio: science / after dev", f"{st['sci 100%']['sig_perf']:.2f} / {st['after dev']['sig_perf']:.2f}", "<= 0.80 / <= 0.45",
           st["sci 100%"]["sig_perf"] <= 0.8 and st["after dev"]["sig_perf"] <= 0.45),
         r("RND-013", "hard-dead with p_works < 0.10 after 2 failed tests", f"{b2['dead_below_010_all'][1]:.2f}", ">= 0.90", b2["dead_below_010_all"][1] >= 0.9),
@@ -113,7 +111,7 @@ def plots(b1, b2, b3):
     fig.tight_layout(); fig.savefig("out/b2_convergence.png", dpi=110); plt.close(fig)
 
     fig, ax = plt.subplots(1, 2, figsize=(9, 3.6))
-    for mode, lab in (("spec", "LR 3, 1/3 (spec)"), ("beta", "class-constant conjugate LR"), ("counts", "per-line Beta counts (proposed)")):
+    for mode, lab in (("spec", "LR 3, 1/3 (spec)"), ("beta", "conjugate LR (proposed)")):
         rel = S.b2_summary(S.b2_beliefs(200, 101, mode, gate_evidence=True))["reliability"]["prior"]
         ax[0].plot(rel[:, 0], rel[:, 1], "o-", label=lab)
     ax[0].plot([.55, 1], [.55, 1], "k", lw=.6); ax[0].set(xlabel="mean p_works in decile", ylabel="observed working share", title="B2 reliability (prior, with cross-generation rule)"); ax[0].legend()

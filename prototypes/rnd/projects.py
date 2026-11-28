@@ -35,8 +35,6 @@ def estimate(b_cost, u, qs=(0.5, 0.8), seed=0, stream="sobol"):
     Same 256 standard normals for every call, so the result is a pure function of (belief, u)."""
     if stream == "sobol":
         z = ndtri(qmc.Sobol(3, scramble=True, seed=seed).random(P["n_estimate"]))   # fixed low-discrepancy stream
-    elif stream == "lhs":                                                              # Latin hypercube on a fixed key (Rust-portable)
-        z = ndtri(qmc.LatinHypercube(3, seed=seed).random(P["n_estimate"]))
     else:                                                                              # spec v0.2 form, kept for the S-1 comparison
         z = np.random.default_rng(seed).standard_normal((P["n_estimate"], 3))
     g, s = growth(np.asarray(u)[..., None], z)                                   # (..., n)

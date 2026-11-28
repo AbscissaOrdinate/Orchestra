@@ -1,10 +1,8 @@
 # WS-05 — R&D Uncertainty, Craft Design, Defense Industry & Market
-Status: Draft v0.2.1 · Parent: ConOps §3 (R&D, craft design, defense market, corporations rows), §5 (P-1, P-2, P-3, P-4, P-6, P-7, P-8, P-10), §6 (R&D, craft design, defense industry rows), SYS-002, SYS-004, SYS-005, SYS-006, SYS-008, SYS-009 · Depends on: WS-02 v1.2, ADR-0006, ADR-0008, WS-03 Draft v0.4 (§2.2–2.3, §3.1, §3.6, §3.10), WS-04 Draft v0.4 (§3.3), WS-08a Draft v0.3 (§3.5), WS-08b Draft v0.4 (§8 P-05a/b), salvo note v0.3 (§7.4, §8) · Last updated: 2026-11-27
+Status: Draft v0.2 · Parent: ConOps §3 (R&D, craft design, defense market, corporations rows), §5 (P-1, P-2, P-3, P-4, P-6, P-7, P-8, P-10), §6 (R&D, craft design, defense industry rows), SYS-002, SYS-004, SYS-005, SYS-006, SYS-008, SYS-009 · Depends on: WS-02 v1.2, ADR-0006, ADR-0008, WS-03 Draft v0.4 (§2.2–2.3, §3.1, §3.6, §3.10), WS-04 Draft v0.4 (§3.3), WS-08a Draft v0.3 (§3.5), WS-08b Draft v0.4 (§8 P-05a/b), salvo note v0.3 (§7.4, §8) · Last updated: 2026-11-27
 
 Tags: **[V]** verified (source linked, or computed and reproducible) · **[R]** recalled, not checked · **[D]** design choice (to be tuned in M2(b)).
 Prototype plan: `prototypes/rnd/PLAN.md`. Calibration seed: `prototypes/rnd/calib_growth.py`.
-
-**v0.2.1 (WS-10 interface review, 2026-11-28):** repeatable levels are a counter on their line, not `TechIdx` entities, with zero-padded IDs and one belief subject per line in a separate range (§4.1.4, P-02b, RND-105); singleton `Tech` schema added (§6.2). The S-1–S-8 findings from M2(b) are not applied here; they wait on POAM #39.
 
 **v0.2 changes (Sean's review of v0.1, 2026-11-27):**
 - **Soft dead ends outnumber hard ones** (≈ 52 vs. ≈ 21 per world): a soft dead end works physically but is gated by hidden enablers, either blocking (`Requires`) or making it achievable at a steep cost and performance penalty (`Penalty`) (§4.1.2–4.1.3, §4.4).
@@ -305,7 +303,7 @@ Notation: monthly ticks; real amounts are deflated by WS-03's R&D cost index for
 - Enablers come only from authored candidates, so a tech's gate depends only on its own content and its candidates' IDs (ARC-034). Content validation requires the line graph of prerequisites ∪ `gate_candidates` to be acyclic, so no gate cycle can be sampled.
 - Gates are satisfied for a polity when all enablers are `Proven` by it.
 
-**4.1.4 Repeatable techs.** A `Repeatable` line (≈ 12, about one per domain: engine efficiency, sensor sensitivity, computing density, specific strength, manufacturing productivity, crop yields, medicine, launch cost, power density, armor efficiency, quieting, guidance accuracy) has levels `tech.<line>.r<k>`, k ≤ max_levels (default 30), all sampled at worldgen. Level k: always works and is never gated; true gain g_k = g0 · d^(k−1) · LogNormal(mean 1, CV 0.3) [D] (g0 and d per line, e.g., 0.03 and 0.95); nominal date D_k = first + (k − 1)·cadence; effort = base_dev · step_dev^(k−1) · premature(D_k) (step_dev ≈ 1.35). Only level k+1 is `Known` when level k is `Proven`. Levels are **not** `TechIdx` entities: a repeatable line is one `RepeatableIdx` (dense, sorted by line ID) with a `level_proven: u8` counter. Level string IDs are zero-padded, `tech.<line>.r01`…`r30` (`max_levels` ≤ 99, validated), and prerequisites may not name a level. Each line has **one belief subject** (gain of the currently `Known` level, Log scale), in its own WS-05 subject range (P-02b); when that level is proven its achieved gain moves to `RndState` and the subject re-initializes to the next level's prior. It is developed by a development project at fixed u = 1/3 with no science phase. The cumulative effect exp(Σ g_k) multiplies the line's target stats (`effects: [(domain, stat)]`) in designs finalized afterwards, or enters §4.9 as an econ effect. Since Σ g_k ≤ g0/(1 − d), the gain is bounded (e.g., ≤ 0.6 in logs). Repeatables are not counted in the 300 baseline nodes.
+**4.1.4 Repeatable techs.** A `Repeatable` line (≈ 12, about one per domain: engine efficiency, sensor sensitivity, computing density, specific strength, manufacturing productivity, crop yields, medicine, launch cost, power density, armor efficiency, quieting, guidance accuracy) has levels `tech.<line>.r<k>`, k ≤ max_levels (default 30), all sampled at worldgen. Level k: always works and is never gated; true gain g_k = g0 · d^(k−1) · LogNormal(mean 1, CV 0.3) [D] (g0 and d per line, e.g., 0.03 and 0.95); nominal date D_k = first + (k − 1)·cadence; effort = base_dev · step_dev^(k−1) · premature(D_k) (step_dev ≈ 1.35). Only level k+1 is `Known` when level k is `Proven`. It has one belief subject (gain, Log scale) and is developed by a development project at fixed u = 1/3 with no science phase. The cumulative effect exp(Σ g_k) multiplies the line's target stats (`effects: [(domain, stat)]`) in designs finalized afterwards, or enters §4.9 as an econ effect. Since Σ g_k ≤ g0/(1 − d), the gain is bounded (e.g., ≤ 0.6 in logs). Repeatables are not counted in the 300 baseline nodes.
 
 ### 4.2 Beliefs (P-2, ADR-0008)
 
@@ -639,7 +637,6 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-101 | Every WS-05 `Tracked` variable has a breakdown. | Property test over WS-05 keys after a 120-tick run (ARC-041). | SYS-004 |
 | RND-102 | WS-05 is deterministic and order-independent. | Two 240-tick runs with the same seed and inputs give identical hashes; reordering projects in the input log within one tick gives identical outcomes. | SYS-002 |
 | RND-104 | `M_s` can't spiral. | B5 coupled to a stub economy (GDP ∝ M_s, R&D ∝ GDP): the cross-polity sd of ln M_s in 2060 ≤ 0.8 × its 1955–2060 maximum in ≥ 90% of runs; no run exceeds L_max. | R-2, OQ-R1 |
-| RND-105 | Repeatable levels are a per-line counter with zero-padded IDs and one belief subject per line. | Fixture repeatable (max_levels 12): IDs `tech.x.r01..r12` sort in level order; no level has a `TechIdx`; the line holds exactly 1 subject in the repeatable range; proving r03 re-initializes the subject to r04's prior (1e-12) and records r03's achieved gain; content naming a level in `prereq` or `max_levels` 100 is rejected. | P-2 |
 | RND-103 | WS-05 stays within its time and memory budgets. | `bench`: R3 WS-05 median ≤ 15 ms on the reference machine; WS-05 share of the `World` postcard ≤ 2 MB. | SYS-008 |
 
 ## 6. Content/data
@@ -678,19 +675,6 @@ TechLine(
     tags: [],                                      // e.g. "fissile"
 )
 
-Tech(                                             // singleton: one tech, no generations
-    id: "tech.comp.transistor",                    // required; used as is (no .g<k> suffix)
-    domain: "dom.computing",                       // required
-    fields: [("field.solidstate", 1.0)],           // default [] (no science phase: u from TRL at start)
-    date: 1950,                                    // nominal date D; default: none (content check requires it in core)
-    base_dev: 120.0,                               // default: none (content check requires it in core)
-    viability: Established,                        // default Established
-    perf: Default, cost_sigma: Default,
-    prereq: ["tech.mat.germanium"],                // absolute tech IDs (line generation or singleton); default []
-    gate_candidates: [],                           // lines, as for TechLine; default []
-    components: [], econ_effects: [], grants: [], tags: [],   // default []
-)
-
 TechLine(
     id: "line.rep.computing_density",
     kind: Repeatable(max_levels: 30, g0: 0.05, decay: 0.93, gain_cv: 0.3, cadence_years: 2),
@@ -699,8 +683,6 @@ TechLine(
     effects: [Stat("dom.sensors", "sensor"), Econ(Sector("services"), 1.0)],
 )
 ```
-
-Every `Tech` field except `id` and `domain` has a serde default, so M4b's test techs (`id`, `domain` only) load unchanged; the WS-05 content check (M5) rejects a core-content singleton without `date` or `base_dev`. A singleton gets a `TechIdx` like a generation tech and its own 3 belief subjects.
 
 ### 6.3 Granularity and authoring volume (Decision 1)
 
@@ -738,7 +720,6 @@ Authoring: ≈ 75 lines (each with 2–5 gate candidates) + 20 singletons + 12 r
 | ID | Document | Edit | Why |
 |---|---|---|---|
 | P-02a | WS-02 §3.2, §5 | Subject index ranges are assigned per subsystem at worldgen in a fixed order (WS-03 structural, WS-05 tech, WS-08b deposits). A macro polity's `BeliefBlock` may omit a subsystem's range (lookup returns `None`). Memory mix: tech beliefs ≈ 0.43 MB | §4.10, §4.12 |
-| P-02b | WS-02 §3.2, §5 | WS-05 holds a second subject range, `rnd.repeatable` (1 subject per repeatable line), placed after the tech range: order WS-03, WS-05 tech, WS-05 repeatable, WS-08b. Tech range stays 3 per tech (`tech_base + 3·t + k`). Macro polities omit both WS-05 ranges. Memory: + 12 lines × 6 high-fidelity polities ≈ 72 subjects ≈ 6 KB (tech beliefs ≈ 0.43 → ≈ 0.44 MB). Rejected alternative: one subject per level (360 per polity, ≈ 0.17 MB more, all but one always `None`) | §4.1.4, RND-105 |
 | P-03a | WS-03 §2.3, §3.1 | `M_s` is relative to the world mean (≈ 1 on average); `g_front` stays the world trend (if OQ-R1 is accepted) | §4.9 |
 | P-03b | WS-03 §3.6 | R&D, space and procurement lines pay min(appropriation, WS-05 demand) and report a funded fraction, like the WS-11 lines. The space-program line prorates between WS-05 (projects, hardware) and WS-08 (operations) demand | §3.4 |
 | P-03c | WS-03 §2.2–2.3 | Add the skill-bias index to the WS-05 inputs row (WS-03 §3.5 already reads it); note that WS-05 doesn't read the skilled-labor pool | §3.4 |
