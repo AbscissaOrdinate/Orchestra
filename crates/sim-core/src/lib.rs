@@ -4,6 +4,29 @@
 #[cfg(arc_004_probe)]
 mod arc_004_probe;
 
+pub mod belief;
+pub mod content;
+pub mod explain;
+#[cfg(any(debug_assertions, test, feature = "stubs"))]
+mod finite;
+pub mod graph;
+pub mod ids;
+pub mod pipeline;
+pub mod state;
+#[cfg(any(test, feature = "stubs"))]
+pub mod stubs;
+pub mod subsystems;
+pub mod worldgen;
+
+pub use belief::{Belief, BeliefBlock, BeliefError, Component, Observation, Scale, SubjectRange};
+pub use content::{Content, ContentError};
+pub use explain::{Breakdown, Owner, Term, Tracked, VarKey};
+pub use graph::Graph;
+pub use ids::*;
+pub use pipeline::{PolityView, STAGES, Stage, TickCtx, TickReport, step};
+pub use state::*;
+pub use worldgen::worldgen;
+
 /// sim-core version, shown by the Tauri stub (ARC-100).
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")

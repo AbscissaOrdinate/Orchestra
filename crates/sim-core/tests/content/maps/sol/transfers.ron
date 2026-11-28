@@ -1,0 +1,11 @@
+// Test Sol fixture edges (WS-08b §3.1 transfers shape). M4b loads only these (derived edges are WS-08b §4.2).
+// Known optimum planet surface → rock surface: via planet low and satellite low, 9.4 + 4.0 + 1.5 = 14.9 km/s
+// (the direct planet low → rock leg gives 15.4).
+[
+    Edge(from: "node.planet.surface", to: "node.planet.low", dv: 9.4, months: 0, one_way: true, source: "[D] test"),
+    Edge(from: "node.planet.low", to: "node.planet.surface", dv: 0.1, months: 0, one_way: true, source: "[D] test"),
+    Edge(from: "node.planet.low", to: "node.satellite.low", dv: 4.0, months: 0, source: "[D] test"),
+    Edge(from: "node.satellite.low", to: "node.satellite.surface", dv: 1.7, months: 0, source: "[D] test"),
+    Edge(from: "node.planet.low", to: "node.rock.surface", dv: 6.0, months: 4, source: "[D] test"),
+    Edge(from: "node.satellite.low", to: "node.rock.surface", dv: 1.5, months: 5, source: "[D] test"),
+]

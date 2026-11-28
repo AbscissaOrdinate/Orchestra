@@ -27,6 +27,8 @@ jobs:
         run: ci/arc_003_dep_allowlist.sh
       - name: ARC-004 clippy rejects banned items in sim-core
         run: ci/arc_004_lint_probe.sh
+      - name: ARC-010 no content IDs hard-coded in crates/*/src
+        run: ci/arc_010_no_hardcoded_ids.sh
 
   app:
     name: Tauri stub builds (ARC-100)

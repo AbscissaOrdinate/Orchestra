@@ -3295,6 +3295,7 @@ dependencies = [
  "rand_distr",
  "ron",
  "serde",
+ "sim-core",
 ]
 
 [[package]]

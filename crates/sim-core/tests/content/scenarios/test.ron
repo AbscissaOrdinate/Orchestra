@@ -1,0 +1,2 @@
+// Minimal test scenario used by every ARC test (WS-02 §6): 3 polities, 6 regions, 4 bodies, 5 techs.
+Scenario(id: "test", map: "earth", setting: "test", start: (1955, 1), end: (1965, 12), overrides: [])

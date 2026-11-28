@@ -1,0 +1,2 @@
+// Test polity (WS-08a §3.3 shape).
+Polity(id: "polity.birch", name: "Birch Republic", short_name: "Birch", adjective: "Birch", provenance: Orchestra, analog_role: "test", kind: NationState, capital: "region.coast", hf_candidate: true)

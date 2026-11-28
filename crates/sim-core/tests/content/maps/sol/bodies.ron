@@ -1,0 +1,7 @@
+// Test bodies (WS-08b §3.1 shape, WS-02 §6): a star, a planet, its moon, and a small body. 5 nodes.
+[
+    Body(id: "body.star", name: "Star", parent: None, class: Star, gm: 1.32712440018e11, radius_km: 695700.0, orbit: None, composition: Gas, atmosphere: Thick, nodes: []),
+    Body(id: "body.planet", name: "Planet", parent: Some("body.star"), class: Planet, gm: 398600.436, radius_km: 6378.1, orbit: Some(Orbit(a: Au(1.0), inc_deg: 0.0, mean_lon: Some((100.0, 36000.0)))), composition: Rocky, atmosphere: Thick, homeworld: true, nodes: [Node(regime: Surface, ascent_dv: Some(9.4), descent_dv: Some(0.1)), Node(regime: Low, alt_km: 300.0, hub: true)]),
+    Body(id: "body.satellite", name: "Satellite", parent: Some("body.planet"), class: Moon, gm: 4902.8, radius_km: 1737.4, orbit: Some(Orbit(a: Km(384400.0), inc_deg: 5.16, mean_lon: None)), composition: Rocky, atmosphere: Airless, nodes: [Node(regime: Surface), Node(regime: Low, alt_km: 100.0, hub: true)]),
+    Body(id: "body.rock", name: "Rock", parent: Some("body.star"), class: Asteroid, gm: 0.0004, radius_km: 8.4, orbit: Some(Orbit(a: Au(1.46), inc_deg: 10.8, mean_lon: None)), composition: Stony, atmosphere: Airless, nodes: [Node(regime: Surface, hub: true)]),
+]

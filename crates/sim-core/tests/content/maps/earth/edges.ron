@@ -1,0 +1,11 @@
+// Test map edges (WS-08a §3.2 shape); each is undirected.
+[
+    ("region.vale", "region.ridge", RegionEdge(kind: Land, cost: 480)),
+    ("region.vale", "region.delta", RegionEdge(kind: Land, cost: 610)),
+    ("region.vale", "region.steppe", RegionEdge(kind: Land, cost: 700)),
+    ("region.ridge", "region.coast", RegionEdge(kind: Land, cost: 450)),
+    ("region.ridge", "region.steppe", RegionEdge(kind: Land, cost: 820)),
+    ("region.coast", "region.delta", RegionEdge(kind: Land, cost: 560)),
+    ("region.coast", "region.sound", RegionEdge(kind: Coast, cost: 300)),
+    ("region.delta", "region.sound", RegionEdge(kind: Coast, cost: 690)),
+]

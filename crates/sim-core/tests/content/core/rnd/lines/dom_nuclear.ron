@@ -1,0 +1,6 @@
+// Test singleton techs (WS-05 §6.2 `Tech` shape). No generation expansion in M4b.
+[
+    Tech(id: "tech.test_fission", domain: "dom.nuclear"),
+    Tech(id: "tech.test_reactor", domain: "dom.nuclear"),
+    Tech(id: "tech.test_fusion", domain: "dom.nuclear"),
+]

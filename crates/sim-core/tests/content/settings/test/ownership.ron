@@ -1,0 +1,8 @@
+// Test region ownership (WS-02 §6 shape).
+[
+    ("region.vale", "polity.alder"),
+    ("region.ridge", "polity.alder"),
+    ("region.coast", "polity.birch"),
+    ("region.delta", "polity.birch"),
+    ("region.steppe", "polity.cedar"),
+]

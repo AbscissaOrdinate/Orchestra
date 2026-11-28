@@ -1,0 +1,5 @@
+// Test singleton techs (WS-05 §6.2 `Tech` shape).
+[
+    Tech(id: "tech.test_rocket", domain: "dom.space_systems"),
+    Tech(id: "tech.test_satellite", domain: "dom.space_systems"),
+]

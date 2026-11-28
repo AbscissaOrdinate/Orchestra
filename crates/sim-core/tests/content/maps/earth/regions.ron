@@ -1,0 +1,9 @@
+// Test map regions (WS-08a §3.2 shape). One entry per line so tests can shuffle entries.
+[
+    Region(id: "region.vale", name: "Vale", lat: 10.0, lon: 10.0, terrain: Plains),
+    Region(id: "region.ridge", name: "Ridge", lat: 12.0, lon: 14.0, terrain: Mountain),
+    Region(id: "region.coast", name: "Coast", lat: 8.0, lon: 16.0, terrain: Hills),
+    Region(id: "region.delta", name: "Delta", lat: 5.0, lon: 12.0, terrain: Jungle),
+    Region(id: "region.steppe", name: "Steppe", lat: 15.0, lon: 8.0, terrain: Steppe),
+    Region(id: "region.sound", name: "Sound", lat: 6.0, lon: 18.0, terrain: Littoral),
+]
