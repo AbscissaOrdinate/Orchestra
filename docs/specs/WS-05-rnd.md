@@ -1,8 +1,18 @@
 # WS-05 — R&D Uncertainty, Craft Design, Defense Industry & Market
-Status: Draft v0.3 · Parent: ConOps §3 (R&D, craft design, defense market, corporations rows), §5 (P-1, P-2, P-3, P-4, P-6, P-7, P-8, P-10), §6 (R&D, craft design, defense industry rows), SYS-002, SYS-004, SYS-005, SYS-006, SYS-008, SYS-009 · Depends on: WS-02 v1.3, ADR-0006, ADR-0008, WS-03 Draft v0.4 (§2.2–2.3, §3.1, §3.6, §3.10), WS-04 Draft v0.4 (§3.3), WS-08a Draft v0.3 (§3.5), WS-08b Draft v0.4 (§8 P-05a/b), salvo note v0.3 (§7.4, §8) · Last updated: 2026-11-28
+Status: Draft v0.4 · Parent: ConOps §3 (R&D, craft design, defense market, corporations rows), §5 (P-1, P-2, P-3, P-4, P-6, P-7, P-8, P-10), §6 (R&D, craft design, defense industry rows), SYS-002, SYS-004, SYS-005, SYS-006, SYS-008, SYS-009 · Depends on: WS-02 v1.3, ADR-0006, ADR-0008, WS-03 Draft v0.4 (§2.2–2.3, §3.1, §3.6, §3.10), WS-04 Draft v0.4 (§3.3), WS-08a Draft v0.3 (§3.5), WS-08b Draft v0.4 (§8 P-05a/b), salvo note v0.3 (§7.4, §8) · Last updated: 2026-11-28
 
 Tags: **[V]** verified (source linked, or computed and reproducible) · **[R]** recalled, not checked · **[D]** design choice (to be tuned in M2(b)).
 Prototype plan and results: `prototypes/rnd/PLAN.md`, `prototypes/rnd/RESULTS.md`.
+
+**v0.4 changes (tech-tree expansion, Sean 2026-11-28; for review; built on v0.3):**
+- **Rotary-wing is its own craft domain** (8 craft domains, 57 hull classes): scout, utility/transport, ASW and attack helicopters replace the single helicopter hull. A `lift` slot on air and rotary hulls takes wing, rotor, tiltrotor, tailsitter and lift-fan components. A ground-effect craft joins the air domain with a `sea_only` flag (§4.6.1, §4.6.6, §6.3).
+- **Longshot class** for physics long shots (≈ 7% work, heavier gating) (§4.1.2–4.1.3).
+- **Physics bases:** lines built on one uncertain physical premise share one hidden switch. Science on the premise and any member's success move every member's odds through an exact factored update (§4.1.5, §4.2.8).
+- **Per-generation gating schedules:** early generations can work but be impractical, later ones mature (VTOL in 1957 vs. 1985), without touching the line's hard-dead correlation. The maturity label players see comes from current belief, so it drifts as evidence accrues (§4.1.3, §4.2.9).
+- **`SciBoost`** for science infrastructure such as colliders: it buys information, not engineering (§4.3).
+- **Tranche-1 content, +39 nodes (339 total):** niche craft, speculative computing and materials, long shots, a skyhook, a collider. Tranche 2 (≈ 75 nodes) is listed for after M2(b) (§6.3).
+- **Believability rules in content validation:** capability tags on every prerequisite, gate candidate and Boost edge; a `precedent` per line; date, Longshot and niche-dominance checks; a gate report for audits (§6.4).
+- New RND-009, 027, 028, 029, 060, 061, 062; RND-004, 006, 050 amended; OQ-R6 opened and closed (soft/hard band 2–3). Edits P-02c, P-07a, P-08c, P-11b proposed (§8). §4.2.8 is consistent with v0.3's S-2 counts rule and S-3 gate evidence.
 
 **v0.3 changes (M2(b) part 1 findings S-1–S-8, approved by Sean 2026-11-28; WS-10 review of PR #32):**
 - **Gate events are viability evidence** (S-3): a `Blocked` or `FeasibilityFinding` can only occur for a tech that works, so it proves viability (§0, §4.4, RND-023).
@@ -35,6 +45,8 @@ Innovation should feel uncertain, and the uncertainty should have causes the pla
 | Value of information | Science and tests are paid for in money and time, and they buy σ reduction before commitment | 4.2, 4.3 |
 | Bayesian updating under ambiguous evidence; when to kill a program (sunk cost) | Test failures happen to working technologies too. A dead end is never confirmed with certainty, only made improbable | 4.2.3, 4.5.5 |
 | "Possible" is not "feasible": wait for enablers or pay to be early | Most dead ends are soft. A design review reveals the missing field and the premium; the player chooses between waiting and paying | 4.1.3, 4.4 |
+| Long shots mostly fail, and shared physics moves the odds | A physics basis is one hidden switch for every line built on it; basis science and any member's success update all members exactly; Longshot singletons carry their own doubt | 4.1.5, 4.2.8 |
+| Basic-science infrastructure pays off indirectly | `SciBoost` techs (colliders) speed up information in a field, not engineering | 4.3 |
 | Contract type allocates risk | Cost-plus, fixed-price, special-access and commercial-milestone contracts trade price, speed, risk bearer and IP (KC-46, U-2 and COTS as anchors) | 4.8.5 |
 | Earned value management | Spending, earned value and CPI are explicit; EAC = AC + (BAC − EV)/CPI with a cause breakdown | 4.5.4 |
 | Brooks's law and stretch-outs | Funding above the efficient rate has log returns; funding below it pays standing-army overhead | 4.5.2 |
@@ -48,7 +60,7 @@ Innovation should feel uncertain, and the uncertainty should have causes the pla
 
 WS-05 owns technology truth and every polity's knowledge of it; science programs; development and design projects; craft designs and their derived stats; production (learning, rate, capacity, lifecycle cost); and the defense market (spot buy, arms deal, license, in-house), with contractors as AI suppliers.
 
-**In (MVP):** P-1 truth per tech sampled at worldgen (viability, performance, cost, hidden enabler edges); P-2 beliefs (estimate ± σ) narrowed by science, tests, espionage and observing others; the science/engineering split; lognormal cost and schedule growth scaled by immaturity; beta-distributed line viability, hard and soft dead ends, and binary test evidence; repeatable techs; mixture performance priors; funding-scaled project slots with diminishing returns per project; hull presets, component slots and derived stats for 7 craft domains; component provenance; Wright learning with flattening, rate effects, capacity, O&S; four acquisition paths, requested by buyers or offered by sellers; contractors with five contract types, capital and private ventures; civil technology effects on WS-03; a macro-tier reduced form; the WS-08a `tech.level` mapping.
+**In (MVP):** P-1 truth per tech sampled at worldgen (viability, performance, cost, hidden enabler edges); P-2 beliefs (estimate ± σ) narrowed by science, tests, espionage and observing others; the science/engineering split; lognormal cost and schedule growth scaled by immaturity; beta-distributed line viability, hard and soft dead ends, and binary test evidence; repeatable techs; mixture performance priors; physics bases and a Longshot class; per-generation gating schedules; funding-scaled project slots with diminishing returns per project; hull presets, component slots and derived stats for 8 craft domains; component provenance; Wright learning with flattening, rate effects, capacity, O&S; four acquisition paths, requested by buyers or offered by sellers; contractors with five contract types, capital and private ventures; civil technology effects on WS-03; a macro-tier reduced form; the WS-08a `tech.level` mapping.
 
 **Out:** movable external components having any stat effect (OQ-3: cosmetic only); 3D; supply chains beyond component provenance; contractor finance beyond a capital memo account (no equity, debt or share prices); per-munition-type stock (salvo F-5); doctrine (WS-11); combat resolution (WS-07); station and facility design (WS-08b templates); player-authored tech content at runtime.
 
@@ -90,7 +102,7 @@ Gates deliberately do **not** fail tests. A `Requires` gate raises a distinct `B
 | Option | For | Against |
 |---|---|---|
 | Pure additive (Stellaris-like) | Trivially legible | No trade-offs: bigger is always better; no range/payload physics, which WS-08b needs (Δv, payload to LEO) |
-| **Budgeted sums + 4 laws** | Real trade-offs (fuel vs. payload vs. armor); WS-08b's Tsiolkovsky needs come free; one code path for 7 domains; each law has a textbook form a reviewer can check | Laws are code, not content (acceptable: like WS-03's CES); constants per domain still need tuning |
+| **Budgeted sums + 4 laws** | Real trade-offs (fuel vs. payload vs. armor); WS-08b's Tsiolkovsky needs come free; one code path for 8 domains; each law has a textbook form a reviewer can check | Laws are code, not content (acceptable: like WS-03's CES); constants per domain still need tuning |
 | Per-domain engineering models | Most realistic | 7 bespoke models; illegible; out of scope |
 
 **D5 — Pricing.** Auctions or supply-demand clearing are heavy and opaque with ~6 sellers. Fixed list prices ignore learning and capacity. Cost-plus at the seller's current marginal cost passes learning through to buyers (exports lower the seller's own costs, as in real arms markets [R]), and the utilization surcharge makes scarce capacity expensive. War Footing's ordering holds: an arms deal is cheaper per unit than a spot buy but slower [V: m1-findings §3.4].
@@ -287,10 +299,10 @@ Notation: monthly ticks; real amounts are deflated by WS-03's R&D cost index for
 
 ### 4.1 Tech graph and world truth (P-1)
 
-**4.1.1 Structure.** Content defines science fields, engineering domains, tech lines and singletons, components, hull classes and enabler candidates (§6). A line expands into generation techs `tech.<line>.g<k>`. Generation k+1 lists generation k as a prerequisite. Lines may list prerequisites in other lines. Each tech carries: field weights (1–2 fields), a domain, a nominal date D_t = `first + (k − 1)·step_years`, base development cost `base_dev × step_dev^(k−1)`, viability class, a performance prior, a cost prior, `gate_candidates` (2–5 other lines that could plausibly enable it), optional `grants`, `econ_effects` and component templates.
+**4.1.1 Structure.** Content defines science fields, engineering domains, tech lines and singletons, components, hull classes and enabler candidates (§6). A line expands into generation techs `tech.<line>.g<k>`. Generation k+1 lists generation k as a prerequisite. Lines may list prerequisites in other lines. Each tech carries: field weights (1–2 fields), a domain, a nominal date D_t = `first + (k − 1)·step_years`, base development cost `base_dev × step_dev^(k−1)`, viability class, a performance prior, a cost prior, `gate_candidates` (2–5 other lines that could plausibly enable it), optional `grants`, `econ_effects` and component templates. Optional per line: `basis` (§4.1.5), `gating` (per-generation gate probabilities, §4.1.3), `sci_boost` (§4.3), and the `needs`/`provides` tags and `precedent` that §6.4 validates.
 
 **4.1.2 Sampled truth** (`worldgen_stream(seed, id, purpose)`, ARC-034):
-- **Outcome: works, soft-gated or hard dead.** Per line: p_line ~ Beta(α_c, β_c) by class (key: line ID) is the probability a generation is *not* hard-dead. Per generation (key: tech ID): works ~ Bernoulli(p_line); if it works, it is soft-gated with probability s_c (§4.1.3). Techs with D_t ≤ scenario start are `historical`: they work, are never gated and have nominal-mode performance.
+- **Outcome: works, soft-gated or hard dead.** Per line: p_line ~ Beta(α_c, β_c) by class (key: line ID) is the probability a generation is *not* hard-dead. Per generation (key: tech ID): works ~ Bernoulli(p_line); if it works, it is soft-gated with probability s_c (§4.1.3). Techs with D_t ≤ scenario start are `historical`: they work, are never gated and have nominal-mode performance. For a line with a `basis`, a generation works iff its basis is true and this draw succeeds (§4.1.5).
 
 | Class | Beta(α, β) not hard-dead [D] | s_c (gated, given works) [D] | Works ungated / soft / hard |
 |---|---|---|---|
@@ -298,20 +310,24 @@ Notation: monthly ticks; real amounts are deflated by WS-03's R&D cost index for
 | Promising | (23, 2) | 0.29 | 0.65 / 0.27 / 0.08 |
 | Speculative | (8, 2) | 0.56 | 0.35 / 0.45 / 0.20 |
 | Fringe | (3, 2) | 0.83 | 0.10 / 0.50 / 0.40 |
+| Longshot | (1, 14) | 0.90 | 0.007 / 0.060 / 0.933 |
 
 - **Performance** (Log): a mixture (disappointing, nominal, breakthrough) with weights (0.15, 0.75, 0.10), component medians (0.75, 1.0, 1.3) and log-σ 0.10 each [D]. A line may override it. Truth is drawn from the same mixture as the prior, so beliefs are calibrated.
 - **Cost** κ (Log): Normal(0, σ_κ) in logs, σ_κ = 0.35 [D]. κ multiplies the tech's development effort and the unit cost of components that use it.
 - **Boost edges** (help, never gate). (a) Authored (`enablers.ron`: from, to, p, b), one draw each (key `edge:<from>><to>`). (b) Procedural: for every ordered pair of lines in different fields, an edge exists with p_rand = 0.002 [D] (≈ 10 valid edges per world for the default content: a pair yields an edge only if the source has a generation dated no later than the target's chosen generation), keyed by the pair, so adding a line only adds pairs. The target generation is drawn uniformly; the source is the source line's generation with the latest D ≤ target D; b ~ U[0.15, 0.40] [D].
 
-**Expected dead ends** with the §6 class mix (≈ 45 historical, 128 Established, 76 Promising, 36 Speculative, 15 Fringe): hard 128·0.01 + 76·0.08 + 36·0.20 + 15·0.40 ≈ 21; soft 128·0.06 + 76·0.27 + 36·0.45 + 15·0.50 ≈ 52 per world [D: arithmetic]. Not every hard dead end is encountered, because a dead generation truncates its line. M2(b) B1 reports both counts and their spread.
+**Expected dead ends** with the §6.3 tranche-1 class mix (≈ 45 historical, 131 Established, 87 Promising, 54 Speculative, 20 Fringe, 2 Longshot; 9 of the Speculative techs are basis members at p_b 0.8 and 0.6): hard ≈ 31, soft ≈ 65 per world, ratio ≈ 2.1 [D: arithmetic; v0.2's 300-node mix gave 21 and 52]. The target band for soft/hard is 2–3 (OQ-R6, closed): a dead end should more often be "not yet" than "never". Not every hard dead end is encountered, because a dead generation truncates its line. M2(b) B1 reports both counts and their spread.
 
 **4.1.3 Soft gates** (`GateTruth`, key `gate:<tech>`):
-- Enablers: 1 (p 0.7) or 2 (p 0.3) [D] lines drawn from the tech's `gate_candidates`. In each, the enabling generation is the one whose D is closest to D_t + Δ, Δ ~ U[−5, +25] years [D], so enablers often arrive *after* the tech's nominal date: the tech is possible before it is practical.
-- Kind: `Requires` with p 0.4, else `Penalty` with cost_mult ~ LogUniform[3, 10] and perf_mult ~ U[0.5, 0.8] [D].
+- Enablers: 1 (p 0.7) or 2 (p 0.3) [D] (Longshot: 2 or 3, p 0.5 each) lines drawn from the tech's `gate_candidates`. In each, the enabling generation is the one whose D is closest to D_t + Δ, Δ ~ U[−5, +25] years [D], so enablers often arrive *after* the tech's nominal date: the tech is possible before it is practical.
+- Kind: `Requires` with p 0.4 (Longshot 0.7), else `Penalty` with cost_mult ~ LogUniform[3, 10] and perf_mult ~ U[0.5, 0.8] [D].
 - Enablers come only from authored candidates, so a tech's gate depends only on its own content and its candidates' IDs (ARC-034). Content validation requires the line graph of prerequisites ∪ `gate_candidates` to be acyclic, so no gate cycle can be sampled.
 - Gates are satisfied for a polity when all enablers are `Proven` by it.
+- **Gating schedule.** A line may set `gating: [s_1, …, s_n]`, one gate probability per generation, replacing s_c [D]. Example: VTOL `[0.85, 0.5, 0.15]`; its early generations usually work but need thrust, control and structure they don't yet have, and later ones rarely do. Hard-dead odds stay line-level, so §4.2.5 is unchanged. Validation: entries in [0, 1], one per generation.
 
 **4.1.4 Repeatable techs.** A `Repeatable` line (≈ 12, about one per domain: engine efficiency, sensor sensitivity, computing density, specific strength, manufacturing productivity, crop yields, medicine, launch cost, power density, armor efficiency, quieting, guidance accuracy) has levels `tech.<line>.r<k>`, k ≤ max_levels (default 30), all sampled at worldgen. Level k: always works and is never gated; true gain g_k = g0 · d^(k−1) · min(LogNormal(mean 1, CV 0.3), 2.0) [D] (the clip binds in 0.6% of draws; mean multiplier 0.999, so g0 is not renormalized) (g0 and d per line, e.g., 0.03 and 0.95); nominal date D_k = first + (k − 1)·cadence; effort = base_dev · step_dev^(k−1) · premature(D_k) (step_dev ≈ 1.35). Only level k+1 is `Known` when level k is `Proven`. Levels are **not** `TechIdx` entities: a repeatable line is one `RepeatableIdx` (dense, sorted by line ID) with a `level_proven: u8` counter. Level string IDs are zero-padded, `tech.<line>.r01`…`r30` (`max_levels` ≤ 99, validated), and prerequisites may not name a level. Each line has **one belief subject** (gain of the currently `Known` level, Log scale), in its own WS-05 subject range (P-02b); the subject is **bound** to one level (stored with it). Observation producers compute the value from the truth gain of the receiver's bound level, whatever level the source event concerns. When the bound level is proven (R3), its achieved gain moves to `RndState`, and the subject is re-bound and re-initialized to the next level's prior in **I1, after that tick's observations are applied**, so no observation crosses a level-up. It is developed by a development project at fixed u = 1/3 with no science phase. The cumulative effect exp(Σ g_k) multiplies the line's target stats (`effects: [(domain, stat)]`) in designs finalized afterwards, or enters §4.9 as an econ effect. So Σ g_k ≤ 2 · g0 (1 − d^L)/(1 − d) for L = max_levels: the gain is bounded (≤ 0.94 in logs for g0 0.03, d 0.95, L 30; expected ≈ 0.47). Repeatables are not counted in the 300 baseline nodes.
+
+**4.1.5 Physics bases.** Content may define bases (`bases.ron`: id, name, field, p), each an uncertain physical premise that several lines rely on: e.g., `basis.high_tc` (high-temperature superconductors are practical engineering materials) and `basis.quantum_coherence` (large coherent quantum systems are practical). Truth: B_b ~ Bernoulli(p_b), key `basis:<id>`, one draw per world. A member line (`basis: "basis.x"`) draws its own outcome per §4.1.2 from its class, which for members means engineering risk *given* the premise; a member generation works iff B_b and its own draw succeed. A false premise makes every member hard-dead at once; a true one leaves each with its own risk. Gates are drawn only for members that work. Historical lines can't be members (RND-003). Use a basis when ≥ 2 lines share a premise; a lone long shot uses the Longshot class. Bases are keyed by ID, so adding a basis or a member changes no other truth (ARC-034).
 
 ### 4.2 Beliefs (P-2, ADR-0008)
 
@@ -323,7 +339,7 @@ Notation: monthly ticks; real amounts are deflated by WS-03's R&D cost index for
 | 1 | performance | Log | the §4.1.2 mixture |
 | 2 | cost κ | Log | Normal(0, σ_κ) |
 
-Gates have no belief subject: they are revealed as discrete findings (§4.4). Unknown techs are `None`. A tech becomes known by discovery (§4.4), by a prerequisite generation becoming `Proven`, by public fielding (§4.2.4), by espionage, or at start (§3.9).
+For a basis member, the viability subject is the tech's own outcome given its premise; each basis known to the polity has one more viability subject of the same form (prior p_b), known as soon as any member is (§4.2.8). Gates have no belief subject: they are revealed as discrete findings (§4.4). Unknown techs are `None`. A tech becomes known by discovery (§4.4), by a prerequisite generation becoming `Proven`, by public fielding (§4.2.4), by espionage, or at start (§3.9).
 
 **4.2.2 Effort → precision → observations.** Science, tests and other sources add precision Δτ_k (on the subject's scale) to `acc[k]`. At most once per quarter per subject (in months where (month + field index) mod 3 = 0, which spreads the load), and at every test, an accumulated `acc[k]` is emitted as one `Observation` with noise σ = 1/√acc[k] and value = truth (perf, cost: truth × exp(N(0, σ)) on the Log scale; viability: v_true + N(0, σ)), then `acc[k]` is reset. Pooling is exact for Gaussian observations (D2).
 
@@ -337,6 +353,15 @@ Gates have no belief subject: they are revealed as discrete findings (§4.4). Un
 
 **4.2.7 Published science.** Science funded from `civil_rnd` in an unclassified field is published: each emitted observation is also pushed to every other high-fidelity polity that knows the tech, with σ ×√2 and an independent noise draw [D]. Defense-line science and classified fields are private. This is Terra Invicta's global/private split (m1-findings §3.1) as a policy choice.
 
+**4.2.8 Basis updates (exact).** Let L_B be the log-odds of a basis and L_j the log-odds of member j's own outcome given the premise. Members' own outcomes are independent given B, and every piece of viability evidence about a tech depends only on whether it works, so the posterior factorizes and these updates are exact [V: computed, `prototypes/rnd/basis_check.py`]:
+- Viability evidence on member j with likelihood ratio LR (tests, fielding, espionage, and gate events per S-3, §4.4): L_j += ln LR and L_B += ln(p_j·LR + 1 − p_j), where p_j = σ(L_j) before the update. Both are pushed as §4.2.3 binary observations.
+- Science on member j splits its viability information between the member's own subject and the basis subject, half each [D]. A polity can also set `SetResearchPriority` on the basis itself (its field comes from content), which buys basis information only.
+- A member becoming `Proven` pushes LR = 10⁴ by the first rule, so the premise is effectively proven for every other member.
+- A member's p_works = σ(L_B)·σ(L_j). Everything that reads p_works (UI bands, maturity labels, the AI kill threshold, RND-012) reads this product. §4.2.5's counts run on the own subject: s counts generations whose own outcome is proven, f counts generations whose σ(L_j) first falls below 0.02, and p̄ is the own subject's prior. A false premise therefore never inflates a line's dead count, and a basis member's line history stays exact evidence about its own Beta.
+- Fixture: p_b = 0.2, two members with own priors 0.8 and 0.6; member 1 passes, fails and passes a test with P(pass | works) = 0.9 and LR 13.6. Exact enumeration and the factored update both give p_works 0.7905 and 0.4803: the untested member 2 rose from 0.12 to 0.48 on member 1's evidence alone.
+
+**4.2.9 Maturity label.** The class a player sees for a known tech comes from its current p_works, not from content [D]: ≥ 0.955 Established · ≥ 0.86 Promising · ≥ 0.70 Speculative · ≥ 0.33 Fringe · otherwise Longshot. The thresholds are midpoints between the class prior means (0.99, 0.92, 0.80, 0.60, 0.067), so a newly known tech shows its authored class. A known gate hint appends "needs <tag>" (§6.4); an unresolved `Penalty` finding appends "premature". A VTOL generation discovered at its Promising prior moves up once tests and others' fielding raise p_works, and every member of a basis moves together when the premise is proven or discredited.
+
 ### 4.3 Science
 
 Per field f, real effort per month e_f = (paid civil_rnd[f] + defense allocations to f) × rnd_morale. The `effort` Tracked variable is a 60-month EMA of e_f (used for discovery and display). Within the field, e_f is split across `Known` techs that are not `Proven`, by `priority`:
@@ -349,6 +374,8 @@ premature = exp(max(0, D_t − year) / τ_p),   τ_p = 8 years [D]
 ```
 
 m_sci is capped at 1 (TRL 4). One full science phase cuts perf σ from ≈ 0.17 (the mixture's moment σ) to ≈ 0.12 and cost σ from 0.35 to ≈ 0.21, and gives a working tech an expected viability ln LR of 2·1.2 = 2.4 [D: arithmetic]. Premature work is possible but costly, which paces the 1955–2060 timeline without hard date gates.
+
+**Science infrastructure (`SciBoost`).** A tech may carry `sci_boost: [(field, [s per generation])]`. Once it is `Proven` by a polity, that polity's information rate Δτ_k and its discovery and hint hazards (§4.4) in the field are multiplied by 1 + Σ s over its proven boost techs, capped at 2 [D]. Δm_sci is unchanged: infrastructure buys knowledge, not engineering. The multiplier is a term in the field-effort breakdown. Defaults: collider generations s = 0.15, 0.20, 0.25 on nuclear physics and 0.05 each on physics [D]; a boost tech may also `grants: [cap.collider.k]`.
 
 ### 4.4 Discovery and hidden enablers
 
@@ -408,7 +435,7 @@ The true final cost is never shown. Terms sum exactly (ARC-041).
 
 ### 4.6 Craft design
 
-**4.6.1 Domains and hull classes.** 7 domains, 53 hull classes (§6.3). A hull class defines target class, slot list (kind, count, max size), mass capacity, base structure stats, the laws used and its sensitivity tier. Hull instances scale by the domain's structure tech generation (airframe, hull materials, armor), so there are 53 class templates, not one per generation.
+**4.6.1 Domains and hull classes.** 8 domains, 57 hull classes (§6.3). Rotary-wing is its own domain because a domain owns its structure line: rotor craft scale with the rotorcraft line, not with fixed-wing airframes. A hull class defines target class, slot list (kind, count, max size), mass capacity, base structure stats, the laws used and its sensitivity tier. Hull instances scale by the domain's structure tech generation (airframe, hull materials, armor), so there are 57 class templates, not one per generation.
 
 **4.6.2 Components.** A component template belongs to a tech line; generation k's instance has stats `base × step^(k−1) × perf_true(tech)` for performance-scaled stats, and unit cost `base_cost × cost_step^(k−1) × κ_true`. Each has slot kind and size, mass, power, and contributions `(stat, op, value)`. Components with tech status below `Proven` can be placed if m_sci ≥ 1/3 (TRL ≥ 2); the design project then matures them concurrently at its u.
 
@@ -433,6 +460,8 @@ Fixtures [V: computed]: `StagedPayload` with n = 2, v_e = 3.0 km/s, ε = 0.1, m�
 **4.6.4 Specified vs. achieved.** `specified` = the stats computed from the owner's belief means at design time. `achieved` = the stats computed from truth, revealed to the owner at acceptance and used by WS-11 from then on. Any other polity's view is `believed_stats`: the same function over its own beliefs (prior means for techs it doesn't know). This needs no per-design belief subjects, and the Measured doctrine (salvo §7.3) reads it directly.
 
 **4.6.5 Placement.** External placement is stored for the 2D silhouette and never read by stat, cost, hash-relevant derived or combat code (OQ-3).
+
+**4.6.6 Lift, roles and niche craft.** Air and rotary hulls have one `lift` slot [D]. Fixed-wing hulls take wing components (straight, swept, delta, variable sweep) and the VTOL family (vectored thrust, lift fan, tailsitter); rotary hulls take rotor, compound and tiltrotor components. Lift components act through ordinary contributions: a tailsitter sets the `no_runway` flag and costs payload and reliability; a tiltrotor beats a rotor on speed and range and loses on unit cost and O&S. Each rotary hull has ≥ 2 role slots: scout (EO/IR, datalink), utility (cargo, troops), ASW (dipping sonar, torpedo), attack (gun, ATGM, armor) (RND-060). Niche craft come out of the same trade-offs, not special rules: hydrofoil and air-cushion hull-form components on small surface hulls (speed against sea state and range), a parasite bay on bomber and transport hulls (it carries aircraft hardpoints), a supercruise engine from the SST line. Every component tagged `niche` must lose to an incumbent of its slot kind on at least one objective stat (RND-062), so niche kit wins only for some objectives. The ground-effect hull is an air-domain hull with `sea_only` (it can't operate over land) and uses `LogMassRatio` with a high L/D [D].
 
 ### 4.7 Production and defense industry
 
@@ -552,7 +581,7 @@ Breakdowns: EAC (§4.5.4), unit cost (learning × rate × producibility × facto
 
 ### 4.12 Performance and memory (SYS-008, ARC-091)
 
-Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~300 techs × a few flops, ≤ 20 projects, ≤ 40 lines, ~20 RNG streams per tick (≈ 6 µs); macro polities 12 updates each; own and published observations total ≈ 4,500 per month after field staggering (≈ 0.5 ms in I1). Expected ≤ 3 ms; content up to ≈ 600 nodes keeps this under 6 ms because every term is linear in node count. Memory: tech beliefs 6 polities × 900 subjects × ~80 B ≈ 0.43 MB (down from ≈ 3 MB if all 46 polities held them); `RndBlock`s ≤ 0.25 MB per high-fidelity polity; total ≤ 2 MB.
+Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~340 techs × a few flops, ≤ 20 projects, ≤ 40 lines, ~20 RNG streams per tick (≈ 6 µs); macro polities 12 updates each; own and published observations total ≈ 4,500 per month after field staggering (≈ 0.5 ms in I1). Expected ≤ 3 ms; content up to ≈ 600 nodes keeps this under 6 ms because every term is linear in node count. Memory: tech beliefs 6 polities × ≈ 1,020 subjects (339 techs × 3 + bases) × ~80 B ≈ 0.49 MB (v0.3: 900 subjects, 0.43 MB; P-02c), plus the repeatable range (P-02b, ≈ 6 KB) (down from ≈ 3 MB if all 46 polities held them); `RndBlock`s ≤ 0.25 MB per high-fidelity polity; total ≤ 2 MB.
 
 ## 5. Requirements
 
@@ -562,11 +591,12 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-001 | Tech lines expand into generation techs with deterministic IDs, dense indices, dates and costs. | Fixture line (gens 4, first 1950, step 10, base_dev 100, step_dev 1.6): IDs `tech.x.g1..g4`, D = 1950/60/70/80, base_dev = 100/160/256/409.6 (exact); shuffling content files gives identical indices (ARC-053). | P-6, R-3 |
 | RND-002 | Truth per tech depends only on (seed, content ID) and is identical for every polity. | Adding an unrelated line leaves all existing `TechTruth` and edges bit-identical; every polity's view of truth is the same object (ARC-011/034). | SYS-005, P-1 |
 | RND-003 | Historical techs (D ≤ scenario start) always work and have nominal-mode performance. | Over 1,000 seeds, every historical tech has works = true and perf within the nominal component's ±4σ. | P-1 |
-| RND-004 | Viability, gate and performance truth follow the content priors. | 10,000 worlds: shares of ungated / soft-gated / hard-dead per class within ±1.5 pp of the §4.1.2 table; Requires vs. Penalty share 0.4 ± 0.015; one vs. two enablers 0.7 ± 0.015; perf mode frequencies within ±1.5 pp of (0.15, 0.75, 0.10); ln κ mean within ±0.01 and sd within ±0.01 of (0, σ_κ). | SYS-005 |
+| RND-004 | Viability, gate and performance truth follow the content priors. | 10,000 worlds: shares of ungated / soft-gated / hard-dead per class within ±1.5 pp of the §4.1.2 table; Requires vs. Penalty share 0.4 ± 0.015 (Longshot 0.7); one vs. two enablers 0.7 ± 0.015 (Longshot two vs. three 0.5 ± 0.015); perf mode frequencies within ±1.5 pp of (0.15, 0.75, 0.10); ln κ mean within ±0.01 and sd within ±0.01 of (0, σ_κ); Longshot shares within ±1.5 pp of (0.007, 0.060, 0.933); lines with a `gating` schedule are checked per generation against their s_k, and basis members' own outcomes against their class. | SYS-005 |
 | RND-005 | Boost edges follow §4.1.2. | 1,000 worlds with default content: mean edge count within 3 SE of Σ p·P(valid) over different-field pairs, computed from content; every edge runs from an earlier to a later D; adding a line changes no edge between other lines. | P-1 |
-| RND-006 | Dead-end frequency matches the content class mix, and soft outnumber hard. | 10,000 worlds: mean hard dead ends per world within 3 SE of the class-mix expectation (≈ 21 with default content) and soft-gated within 3 SE of theirs (≈ 52); the ratio soft/hard ≥ 2 in the mean; M2(b) B1 reports p5–p95 of both. | §0 |
+| RND-006 | Dead-end frequency matches the content class mix, and soft outnumber hard. | 10,000 worlds: mean hard dead ends per world within 3 SE of the class-mix expectation (≈ 31 with tranche-1 content) and soft-gated within 3 SE of theirs (≈ 65); the ratio soft/hard within [2, 3] in the mean; M2(b) B1 reports p5–p95 of both. | §0 |
 | RND-007 | Soft gates are drawn per §4.1.3 from authored candidates only, and can't form cycles. | Unit: every sampled enabler belongs to a line in the tech's `gate_candidates`; adding a line that no candidate list names leaves every gate bit-identical (ARC-034); content validation rejects a fixture whose prerequisites ∪ `gate_candidates` line graph has a cycle. | P-1, P-6 |
 | RND-008 | Repeatable lines follow §4.1.4. | Unit: all levels are sampled at worldgen and always work, never gated; only level k+1 is known after level k is proven; level effort = base_dev·step_dev^(k−1)·premature (1e-12); Σ gains ≤ 2·g0(1 − d^L)/(1 − d) for every world (10⁵ worlds); the gain multiplies the target stats only in designs finalized after proof. | P-1, R-3 |
+| RND-009 | Physics bases and gating schedules follow §4.1.3 and §4.1.5. | 10,000 worlds: each basis true within ±1.5 pp of p_b; every working member has a true basis; with a false basis every member is hard-dead; a line with `gating: [0.85, 0.5, 0.15]` is gated at those rates per generation (±1.5 pp, given works); adding a basis or a member leaves all other truth bit-identical; validation rejects a historical member and a `gating` list of the wrong length. | P-1, ARC-034 |
 | **Beliefs** ||||
 | RND-010 | Each known tech has the three §4.2.1 subjects with priors equal to the sampling distributions; unknown techs are `None`. | Unit: subjects created at discovery equal the content prior component-for-component (1e-12). | P-2, ADR-0008 |
 | RND-011 | Binary evidence reproduces the exact Bernoulli posterior. | For priors {0.1, 0.4, 0.8} × LR {1/20, 1/3, 3, 13.6, 50}: `p_works` after one observation equals p·LR/(p·LR + 1 − p) within 1e-6. | P-2 |
@@ -578,6 +608,8 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-017 | Espionage never makes the thief more certain than the target. | Repeated `Field` thefts (×10) against a fixed target leave the thief's τ on every subject ≤ τ_target/k_spy² + own τ (1e-9); `stolen` records the copied amount. | P-2, WS-06 |
 | RND-018 | Science from unclassified civil lines is published with σ×√2; defense and classified science is not. | Two-polity fixture: B receives exactly A's civil-field emissions with σ ×√2 and none of A's defense-line or classified emissions. | P-2 |
 | RND-019 | Decide-stage code can't read truth or hidden project draws. | `compile_fail` doc tests: no `PolityView` accessor returns `TechTruth`, `EdgeTruth` or `ProjectDraws`. | ARC-012, P-1 |
+| RND-028 | Basis updates are exact (§4.2.8). | Fixture: p_b 0.2, own priors (0.8, 0.6); member 1 passes, fails and passes a test at P(pass \| works) 0.9, LR 13.6 → p_works (0.7905, 0.4803) within 1e-4, equal to exact enumeration; a member `Proven` → basis p > 0.999; RND-012 holds on B2 content with bases. | P-2, ADR-0008 |
+| RND-029 | The maturity label follows §4.2.9. | p_works 0.99, 0.92, 0.80, 0.60, 0.067 → Established, Promising, Speculative, Fringe, Longshot; the label changes only when p_works crosses a threshold; a known gate hint appends its tag. | §4.2.9 |
 | **Science and discovery** ||||
 | RND-020 | Field effort is split by priority and converts to maturity and precision per §4.3. | Unit: e_f = 10, priorities (1, 3), equal weights, E_sci = 20 → Δm = (0.125, 0.375); classified → precision × 0.8; rnd_morale 1.1 scales both by 1.1 (1e-12). | §4.3 |
 | RND-021 | Premature work costs exp(Δyears/τ_p). | E_sci for a tech 8 years early = e × base value (1e-12); 0 years early = base. | §4.3 |
@@ -586,6 +618,7 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-025 | `Penalty` gates follow §4.4. | Fixture: B gated by A (Penalty 5×, perf 0.6): effort for progress made while A is unproven is × 5; `FeasibilityFinding` at progress 0.4 carries exactly (5, 0.6), and the EAC gains a gate-penalty term; B completes; a design finalized meanwhile has B's component perf × 0.6; after A is `Proven`, remaining effort is unpenalized and a `ReviseDesign` restores full perf. | §0, §4.4 |
 | RND-026 | Science reveals gate hints per §4.4. | 10⁵ trials at fixed effort: monthly hint frequency within 3 SE of 1 − exp(−κ_g·e/E_sci), and factor reveals at half that rate; no hint is ever produced for an ungated tech. | §4.4 |
 | RND-024 | Boost edges cut effort and are revealed per §4.4. | Fixture: A proven, b = 0.3: B's true effort = 0.7 × unboosted (1e-12); revealed at B's first test; reveal hazard in the passive path within 3 SE over 10⁵ trials. | §4.4 |
+| RND-027 | `SciBoost` follows §4.3. | Fixture: collider g1 (s 0.15) `Proven` → nuclear-physics Δτ and discovery and hint hazards × 1.15, Δm_sci unchanged (1e-12); boost techs summing past 1 are capped at × 2; the field-effort breakdown has a boost term. | §4.3 |
 | **Projects** ||||
 | RND-030 | Slots = clamp(round(√(B/B_slot)), 1, 20); new projects beyond slots are rejected. | B/B_slot ∈ {0, 1, 4, 25, 1000} → {1, 1, 2, 5, 20}; a 6th project at 5 slots → rejection event; a slot drop cancels nothing. | §4.5.1 |
 | RND-031 | The funding response follows §4.5.2. | x = 0.5 → w = 0.375 R*; x = 1 → R*; x = 2 → R*(1 + 0.5 ln 2); x ≤ 0.2 → 0; x = 4 is clamped to 3 (all 1e-12). | §0 |
@@ -604,7 +637,7 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-044 | Private ventures start and run per §4.8.6. | 10⁵ contractor-years: start frequency within 3 SE of h_pv; IB = 0 → no ventures; a venture uses no government slot; `AdoptVenture` procures without development cost and pays the 50% recoupment from the first lots. | §0, §4.8.6 |
 | RND-045 | `auto_design` returns a deterministic feasible draft. | 1,000 random fixture inventories: output is always feasible or `None`; identical across calls; with two engines differing only in value per cost, the better one is chosen. | §3.10 |
 | **Design** ||||
-| RND-050 | Designs are built from 53 hull classes in 7 domains with typed slots. | Content validation: every hull class has a domain, target class, ≥ 1 slot and a sensitivity tier; every component's slot kind exists. | §4.6.1 |
+| RND-050 | Designs are built from 57 hull classes in 8 domains with typed slots. | Content validation: every hull class has a domain, target class, ≥ 1 slot and a sensitivity tier; every component's slot kind exists. | §4.6.1 |
 | RND-051 | Feasibility rejects drafts that break slot, mass or power limits and names the binding constraint. | Three fixture drafts (wrong slot kind, 1% over mass, 1 kW short) are rejected with those reasons; a feasible draft passes. | §4.6.3 |
 | RND-052 | Derived stats follow §4.6.3 ops and laws with exact breakdowns. | Fixtures reproduce `StagedPayload` 1.460 t and 7.328 t, `LogMassRatio` 2.841 km/s (1e-3 rel); `sum`, `max`, `min`, `product` unit tests; every stat breakdown sums exactly (ARC-041). | P-3, P-10 |
 | RND-053 | Component stats scale with the true performance and cost of their tech. | Doubling a tech's truth perf in a fixture doubles every perf-scaled stat of its components; κ scales unit cost (1e-12). | P-1 |
@@ -614,6 +647,9 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 | RND-057 | `DesignStats` fill every field WS-11 needs for the salvo and Lanchester inputs. | For one fixture design per domain, every §3.6 field required for its domain is present (per-domain required-field table in content), with no NaN. | SYS-009, WS-07 |
 | RND-058 | Munition deliveries carry the delivering design's stats as a lot. | Two munition designs of one class deliver two lots with their own stats; a later third design doesn't change existing lots. | salvo §7.4 |
 | RND-059 | Launch vehicles and spacecraft publish the WS-08b fields; capability flags and v_e follow §3.7. | Fixture: proving a tech with `grants: [cap.lander]` sets the flag; v_e = max over proven propulsion techs of base × perf_true; LV stats include payload_leo. | WS-08b P-05a |
+| RND-060 | Rotary-wing is a craft domain with four role hulls. | Content validation: `craft.rotary` has the rotorcraft line as its structure line; hulls scout, utility, ASW and attack each have a `lift` slot that accepts only rotary lift components and ≥ 2 role slots; no air hull is a helicopter; one fixture design per rotary hull passes RND-057. | §4.6.1, §4.6.6 |
+| RND-061 | Tech content passes the believability rules (§6.4). | Content check rejects fixtures with: a prerequisite, gate candidate or Boost edge whose source `provides` and target `needs` don't intersect; a non-historical line without `precedent`; a gate candidate whose first generation comes more than 25 years after the target's last; a Longshot with < 4 gate candidates. Default content passes. | R-3, §6.4 |
+| RND-062 | Niche components lose on at least one objective stat. | Content check: for every component tagged `niche`, an untagged component of the same slot kind with D within ±10 years beats it on ≥ 1 stat that has nonzero weight in some hull objective; default content passes. | §4.6.6 |
 | **Production** ||||
 | RND-065 | Lot costs follow §4.7.1. | c1 = 100, slope 0.8, N_f = 500: units 11–20 = 292.36 and A(500) = 16.895 (1e-4 rel); T(N) strictly increasing for N ≤ 10⁵ at slopes 0.75–0.95. | m1 §3.3 |
 | RND-066 | Rate effects scale lot cost by (r/r_ref)^b_r. | r = 2 r_ref with b_r = log2(0.95) → × 0.95 (1e-12). | §4.7.2 |
@@ -655,14 +691,15 @@ Budget: R3 WS-05 ≤ 15 ms (WS-02 §5). Estimate [D]: per high-fidelity polity ~
 ```
 content/core/rnd/
   fields.ron          Field { id, name, e_ref }                                      10 entries
-  domains.ron         Domain { id, name, structure_line, laws: [...], required_stats: [...] }   12 eng. + 7 craft
-  lines/<domain>.ron  TechLine { ... } and Tech { ... } (singletons)                 ≈ 75 lines + ≈ 20 singletons + ≈ 12 repeatable lines
-  components.ron      ComponentTemplate { id, line, slot, size, mass, power, cost, contrib: [(stat, op, base, step)] }  ≈ 90
-  hulls/<domain>.ron  HullClass { id, domain, target_class, slots, mass_cap, base_stats, sensitivity, lead, slope, n_f }   53
+  domains.ron         Domain { id, name, structure_line, laws: [...], required_stats: [...] }   12 eng. + 8 craft
+  lines/<domain>.ron  TechLine { ... } and Tech { ... } (singletons)                 ≈ 90 lines + ≈ 23 singletons + ≈ 12 repeatable lines
+  bases.ron           Basis { id, name, field, p }                                    ≈ 2 (tranche 1)
+  components.ron      ComponentTemplate { id, line, slot, size, mass, power, cost, contrib: [(stat, op, base, step)], tags }  ≈ 112
+  hulls/<domain>.ron  HullClass { id, domain, target_class, slots, mass_cap, base_stats, sensitivity, lead, slope, n_f }   57
   enablers.ron        [(from, to, p, b)]  Boost edges only (gates are line fields)  ≈ 40
   params.ron          every [D] constant in §4 (one file, tagged comments)
 content/settings/<s>/contractors.ron, rnd_start.ron   (optional)
-content/core/rnd/objectives.ron   auto_design value weights per hull class           53
+content/core/rnd/objectives.ron   auto_design value weights per hull class           57
 ```
 
 ### 6.2 Tech line schema (example)
@@ -704,33 +741,68 @@ TechLine(
     first: 1962, base_dev: 150.0, step_dev: 1.35,
     effects: [Stat("dom.sensors", "sensor"), Econ(Sector("services"), 1.0)],
 )
+
+TechLine(                                          // v0.3 fields
+    id: "line.aero.vtol", domain: "dom.aerostructures",
+    fields: [("field.fluids", 0.7), ("field.cs", 0.3)],
+    generations: 3, first: 1957, step_years: 14, base_dev: 600.0, step_dev: 1.5,
+    viability: Promising,
+    gating: [0.85, 0.5, 0.15],                     // works early, practical late (§4.1.3)
+    gate_candidates: ["line.prop.turbofan", "line.comp.flight_control", "line.mat.composites"],
+    needs: [Thrust, Control, Lightweight], provides: [Vtol],   // §6.4
+    precedent: "[R] Ryan X-13 (1957), Harrier (1969), F-35B (2015)",
+    components: ["comp.lift.vectored_thrust", "comp.lift.lift_fan"],
+)
+
+Basis(id: "basis.quantum_coherence", name: "Large coherent quantum systems", field: "field.physics", p: 0.8)
+TechLine(id: "line.comp.quantum", basis: "basis.quantum_coherence", viability: Speculative, /* ... */)
+TechLine(id: "line.nuc.cold_fusion", generations: 1, first: 1989, viability: Longshot,
+         precedent: "[R] Fleischmann–Pons claim (1989), not replicated", /* ≥ 4 gate candidates */)
+TechLine(id: "line.sci.collider", generations: 3, viability: Established,
+         sci_boost: [("field.nuclear", [0.15, 0.20, 0.25]), ("field.physics", [0.05, 0.05, 0.05])],
+         grants: [Cap("cap.collider")], /* ... */)
 ```
 
 Every `Tech` field except `id` and `domain` has a serde default, so M4b's test techs (`id`, `domain` only) load unchanged; the WS-05 content check (M5) rejects a core-content singleton without `date` or `base_dev`. A singleton gets a `TechIdx` like a generation tech and its own 3 belief subjects.
 
 ### 6.3 Granularity and authoring volume (Decision 1)
 
-| Engineering domain | Nodes | Example lines |
+| Engineering domain | Nodes | Example lines (**v0.3 tranche 1** in bold: gens, class) |
 |---|---|---|
-| Air-breathing propulsion | 20 | piston (hist.), turbojet, turbofan, turboshaft, ramjet/scramjet |
+| Air-breathing propulsion | 22 | piston (hist.), turbojet, turbofan, turboshaft, ramjet/scramjet; **nuclear ramjet (2, F, `fissile`)** |
 | Rocketry and space propulsion | 28 | solid, storable, cryogenic, staged combustion, NTR, electric, reusability |
-| Aerostructures and aerodynamics | 24 | airframe gens, swept/delta, VTOL, rotorcraft, low observability, hypersonic glide |
-| Naval architecture | 26 | hull forms, steam, gas turbine, naval reactor, AIP, quieting, VLS |
+| Aerostructures and aerodynamics | 37 | airframe gens, swept/delta, VTOL, rotorcraft (rotary structure line), low observability, hypersonic glide; **tiltrotor (3, P), tailsitter (2, S), SST (3, P), ground effect (3, S), airborne carrier/parasite fighter (2, F)** |
+| Naval architecture | 31 | hull forms, steam, gas turbine, naval reactor, AIP, quieting, VLS; **hydrofoil (3, P), air cushion (2, P)** |
 | Ground vehicles | 20 | armor, composite armor, engines, fire control, active protection |
-| Sensors and EW | 30 | radar, phased array, sonar, EO/IR, ESM, ECM |
-| Computing and communications | 28 | transistor, IC, microprocessor, networks, satellite comms, autonomy, crypto |
-| Weapons and guidance | 32 | inertial, radar seeker, IR seeker, GPS-class nav, warheads, guns, DEW |
-| Nuclear | 18 | fission weapon, thermonuclear, MIRV, naval and civil reactors, fusion |
-| Space systems | 26 | satellite bus, life support, reentry, ISRU, survey instruments, docking |
-| Materials and manufacturing | 24 | alloys, superalloys, composites, ceramics, automation, additive |
-| Civil and biomedical | 24 | green revolution, antibiotics/vaccines, contraception, containerization, energy |
-| **Total** | **300** | plus ≈ 12 repeatable lines (§4.1.4), not counted |
+| Sensors and EW | 32 | radar, phased array, sonar, EO/IR, ESM, ECM; **quantum sensing (2, S, `basis.quantum_coherence`)** |
+| Computing and communications | 35 | transistor, IC, microprocessor, networks, satellite comms, autonomy, crypto; **organic semiconductors (2, S), quantum computing (3, S, `basis.quantum_coherence`), superconducting logic (2, S, `basis.high_tc`)** |
+| Weapons and guidance | 34 | inertial, radar seeker, IR seeker, GPS-class nav, warheads, guns, DEW; **railgun (2, S)** |
+| Nuclear | 19 | fission weapon, thermonuclear, MIRV, naval and civil reactors, fusion; **cold fusion (1, Longshot)** |
+| Space systems | 27 | satellite bus, life support, reentry, ISRU, survey instruments, docking; **skyhook (1, F; P-08c)** |
+| Materials and manufacturing | 27 | alloys, superalloys, composites, ceramics, automation, additive; **warm superconductor (2, S, `basis.high_tc`), ambient superconductor (1, Longshot)** |
+| Civil and biomedical | 27 | green revolution, antibiotics/vaccines, contraception, containerization, energy; **collider (3, E, `SciBoost`)** |
+| **Total** | **339** | plus ≈ 12 repeatable lines (§4.1.4), not counted |
+
+Tranche 1 adds one exemplar per mechanism (niche craft, basis members, Longshot singletons, `SciBoost`) plus the lift components the rotary split needs. Bases: `basis.quantum_coherence` p 0.8 (physics), `basis.high_tc` p 0.6 (materials science) [D]. Every tranche-1 line has its first generation after 1955, so RND-003 doesn't force it to work. Helicopter roles need no new techs: rotorcraft, turboshaft, sonar, EO/IR and weapon lines already supply the components.
+
+**Tranche 2** (≈ 75 nodes, after M2(b) fixes the class mix; within the ≈ 600-node ceiling): compound rotor, seaplane, airship, low-boom; rotating detonation, variable cycle, combined cycle; spaceplane, nuclear pulse, fusion rocket, beamed propulsion, MPD thruster; SWATH, supercavitating torpedo, liquid-metal reactor, large UUV; hybrid drive, ETC gun, UGV; OTH radar, passive coherent location, hyperspectral; photonic and neuromorphic computing; particle beam, X-ray laser, orbital kinetic; inertial fusion, breeder/thorium, microreactor; space station, orbital solar, space elevator (Longshot), lunar mass driver; nanotube/graphene, metamaterial stealth.
 
 Science fields (10): physics, nuclear physics, chemistry, materials science, fluid dynamics, solid-state electronics, computer and information science, life sciences, earth and planetary sciences, astronomy.
 
-Hull classes (53): **air** 9 (fighter, strike, bomber, AEW&C, maritime patrol, transport/tanker, reconnaissance, helicopter, UAV) · **surface** 9 (patrol/corvette, frigate, destroyer, cruiser, carrier, amphibious, mine warfare, replenishment, fast attack craft) · **subsurface** 3 (SSK, SSN, SSBN/SSGN) · **ground** 6 (MBT, IFV, APC, self-propelled artillery, air-defense vehicle, TEL) · **munition** 14 (the salvo §8.4 classes plus ICBM/SLBM) · **launch vehicle** 4 (small, medium, heavy, super-heavy) · **spacecraft** 8 (comsat, ISR, navigation, early warning, survey probe, crewed, lander, tug).
+Hull classes (57): **air** 9 (fighter, strike, bomber, AEW&C, maritime patrol, transport/tanker, reconnaissance, UAV, ground-effect craft) · **rotary** 4 (scout, utility/transport, ASW, attack) · **surface** 9 (patrol/corvette, frigate, destroyer, cruiser, carrier, amphibious, mine warfare, replenishment, fast attack craft) · **subsurface** 3 (SSK, SSN, SSBN/SSGN) · **ground** 6 (MBT, IFV, APC, self-propelled artillery, air-defense vehicle, TEL) · **munition** 14 (the salvo §8.4 classes plus ICBM/SLBM) · **launch vehicle** 4 (small, medium, heavy, super-heavy) · **spacecraft** 8 (comsat, ISR, navigation, early warning, survey probe, crewed, lander, tug).
 
-Authoring: ≈ 75 lines (each with 2–5 gate candidates) + 20 singletons + 12 repeatables + 90 components + 53 hulls + 53 objectives + 40 Boost edges + 10 fields ≈ 355 entries, against ≈ 600+ for hand-authored nodes. More depth is welcome: the schema and budget allow ≈ 600 nodes (§4.12), and 300 stays the baseline the prototypes tune against. A content-check test (like WS-08a's) validates references, dates, cycles and the domain node counts.
+Authoring: ≈ 90 lines (each with 2–5 gate candidates) + 23 singletons + 12 repeatables + 2 bases + 112 components + 57 hulls + 57 objectives + 40 Boost edges + 10 fields ≈ 403 entries. More depth is welcome: the schema and budget allow ≈ 600 nodes (§4.12); 339 (tranche 1) is the baseline the prototypes tune against. A content-check test (like WS-08a's) validates references, dates, cycles, the domain node counts and the §6.4 rules.
+
+### 6.4 Believability rules (RND-061, RND-062)
+
+A player judges a tech tree by whether each requirement has a reason they can name. Content carries the reason and the validator enforces it [D]:
+
+1. **Capability tags.** Every line declares `needs` and `provides` from a closed list in `domains.ron` (≈ 20: Thrust, HighTemp, Strength, Lightweight, PowerDensity, Compute, Control, Precision, Sensing, Comms, Stealth, Cryo, Superconduct, Fissile, Fusion, Bio, Manufacturing, Vtol, Hydro, Orbit). A prerequisite, gate candidate or Boost edge A → B is valid only if A.provides ∩ B.needs ≠ ∅. Gate hints and `Blocked` events show the shared tag ("needs high-temperature materials"): the category, not the line, so a hint doesn't hand over the answer.
+2. **Precedent.** Every non-historical line names its real-world analog or claim in `precedent:`, tagged [V] with a source or [R] (Concorde and Tu-144; Ryan X-13; Shkval; Fleischmann–Pons). The tech card shows it.
+3. **Dates.** A gate candidate's first generation comes at most 25 years after the target's last (the §4.1.3 Δ window); a line meant to be uncertain must start after the scenario start (RND-003).
+4. **Longshots** have ≥ 4 gate candidates, so even a lucky world needs a believable stack of enablers.
+5. **Niche dominance** (§4.6.6, RND-062).
+6. **Audit.** `gate_report(content, seed) -> String` is a pure, sim-side debug function (never reachable from `PolityView`, RND-019). It lists every sampled gate and basis with its tags, so a reviewer can read 20 random gates per seed and flag implausible ones. M2(b) B1 writes one per base seed.
 
 ## 7. Verification
 
@@ -754,11 +826,15 @@ Authoring: ≈ 75 lines (each with 2–5 gate candidates) + 20 singletons + 12 r
 | P-11a | WS-11 | Build unit aggregates from `DesignStats.achieved`; consume `deliveries`; pay non-personnel O&S from §4.7.4 with the foreign share and embargo flag; refit = `ReviseDesign`; `Sell` → spot listing; macro equipment quality from `MacroRnd.level` | §3.6 |
 | P-SAL | salvo note §8 | `DesignStats` field names (§3.6) are the source of §8.1–8.4 unit inputs; ground units add `GroundStats` (G-6) | §3.6 |
 | P-08b | WS-08b §8 | Mark P-05a/b as accepted with the §3.7 forms | §3.7 |
+| P-02c | WS-02 §5 memory mix | Tech beliefs ≈ 0.49 MB (≈ 1,020 subjects per high-fidelity polity: 339 techs × 3 + bases), up from 0.43 MB; the ARC-090 bench may stay at 300 techs, since cost is linear in nodes (§4.12) | §4.12 |
+| P-07a | WS-07, salvo note §8 | Target classes and kernels for rotary hulls (attack: Lanchester support fires against ground units; ASW: salvo shooter against subsurface; scout and utility: staying power only) and for the ground-effect craft (surface target in naval salvo, air target to fighters) | §4.6.6, RND-060 |
+| P-08c | WS-08b | Skyhook (tranche 2: space elevator): the tech grants `cap.skyhook`; WS-08b owns its effect on launch cost or Δv to LEO for a polity holding it | §6.3 |
+| P-11b | WS-11 | Rotary units tracked as squadrons or flights, like air (army aviation and ship flights as templates); required-stat rows for `craft.rotary`; basing reads the new design flags `no_runway`, `sea_only` and `ship_capable` (helicopters and tailsitters can use any ship with a flight deck and unprepared ground) | §4.6.6, RND-060 |
 | P-CON | ConOps §6 R&D row | "P-1 latent truth; science fields vs. engineering projects; TRL-scaled lognormal cost and schedule growth; beta line viability; mixture performance; hidden enablers; funding-scaled slots" | §2 |
 
 ## 9. Open questions
 
-All five closed 2026-11-27 (Sean: accept the defaults, with the additions noted).
+OQ-R1–R5 closed 2026-11-27 (Sean: accept the defaults, with the additions noted). OQ-R6 opened and closed in v0.4.
 
 | ID | Question | Resolution |
 |---|---|---|
@@ -767,6 +843,7 @@ All five closed 2026-11-27 (Sean: accept the defaults, with the additions noted)
 | OQ-R3 | The ACAT triple (mean 1.36, CV 0.80, p85 3.1) is internally inconsistent under a lognormal. | **Closed: GAO governs.** The GAO split sets the means; the CV is fitted to ACAT's 0.80; the ACAT mean and p85 are reported, not targeted (§4.5.3). |
 | OQ-R4 | Contractors: catalogs only, or more? | **Closed: more.** Contractors get a capital memo account, five contract types with real-world trade-offs (§4.8.5), and stochastic private ventures driven by capital and home industrial-base strength (§4.8.6). |
 | OQ-R5 | Player as seller: automatic by export policy? | **Closed: automatic**, with notifications. Sellers can also make offers, including grant aid (§4.8.2); AI responses to offers are WS-06's (P-06a). |
+| OQ-R6 | Tranche 1 puts the expected soft/hard ratio at ≈ 2.1, near RND-006's floor of 2. Raise soft gating, or lower the floor? | **Closed 2026-11-28 (Sean): keep the floor; band 2–3.** It is more plausible that a tech eventually works than that it never can (Clarke's first law). M2(b) B1 measures the ratio; if it falls outside [2, 3], tune by moving outcomes from hard to soft (raise Speculative s_c 0.56 → 0.65, then the Speculative and Fringe Beta α) before touching the class mix. |
 
 ## 10. Sources
 
