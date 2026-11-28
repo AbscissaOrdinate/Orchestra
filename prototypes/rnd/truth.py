@@ -79,7 +79,7 @@ def sample_edges(c, seed, worlds):
 def sample_repeatable(seed, worlds, n_lines=P["n_repeatable"], levels=P["rep_levels"]):
     """True gains g_k = g0 d^(k-1) LogNormal(mean 1, CV rep_cv), shape (W, lines, levels)  (§4.1.4)."""
     w = np.asarray(worlds, np.uint64)[:, None, None]
-    h = key_hashes([f"rep{i:02d}.r{k + 1:02d}" for i in range(n_lines) for k in range(levels)]).reshape(1, n_lines, levels)
+    h = key_hashes([f"rep{i:02d}.r{k}" for i in range(n_lines) for k in range(levels)]).reshape(1, n_lines, levels)
     s2 = np.log1p(P["rep_cv"] ** 2)
     m = np.exp(-s2 / 2 + np.sqrt(s2) * ndtri(keyed_u(seed, w, h, SLOT["rep"])))
     return P["rep_g0"] * P["rep_d"] ** np.arange(levels) * m
